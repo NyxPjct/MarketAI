@@ -1,8 +1,11 @@
-name: Bootstrap source snapshot
+name: Expand MarketAI source
 
 on:
   push:
     branches: [main]
+    paths:
+      - ".bootstrap/core.part*"
+      - ".github/workflows/bootstrap-source.yml"
   workflow_dispatch:
 
 permissions:
@@ -10,6 +13,7 @@ permissions:
 
 jobs:
   unpack-source:
+    if: ${{ hashFiles('.bootstrap/core.part*') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,28 +21,30 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install zstd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd
+
       - name: Rebuild source snapshot
         shell: bash
         run: |
-          if ! compgen -G ".bootstrap/core.part*" > /dev/null; then
-            echo "No bootstrap snapshot found; nothing to expand."
-            exit 0
-          fi
-          cat .bootstrap/core.part* | tr -d '\n' | base64 --decode > /tmp/marketai-core.tar.zst
-          sudo apt-get update
-          sudo apt-get install -y zstd
-          tar --zstd -xf /tmp/marketai-core.tar.zst -C .
+          set -euo pipefail
+          cat .bootstrap/core.part* | tr -d '\\n\\r' | base64 --decode > /tmp/marketai-source.tar.zst
+          zstd -t /tmp/marketai-source.tar.zst
+          zstd -dc /tmp/marketai-source.tar.zst | tar -xf - -C .
           rm -rf .bootstrap
 
       - name: Commit expanded source
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "No source changes to commit."
+            echo "Nothing to commit."
             exit 0
           fi
-          git commit -m "chore: expand MarketAI v0.0 source snapshot"
-          git push origin HEAD:main
+          git commit -m "chore: expand MarketAI v0.0 source"
+          git push
