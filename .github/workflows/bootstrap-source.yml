@@ -2,10 +2,8 @@ name: Expand MarketAI source
 
 on:
   push:
-    branches: [main]
-    paths:
-      - ".bootstrap/core.part*"
-      - ".github/workflows/bootstrap-source.yml"
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -13,7 +11,6 @@ permissions:
 
 jobs:
   unpack-source:
-    if: ${{ hashFiles('.bootstrap/core.part*') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,30 +18,43 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check bootstrap
+        id: check
+        shell: bash
+        run: |
+          if compgen -G '.bootstrap/core.part*' > /dev/null; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install zstd
+        if: steps.check.outputs.present == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y zstd
 
       - name: Rebuild source snapshot
+        if: steps.check.outputs.present == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          cat .bootstrap/core.part* | tr -d '\\n\\r' | base64 --decode > /tmp/marketai-source.tar.zst
+          cat .bootstrap/core.part* | tr -d '\n\r' | base64 --decode > /tmp/marketai-source.tar.zst
           zstd -t /tmp/marketai-source.tar.zst
           zstd -dc /tmp/marketai-source.tar.zst | tar -xf - -C .
           rm -rf .bootstrap
 
       - name: Commit expanded source
+        if: steps.check.outputs.present == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           if git diff --cached --quiet; then
-            echo "Nothing to commit."
+            echo 'Nothing to commit.'
             exit 0
           fi
-          git commit -m "chore: expand MarketAI v0.0 source"
+          git commit -m 'chore: expand MarketAI v0.0 source'
           git push
