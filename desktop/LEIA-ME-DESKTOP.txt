@@ -1,0 +1,17 @@
+MARKETAI DESKTOP v0.0 — COMMERCIAL RELEASE
+
+Execute MarketAI.exe para abrir a aplicação em janela própria.
+
+Dados locais:
+%LOCALAPPDATA%\MarketAI
+
+Configuração de APIs:
+Abra MarketAI > Configurações.
+
+Teste das APIs:
+Abra MarketAI > Integrações.
+
+Logs:
+%LOCALAPPDATA%\MarketAI\logs
+
+O MarketAI não gera preços de mercado fictícios quando não há fontes reais suficientes.

@@ -1,0 +1,10 @@
+{
+  "available": false,
+  "version": "0.0",
+  "channel": "stable",
+  "platform": "windows",
+  "download_url": "",
+  "sha256": "",
+  "mandatory": false,
+  "notes": "Primeira versão comercial."
+}

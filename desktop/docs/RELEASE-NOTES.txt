@@ -1,0 +1,20 @@
+MARKETAI v0.0 — COMMERCIAL CLOUD MULTI-PAY
+
+- Conta e autenticação centralizadas
+- Teste grátis e cotas por plano
+- Licença manual B2B
+- Limite de dispositivos
+- Pix via Mercado Pago no Brasil (30 dias por pagamento aprovado)
+- Assinatura recorrente via Mercado Pago
+- Cartão internacional de crédito/débito via Stripe Checkout
+- Assinatura recorrente via PayPal
+- Seleção de país, gateway e moeda na tela de planos
+- Preços comerciais configuráveis por moeda
+- Webhooks verificados para Mercado Pago, Stripe e PayPal
+- Proteção contra crédito duplicado em webhook Pix repetido
+- Sincronização manual recupera pagamentos quando webhook atrasa
+- Bloqueio contra criação acidental de uma segunda assinatura recorrente ativa
+- Chaves de marketplaces e pagamentos somente no servidor
+- Análise LIVE MARKET processada no Cloud
+- Atualização automática por manifesto + SHA-256
+- Nenhum preço fictício em análises comerciais

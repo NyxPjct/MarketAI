@@ -1,0 +1,29 @@
+MARKETAI v0.0 — CHECKLIST ANTES DE DISTRIBUIR PUBLICAMENTE
+
+[OK NO PROJETO]
+- instalador MarketAI-Setup-v0.0.exe configurado;
+- aplicativo desktop em janela própria;
+- instância única;
+- dados separados da pasta do programa;
+- conta, planos, cotas e dispositivos controlados no MarketAI Cloud;
+- chaves de marketplaces e gateways somente no servidor;
+- Pix, Mercado Pago, Stripe e PayPal integrados na camada de cobrança;
+- webhooks com validação configurável/obrigatória em produção;
+- sem telemetria própria;
+- logs e diagnóstico;
+- EULA, privacidade e avisos de terceiros;
+- preço de mercado fictício removido;
+- Radar demonstrativo removido;
+- testes automatizados incluídos.
+
+[ANTES DE VENDER EM ESCALA]
+1. Comprar certificado de Code Signing e assinar EXE + Setup para reduzir alertas do SmartScreen.
+2. Definir o nome jurídico real do fornecedor/desenvolvedor para substituir "MarketAI" como publisher, se aplicável.
+3. Revisar EULA e Política de Privacidade com assessoria jurídica adequada ao modelo de negócio e aos países atendidos.
+4. Testar o Setup em máquinas limpas com Windows 10 e Windows 11.
+5. Definir suporte ao cliente, política de atualização, reembolso e canal oficial de download.
+6. Publicar MarketAI Cloud com PostgreSQL, HTTPS e domínio próprio.
+7. Configurar Stripe, PayPal e Mercado Pago em produção e cadastrar os três webhooks.
+8. Manter ALLOW_UNVERIFIED_WEBHOOKS=false em produção.
+9. Testar pagamentos reais de baixo valor e estornos/cancelamentos em cada gateway antes do lançamento.
+10. Confirmar obrigações fiscais, tributárias e de proteção ao consumidor para cada mercado onde o software será vendido.

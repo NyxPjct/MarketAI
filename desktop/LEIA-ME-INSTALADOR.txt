@@ -1,0 +1,22 @@
+MARKETAI v0.0 — INSTALADOR COMERCIAL WINDOWS
+
+1. Extraia a pasta inteira.
+2. Execute build_installer.bat.
+3. Aguarde os testes e a compilação.
+4. O instalador final será criado em:
+
+   dist-installer\MarketAI-Setup-v0.0.exe
+
+O instalador inclui:
+- MarketAI.exe;
+- Termos de Uso;
+- Política de Privacidade;
+- Avisos de Terceiros;
+- notas da versão;
+- atalhos do Menu Iniciar;
+- desinstalador do Windows;
+- opção de atalho na Área de Trabalho.
+
+As credenciais configuradas pelo app ficam no perfil do Windows e são protegidas por DPAPI.
+
+IMPORTANTE: o instalador não é assinado digitalmente por padrão. Para distribuição pública profissional, assine MarketAI.exe e MarketAI-Setup-v0.0.exe com um certificado de Code Signing.

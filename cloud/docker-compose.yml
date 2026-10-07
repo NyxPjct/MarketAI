@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: marketai
+      POSTGRES_USER: marketai
+      POSTGRES_PASSWORD: marketai-dev
+    ports: ["5432:5432"]
+    volumes: ["marketai_pg:/var/lib/postgresql/data"]
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://marketai:marketai-dev@db:5432/marketai
+      JWT_SECRET: dev-change-me-dev-change-me-dev-change-me
+      ADMIN_API_KEY: dev-admin
+    ports: ["9000:9000"]
+    depends_on: [db]
+volumes:
+  marketai_pg:

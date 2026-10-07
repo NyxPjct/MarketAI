@@ -1,0 +1,32 @@
+MARKETAI v0.0 — TERMOS DE LICENÇA E ASSINATURA
+Última atualização: 07/10/2026
+
+1. LICENÇA
+O MarketAI concede licença limitada, não exclusiva, revogável e vinculada à conta/plano. A quantidade de dispositivos e análises é definida pelo plano ou chave comercial ativada.
+
+2. CONTA E SEGURANÇA
+O usuário é responsável por manter sua senha protegida e por não compartilhar acesso além dos limites contratados. O serviço pode revogar sessões ou dispositivos em caso de abuso, fraude, chargeback ou violação dos termos, respeitada a legislação aplicável.
+
+3. ASSINATURA E COBRANÇA
+Planos podem ser cobrados por Mercado Pago, Stripe ou PayPal. Pix pode ser oferecido no Brasil como pagamento avulso de um período de acesso, sem renovação automática. Preços, moeda, periodicidade, condições de cancelamento e eventual reembolso devem ser apresentados antes da contratação. Aprovação e disponibilidade dependem do provedor, país, banco emissor e meio de pagamento.
+
+4. FINALIDADE
+O MarketAI auxilia na coleta, comparação e análise de referências de preço, custos, margens e dados de mercado. Não garante vendas, lucro, disponibilidade, autenticidade física ou exatidão permanente de dados de terceiros.
+
+5. PREÇOS E RECOMENDAÇÕES
+O software deve bloquear recomendação de mercado quando não houver amostra confiável, em vez de fabricar preços. Dados podem mudar a qualquer momento e devem ser interpretados como apoio à decisão.
+
+6. TRIBUTAÇÃO E IMPORTAÇÃO
+NCM, impostos, ICMS, desembaraço, frete, tributação empresarial e obrigações fiscais devem ser validados com profissionais responsáveis. O MarketAI não presta consultoria jurídica, contábil, fiscal ou financeira.
+
+7. SERVIÇOS DE TERCEIROS
+O MarketAI Cloud pode consultar marketplaces, agregadores, provedores de IA, câmbio e pagamento. Disponibilidade, limites e termos desses serviços podem afetar a operação.
+
+8. ATUALIZAÇÕES
+O aplicativo pode verificar atualizações no MarketAI Cloud. Atualizações podem ser recomendadas ou, quando necessárias à segurança/compatibilidade, marcadas como obrigatórias.
+
+9. LIMITAÇÃO DE RESPONSABILIDADE
+Na extensão permitida pela lei, o desenvolvedor não responde por decisões de estoque, importação, precificação ou indisponibilidade de terceiros. Direitos obrigatórios do consumidor não são excluídos.
+
+10. ACEITAÇÃO
+Ao instalar, criar conta ou utilizar uma assinatura/licença, o usuário declara ter lido e aceitado estes termos e a Política de Privacidade aplicável.

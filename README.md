@@ -1,122 +1,118 @@
-# MarketAI
+# MarketAI v0.0 — Commercial Cloud Edition
 
-> **MarketAI v0.0** — plataforma de inteligência comercial para análise de produtos, preços, margem, mercado e oportunidades de venda.
+Este pacote transforma o MarketAI em um software comercial por assinatura. Ele é dividido em dois componentes:
 
-O MarketAI foi criado para ajudar vendedores a entenderem **quanto um produto custa no mercado, quanto vale a pena cobrar, qual a margem estimada e quais fontes sustentam a análise**.
+- `desktop/` — aplicativo Windows distribuído aos clientes;
+- `cloud/` — API central que guarda as credenciais de marketplaces, autentica usuários, aplica licenças/cotas, recebe webhooks e executa as análises.
 
-Esta é a **base inicial do projeto**, publicada para continuidade do desenvolvimento.
+## O que mudou
 
-## Preview
+O cliente não precisa mais possuir OpenAI, Mercado Livre, eBay ou SerpApi. Essas credenciais existem apenas no servidor. O desktop guarda somente a sessão da conta protegida com Windows DPAPI.
 
-### Interface principal
-
-![MarketAI Dashboard](docs/images/marketai-dashboard.svg)
-
-### Nova análise
-
-![MarketAI Nova Análise](docs/images/marketai-analysis.svg)
-
-### Admin Console
-
-![MarketAI Admin Console](docs/images/marketai-admin.svg)
-
-> As imagens acima são previews da interface atual do projeto. O visual continuará evoluindo junto com as próximas versões.
-
-## Principais recursos
-
-- Pesquisa e comparação de preços por fonte de mercado
-- Identificação de produto, variante, volume, capacidade e especificações
-- Filtros para evitar comparar produtos incompatíveis
-- Match Score para auditar anúncios utilizados
-- Cálculo de custo real, break-even, margem, ROI e preço sugerido
-- Simulador de preço
-- Mercado por país e moeda
-- Cotação cambial
-- Mercado Livre, eBay e Google Shopping/SerpApi
-- Reconhecimento assistido por IA
-- Histórico e produtos monitorados
-- MarketAI Desktop para Windows
-- MarketAI Cloud
-- Login, planos, cotas e dispositivos
-- Licenças comerciais
-- Pagamentos via Mercado Pago / Pix, Stripe e PayPal
-- Painel administrativo
-- Auditoria administrativa
-- Atualização automática do aplicativo
-
-## Estrutura
-
-```text
-MarketAI
-├── desktop/              # Cliente desktop Windows
-├── cloud/                # API, autenticação, assinaturas e serviços
-├── docs/                 # Documentação e previews
-├── installer/            # Build/instalador Windows
-├── tests/                # Testes
-├── build_installer.bat   # Gera MarketAI-Setup-v0.0.exe
-└── README.md
-```
-
-## Arquitetura comercial
-
-```text
-MarketAI Desktop
-       │
-       ▼
-MarketAI Cloud
-       │
-       ├── Mercado / IA / Câmbio
-       ├── Contas e dispositivos
-       ├── Planos e cotas
-       ├── Licenças
-       ├── Pagamentos
-       └── Admin Console
-```
-
-As chaves das integrações comerciais ficam no **servidor**, e não devem ser distribuídas dentro do aplicativo do cliente.
+A edição inclui: cadastro/login, teste grátis de 7 dias/10 análises, três planos, limite de dispositivos, cota mensal, assinaturas Mercado Pago, licenças manuais B2B, rotação de refresh token, atualização via manifesto, API administrativa e MarketAI LIVE MARKET no servidor.
 
 ## Desenvolvimento local
 
-Consulte os arquivos de documentação do projeto antes de executar a stack:
+### Cloud
 
-- `PRODUCTION-SETUP.md`
-- `PAYMENTS-SETUP.md`
-- `ADMIN-PANEL.md`
-- `LAUNCH-CHECKLIST.md`
-
-O repositório inclui arquivos `.env.example` para referência. **Nunca publique credenciais reais, tokens, chaves privadas ou arquivos `.env`.**
-
-## Desktop Windows
-
-O projeto está configurado para gerar:
-
-```text
-MarketAI-Setup-v0.0.exe
+```bat
+cd cloud
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --reload --port 9000
 ```
 
-O build final do executável/instalador deve ser realizado em um ambiente Windows.
+### Desktop
 
-## Status
+Em outro terminal:
 
-🚧 **v0.0 — desenvolvimento ativo**
+```bat
+cd desktop
+set MARKETAI_CLOUD_URL=http://127.0.0.1:9000
+run_desktop_dev.bat
+```
 
-Esta versão representa a fundação inicial do produto. As próximas etapas serão implementadas e versionadas neste repositório.
+## Produção
+
+1. Crie um PostgreSQL.
+2. Publique `cloud/` no Railway usando o `Dockerfile` e `railway.toml` incluídos.
+3. Configure `DATABASE_URL`, `JWT_SECRET`, `ADMIN_API_KEY` e as chaves reais de mercado no servidor.
+4. Configure `MERCADOPAGO_ACCESS_TOKEN`.
+5. Aponte `PUBLIC_API_URL`, `PUBLIC_APP_URL` e o webhook para seu domínio HTTPS.
+6. Antes do build, execute `set MARKETAI_CLOUD_URL=https://api.seudominio.com`. O `build_installer.bat` grava essa URL dentro do executável; o cliente final não precisa configurar nada.
+7. Execute `desktop/build_installer.bat`. O nome continua `MarketAI-Setup-v0.0.exe`.
+
+## Planos padrão
+
+- Essencial: R$ 49,90/mês — 100 análises — 1 dispositivo
+- Pro: R$ 99,90/mês — 500 análises — 2 dispositivos
+- Business: R$ 199,90/mês — 2000 análises — 5 dispositivos
+
+Os preços podem ser alterados por variáveis de ambiente antes do lançamento.
+
+## Licenças B2B
+
+Crie uma licença manual pela API administrativa:
+
+```bash
+curl -X POST https://api.seudominio.com/v1/admin/licenses \
+  -H "x-admin-key: SUA_CHAVE_ADMIN" \
+  -H "content-type: application/json" \
+  -d '{"plan_code":"pro","duration_days":365,"max_redemptions":1}'
+```
+
+A chave em texto puro é mostrada apenas no momento da criação.
 
 ## Segurança
 
-O repositório não deve conter:
+- senhas: Argon2;
+- access token JWT curto;
+- refresh token aleatório, persistido no servidor somente como SHA-256 e rotacionado;
+- refresh/access token local protegido por DPAPI no Windows;
+- credenciais de marketplaces nunca são entregues ao cliente;
+- webhook Mercado Pago é sempre confirmado buscando a assinatura novamente na API do provedor;
+- dispositivo usa UUID local aleatório, não fingerprint invasivo de hardware.
 
-- `.env` com credenciais reais
-- bancos locais de produção/desenvolvimento
-- tokens de marketplaces
-- chaves OpenAI/Stripe/PayPal/Mercado Pago
-- certificados de assinatura
-- arquivos temporários de build
+## Antes de vender publicamente
 
-## Projeto
-
-Desenvolvido como parte do **MarketAI**.
+Ainda são dependências operacionais externas: domínio HTTPS, conta Mercado Pago produtiva, banco PostgreSQL, credenciais produtivas dos marketplaces, política comercial definitiva, e certificado de assinatura de código para reduzir alertas do SmartScreen.
 
 ---
 
-**MarketAI v0.0**
+## Pagamentos Multi-Gateway — atualização comercial
+
+Esta edição adiciona uma camada de cobrança por país:
+
+- **Pix (Brasil / Mercado Pago):** pagamento avulso que libera 30 dias do plano. Renovação manual.
+- **Cartão internacional (Stripe):** crédito ou débito via Stripe Checkout, assinatura mensal recorrente.
+- **PayPal:** assinatura mensal recorrente nos mercados/moedas suportados pela conta PayPal.
+- **Mercado Pago:** assinatura recorrente brasileira preservada como opção local.
+
+O cliente escolhe o país de cobrança e o MarketAI exibe somente os métodos configurados/adequados. As chaves ficam exclusivamente no Cloud.
+
+Veja `PAYMENTS-SETUP.md` para configuração dos gateways e webhooks.
+
+---
+
+## Admin Console — operação comercial
+
+Esta edição inclui o painel administrativo completo em `/admin`.
+
+O painel centraliza clientes, assinaturas, pagamentos, licenças, dispositivos, consumo, planos e auditoria. O acesso usa uma conta administrativa própria; a antiga `ADMIN_API_KEY` continua disponível apenas para automações/API legada e não é exposta no navegador.
+
+Configuração mínima:
+
+```env
+ADMIN_PANEL_ENABLED=true
+ADMIN_EMAIL=admin@seudominio.com
+ADMIN_PASSWORD=<senha longa e exclusiva>
+ADMIN_NAME=Administrador MarketAI
+```
+
+Após publicar o Cloud:
+
+`https://api.seudominio.com/admin`
+
+Consulte `ADMIN-PANEL.md` para o guia completo.

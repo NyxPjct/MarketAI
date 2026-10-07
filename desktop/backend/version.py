@@ -1,0 +1,5 @@
+APP_NAME = "MarketAI"
+APP_VERSION = "0.0"
+APP_VERSION_TUPLE = (0, 0, 0, 0)
+APP_CHANNEL = "Commercial"
+APP_TITLE = f"{APP_NAME} v{APP_VERSION}"

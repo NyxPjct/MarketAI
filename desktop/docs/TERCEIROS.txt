@@ -1,0 +1,15 @@
+MARKETAI v0.0 — SERVIÇOS DE TERCEIROS
+
+O MarketAI pode integrar serviços externos para pesquisa, inteligência artificial, pagamentos e operação da conta, incluindo:
+
+- Mercado Livre — dados de mercado;
+- eBay — dados de mercado internacional;
+- Google Shopping / SerpApi — ofertas agregadas, quando configurado;
+- OpenAI — identificação/análise assistida, quando configurado;
+- Banco Central e/ou fontes cambiais — referências de câmbio;
+- Mercado Pago — assinatura local e Pix no Brasil;
+- Stripe — checkout de cartão de crédito/débito internacional;
+- PayPal — assinatura via conta PayPal nos países suportados;
+- Railway/PostgreSQL — infraestrutura de servidor/banco, quando utilizados.
+
+Cada serviço possui seus próprios termos, políticas de privacidade, disponibilidade geográfica, regras de aceitação e tarifas. MarketAI não controla a aprovação de pagamentos por bancos, bandeiras ou gateways.
