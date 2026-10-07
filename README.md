@@ -1,15 +1,10 @@
 # MarketAI
 
-[![Bootstrap source](https://github.com/NyxPjct/MarketAI/actions/workflows/bootstrap-source.yml/badge.svg)](https://github.com/NyxPjct/MarketAI/actions/workflows/bootstrap-source.yml)
+> **MarketAI v0.0** — plataforma de inteligência comercial para análise de produtos, preços, margem, mercado e oportunidades de venda.
 
-> **Pricing Intelligence para descobrir se vale a pena vender antes de comprar.**
+O MarketAI foi criado para ajudar vendedores a entenderem **quanto um produto custa no mercado, quanto vale a pena cobrar, qual a margem estimada e quais fontes sustentam a análise**.
 
-MarketAI é uma plataforma de inteligência comercial em desenvolvimento para identificar produtos, comparar preços reais de mercado, normalizar variantes, calcular custos e margens e apoiar decisões de compra e revenda.
-
-A arquitetura atual é dividida em **MarketAI Desktop**, **MarketAI Cloud** e **MarketAI Admin**, com autenticação, planos, cotas, dispositivos, pagamentos e análise de mercado centralizada no servidor.
-
-> [!IMPORTANT]
-> Esta é a base inicial **v0.0** do projeto. O repositório não contém credenciais produtivas, instaladores compilados nem dados privados de clientes. Nunca faça commit de arquivos `.env`.
+Esta é a **base inicial do projeto**, publicada para continuidade do desenvolvimento.
 
 ## Preview
 
@@ -25,202 +20,103 @@ A arquitetura atual é dividida em **MarketAI Desktop**, **MarketAI Cloud** e **
 
 ![MarketAI Admin Console](docs/images/marketai-admin.svg)
 
-> Previews visuais da interface MarketAI v0.0. A aplicação continuará evoluindo neste repositório.
+> As imagens acima são previews da interface atual do projeto. O visual continuará evoluindo junto com as próximas versões.
 
-## O que o MarketAI faz
+## Principais recursos
 
-- identifica o produto por nome, imagem e códigos como GTIN/EAN/UPC;
-- diferencia variantes como volume, concentração, capacidade e potência;
-- compara anúncios reais e bloqueia recomendação quando os dados não são confiáveis;
-- calcula custo real por unidade, break-even, margem, lucro e ROI;
-- oferece simulador de preço e diferentes estratégias de venda;
-- separa mercado nacional e internacional;
-- suporta histórico, monitoramento e auditoria dos anúncios utilizados;
-- centraliza as credenciais dos provedores no Cloud, sem expô-las ao cliente desktop;
-- possui autenticação, trial, planos, cotas e limite de dispositivos;
-- possui cobrança multi-gateway: Pix/Mercado Pago, cartão via Stripe e PayPal;
-- possui Admin Console para clientes, assinaturas, pagamentos, licenças, dispositivos, planos e auditoria.
+- Pesquisa e comparação de preços por fonte de mercado
+- Identificação de produto, variante, volume, capacidade e especificações
+- Filtros para evitar comparar produtos incompatíveis
+- Match Score para auditar anúncios utilizados
+- Cálculo de custo real, break-even, margem, ROI e preço sugerido
+- Simulador de preço
+- Mercado por país e moeda
+- Cotação cambial
+- Mercado Livre, eBay e Google Shopping/SerpApi
+- Reconhecimento assistido por IA
+- Histórico e produtos monitorados
+- MarketAI Desktop para Windows
+- MarketAI Cloud
+- Login, planos, cotas e dispositivos
+- Licenças comerciais
+- Pagamentos via Mercado Pago / Pix, Stripe e PayPal
+- Painel administrativo
+- Auditoria administrativa
+- Atualização automática do aplicativo
 
-## Arquitetura
+## Estrutura
 
-```mermaid
-flowchart TD
-    A[MarketAI Desktop] -->|HTTPS| B[MarketAI Cloud]
-    B --> C[Marketplaces / Shopping]
-    B --> D[IA / Visão]
-    B --> E[Câmbio]
-    B --> F[PostgreSQL]
-    B --> G[Mercado Pago / Pix]
-    B --> H[Stripe]
-    B --> I[PayPal]
-    J[MarketAI Admin] -->|HTTPS| B
+```text
+MarketAI
+├── desktop/              # Cliente desktop Windows
+├── cloud/                # API, autenticação, assinaturas e serviços
+├── docs/                 # Documentação e previews
+├── installer/            # Build/instalador Windows
+├── tests/                # Testes
+├── build_installer.bat   # Gera MarketAI-Setup-v0.0.exe
+└── README.md
 ```
 
-### `desktop/`
+## Arquitetura comercial
 
-Aplicativo Windows distribuído ao cliente. O build final é preparado para gerar:
+```text
+MarketAI Desktop
+       │
+       ▼
+MarketAI Cloud
+       │
+       ├── Mercado / IA / Câmbio
+       ├── Contas e dispositivos
+       ├── Planos e cotas
+       ├── Licenças
+       ├── Pagamentos
+       └── Admin Console
+```
+
+As chaves das integrações comerciais ficam no **servidor**, e não devem ser distribuídas dentro do aplicativo do cliente.
+
+## Desenvolvimento local
+
+Consulte os arquivos de documentação do projeto antes de executar a stack:
+
+- `PRODUCTION-SETUP.md`
+- `PAYMENTS-SETUP.md`
+- `ADMIN-PANEL.md`
+- `LAUNCH-CHECKLIST.md`
+
+O repositório inclui arquivos `.env.example` para referência. **Nunca publique credenciais reais, tokens, chaves privadas ou arquivos `.env`.**
+
+## Desktop Windows
+
+O projeto está configurado para gerar:
 
 ```text
 MarketAI-Setup-v0.0.exe
 ```
 
-O cliente faz login no Cloud e não recebe chaves dos provedores utilizados pelo servidor.
-
-### `cloud/`
-
-API central em FastAPI responsável por autenticação, entitlement/licenças, cotas, análise de mercado, pagamentos, webhooks, atualização do desktop e Admin Console.
-
-## Estrutura do repositório
-
-```text
-MarketAI/
-├── cloud/                 # API, billing, Admin Console e testes
-│   ├── admin/
-│   ├── app/
-│   ├── tests/
-│   └── tools/
-├── desktop/               # Cliente desktop Windows
-│   ├── backend/
-│   ├── frontend/
-│   ├── installer/
-│   ├── docs/
-│   └── tests/
-├── docs/images/           # Screenshots usados no README
-├── ADMIN-PANEL.md
-├── PAYMENTS-SETUP.md
-├── PRODUCTION-SETUP.md
-└── LAUNCH-CHECKLIST.md
-```
-
-## Desenvolvimento local
-
-### 1. MarketAI Cloud
-
-No Windows:
-
-```bat
-cd cloud
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-uvicorn app.main:app --reload --port 9000
-```
-
-Edite o `.env` local com as credenciais de desenvolvimento necessárias. **Não faça commit desse arquivo.**
-
-### 2. MarketAI Desktop
-
-Em outro terminal:
-
-```bat
-cd desktop
-set MARKETAI_CLOUD_URL=http://127.0.0.1:9000
-run_desktop_dev.bat
-```
-
-## Build Windows
-
-Antes do build comercial, defina a URL pública do MarketAI Cloud:
-
-```bat
-set MARKETAI_CLOUD_URL=https://api.seudominio.com
-cd desktop
-build_installer.bat
-```
-
-O pipeline foi preparado para produzir:
-
-```text
-dist-installer/MarketAI-Setup-v0.0.exe
-```
-
-A compilação do instalador deve ser feita em Windows.
-
-## Fontes e integrações
-
-A base possui estrutura para integrar fontes e serviços como:
-
-- Mercado Livre;
-- eBay;
-- Google Shopping via provedor configurado;
-- serviço de IA/visão configurado no Cloud;
-- fontes de câmbio;
-- Mercado Pago / Pix;
-- Stripe;
-- PayPal.
-
-A disponibilidade de cada integração depende de credenciais e das regras do provedor no país selecionado.
-
-## Princípio de confiabilidade
-
-O MarketAI **não deve inventar preço de mercado**. Quando não existem anúncios reais compatíveis suficientes ou a variante do produto está ambígua, a recomendação de mercado é bloqueada.
-
-Exemplos de diferenças que podem provocar descarte de um anúncio:
-
-- `EDT` x `EDP`;
-- `60 ml` x `100 ml`;
-- decant, tester, amostra ou kit;
-- `128 GB` x `256 GB`;
-- `750 W` x `1000 W`;
-- anúncios estatisticamente fora da faixa válida.
-
-## Pagamentos
-
-A arquitetura comercial atual prevê:
-
-| Método | Uso principal |
-|---|---|
-| Pix / Mercado Pago | Brasil |
-| Mercado Pago recorrente | Brasil |
-| Stripe Checkout | Cartão de crédito/débito em mercados compatíveis |
-| PayPal | Assinaturas em mercados compatíveis |
-
-Detalhes de configuração e webhooks estão em [`PAYMENTS-SETUP.md`](PAYMENTS-SETUP.md).
-
-## Administração
-
-O Cloud inclui um Admin Console em:
-
-```text
-https://api.seudominio.com/admin
-```
-
-O painel centraliza clientes, assinaturas, pagamentos, licenças, dispositivos, planos, consumo e auditoria.
-
-Veja [`ADMIN-PANEL.md`](ADMIN-PANEL.md).
-
-## Produção
-
-Antes de um lançamento público ainda é necessário configurar infraestrutura e credenciais produtivas, incluindo banco PostgreSQL, domínio HTTPS, gateways, fontes de mercado e assinatura digital do executável.
-
-Use os documentos:
-
-- [`PRODUCTION-SETUP.md`](PRODUCTION-SETUP.md)
-- [`LAUNCH-CHECKLIST.md`](LAUNCH-CHECKLIST.md)
-- [`PAYMENTS-SETUP.md`](PAYMENTS-SETUP.md)
-- [`ADMIN-PANEL.md`](ADMIN-PANEL.md)
-
-## Segurança
-
-Entre as proteções já previstas na base:
-
-- Argon2 para senhas;
-- access token curto e refresh token rotacionado;
-- tokens locais protegidos com DPAPI no Windows;
-- credenciais de marketplace apenas no Cloud;
-- validação de webhooks dos gateways;
-- controle de dispositivos;
-- licença e cotas validadas no servidor;
-- auditoria das ações administrativas;
-- `.env`, bancos locais, builds e logs ignorados pelo Git.
+O build final do executável/instalador deve ser realizado em um ambiente Windows.
 
 ## Status
 
-**MarketAI v0.0 — base comercial inicial.**
+🚧 **v0.0 — desenvolvimento ativo**
 
-O projeto continuará evoluindo neste repositório.
+Esta versão representa a fundação inicial do produto. As próximas etapas serão implementadas e versionadas neste repositório.
+
+## Segurança
+
+O repositório não deve conter:
+
+- `.env` com credenciais reais
+- bancos locais de produção/desenvolvimento
+- tokens de marketplaces
+- chaves OpenAI/Stripe/PayPal/Mercado Pago
+- certificados de assinatura
+- arquivos temporários de build
+
+## Projeto
+
+Desenvolvido como parte do **MarketAI**.
 
 ---
 
-Desenvolvido por **NyxPjct**.
+**MarketAI v0.0**
