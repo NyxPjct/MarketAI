@@ -39,7 +39,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .bootstrap/core.part* | tr -d '\n\r' | base64 --decode > /tmp/marketai-source.tar.zst
+          cat .bootstrap/core.part* | tr -d '\n\r' > /tmp/marketai-source.b64
+          rem=$(( $(wc -c < /tmp/marketai-source.b64) % 4 ))
+          if [ "$rem" -eq 2 ]; then printf '==' >> /tmp/marketai-source.b64; fi
+          if [ "$rem" -eq 3 ]; then printf '=' >> /tmp/marketai-source.b64; fi
+          if [ "$rem" -eq 1 ]; then echo 'Invalid Base64 snapshot length' >&2; exit 1; fi
+          base64 --decode /tmp/marketai-source.b64 > /tmp/marketai-source.tar.zst
           zstd -t /tmp/marketai-source.tar.zst
           zstd -dc /tmp/marketai-source.tar.zst | tar -xf - -C .
           rm -rf .bootstrap
@@ -56,5 +61,5 @@ jobs:
             echo 'Nothing to commit.'
             exit 0
           fi
-          git commit -m 'chore: expand MarketAI v0.0 source'
+          git commit -m 'chore: expand MarketAI commercial source'
           git push
