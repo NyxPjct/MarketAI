@@ -20,10 +20,6 @@ O MarketAI deixou de ser apenas um analisador de preços. A versão **v1.0 SUPER
 
 ![MarketAI Admin Console](docs/images/marketai-admin.svg)
 
-### Histórico real
-
-![MarketAI Histórico](docs/images/marketai-history-real.png)
-
 ## O que existe na v1.0
 
 ### MarketAI Intelligence Core
