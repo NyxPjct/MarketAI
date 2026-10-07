@@ -1,5 +1,7 @@
 # MarketAI
 
+[![Bootstrap source](https://github.com/NyxPjct/MarketAI/actions/workflows/bootstrap-source.yml/badge.svg)](https://github.com/NyxPjct/MarketAI/actions/workflows/bootstrap-source.yml)
+
 > **Pricing Intelligence para descobrir se vale a pena vender antes de comprar.**
 
 MarketAI é uma plataforma de inteligência comercial em desenvolvimento para identificar produtos, comparar preços reais de mercado, normalizar variantes, calcular custos e margens e apoiar decisões de compra e revenda.
