@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MarketAI Admin</title>
+  <link rel="stylesheet" href="/admin/assets/style.css" />
+</head>
+<body>
+  <div id="loginView" class="login-shell">
+    <div class="login-card">
+      <div class="brand-lockup"><div class="brand-mark">M</div><div><strong>MarketAI</strong><span>Admin Console</span></div></div>
+      <h1>Controle da operação</h1>
+      <p class="muted">Acesso reservado à administração do MarketAI Cloud.</p>
+      <form id="loginForm">
+        <label>E-mail administrativo<input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label>Senha<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="primary wide" type="submit">Entrar no painel</button>
+      </form>
+      <div id="loginError" class="error hidden"></div>
+      <small>Use HTTPS em produção. A sessão administrativa expira automaticamente.</small>
+    </div>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand-lockup sidebar-brand"><div class="brand-mark">M</div><div><strong>MarketAI</strong><span>Admin</span></div></div>
+      <nav id="nav">
+        <button data-page="dashboard" class="active">⌂ <span>Visão geral</span></button>
+        <button data-page="users">◎ <span>Clientes</span></button>
+        <button data-page="subscriptions">◆ <span>Assinaturas</span></button>
+        <button data-page="payments">$ <span>Pagamentos</span></button>
+        <button data-page="licenses">⌘ <span>Licenças</span></button>
+        <button data-page="devices">▣ <span>Dispositivos</span></button>
+        <button data-page="plans">▤ <span>Planos</span></button>
+        <button data-page="audit">↺ <span>Auditoria</span></button>
+      </nav>
+      <div class="sidebar-footer"><span id="adminIdentity">—</span><button id="logoutBtn" class="ghost small">Sair</button></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><p class="eyebrow">MARKETAI CLOUD</p><h2 id="pageTitle">Visão geral</h2></div>
+        <div class="top-actions"><span id="lastUpdated" class="muted"></span><button id="refreshBtn" class="ghost">Atualizar</button></div>
+      </header>
+
+      <section id="page-dashboard" class="page active-page">
+        <div id="metricGrid" class="metric-grid"></div>
+        <div class="grid-2">
+          <article class="panel"><div class="panel-head"><h3>Clientes recentes</h3><button class="link-btn" data-go="users">Ver todos</button></div><div id="recentUsers"></div></article>
+          <article class="panel"><div class="panel-head"><h3>Pagamentos recentes</h3><button class="link-btn" data-go="payments">Ver todos</button></div><div id="recentPayments"></div></article>
+        </div>
+        <div class="grid-3">
+          <article class="panel"><h3>Planos</h3><div id="planBars" class="bars"></div></article>
+          <article class="panel"><h3>Assinaturas por gateway</h3><div id="providerBars" class="bars"></div></article>
+          <article class="panel"><h3>Transações — 30 dias</h3><div id="paymentBars" class="bars"></div></article>
+        </div>
+      </section>
+
+      <section id="page-users" class="page">
+        <div class="toolbar">
+          <input id="userSearch" placeholder="Buscar por nome, e-mail ou ID…">
+          <select id="userStatus"><option value="">Todos os status</option><option value="active">Ativos</option><option value="blocked">Bloqueados</option><option value="suspended">Suspensos</option></select>
+          <select id="userPlan"><option value="">Todos os planos</option><option value="essencial">Essencial</option><option value="pro">Pro</option><option value="business">Business</option></select>
+          <button id="userSearchBtn" class="primary">Buscar</button>
+        </div>
+        <article class="panel table-panel"><div class="panel-head"><h3>Clientes</h3><span id="usersCount" class="pill">0</span></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Status</th><th>Plano</th><th>Gateway</th><th>Uso</th><th>Dispositivos</th><th></th></tr></thead><tbody id="usersTable"></tbody></table></div></article>
+      </section>
+
+      <section id="page-subscriptions" class="page">
+        <article class="panel table-panel"><div class="panel-head"><h3>Assinaturas</h3><button id="reloadSubscriptions" class="ghost small">Atualizar</button></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Plano</th><th>Status</th><th>Gateway</th><th>Vencimento</th><th>ID externo</th></tr></thead><tbody id="subscriptionsTable"></tbody></table></div></article>
+      </section>
+
+      <section id="page-payments" class="page">
+        <div class="toolbar"><select id="paymentProvider"><option value="">Todos os gateways</option><option>mercadopago</option><option>stripe</option><option>paypal</option></select><select id="paymentStatus"><option value="">Todos os status</option><option value="approved">approved</option><option value="active">active</option><option value="pending">pending</option><option value="failed">failed</option></select><button id="reloadPayments" class="primary">Filtrar</button></div>
+        <article class="panel table-panel"><div class="panel-head"><h3>Transações registradas</h3><span class="muted">A receita confirmada usa apenas transações creditadas pelo Cloud.</span></div><div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Gateway</th><th>Método</th><th>Plano</th><th>Valor</th><th>Status</th><th>Crédito</th></tr></thead><tbody id="paymentsTable"></tbody></table></div></article>
+      </section>
+
+      <section id="page-licenses" class="page">
+        <div class="split-head"><div><h3>Licenças comerciais</h3><p class="muted">Gere licenças manuais para vendas B2B, parceiros ou cortesias.</p></div><button id="createLicenseBtn" class="primary">+ Nova licença</button></div>
+        <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Final</th><th>Plano</th><th>Duração</th><th>Resgates</th><th>Status</th><th>Criada em</th><th></th></tr></thead><tbody id="licensesTable"></tbody></table></div></article>
+      </section>
+
+      <section id="page-devices" class="page">
+        <div class="toolbar"><input id="deviceSearch" placeholder="Buscar computador, UUID ou cliente…"><button id="deviceSearchBtn" class="primary">Buscar</button></div>
+        <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Computador</th><th>UUID</th><th>Status</th><th>Primeiro acesso</th><th>Último acesso</th><th></th></tr></thead><tbody id="devicesTable"></tbody></table></div></article>
+      </section>
+
+      <section id="page-plans" class="page">
+        <div class="split-head"><div><h3>Planos comerciais</h3><p class="muted">Edite limites e preço base em BRL. Preços internacionais continuam configuráveis no servidor.</p></div></div>
+        <div id="plansGrid" class="plans-grid"></div>
+      </section>
+
+      <section id="page-audit" class="page">
+        <div class="toolbar"><input id="auditSearch" placeholder="Buscar evento, detalhe ou ID…"><button id="auditSearchBtn" class="primary">Buscar</button></div>
+        <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Conta</th><th>Evento</th><th>Detalhe</th></tr></thead><tbody id="auditTable"></tbody></table></div></article>
+      </section>
+    </main>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop hidden">
+    <div id="modal" class="modal"><button id="modalClose" class="modal-close">×</button><div id="modalBody"></div></div>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="/admin/assets/app.js"></script>
+</body>
+</html>

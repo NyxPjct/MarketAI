@@ -1,0 +1,43 @@
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local databases and runtime data
+*.db
+*.sqlite
+*.sqlite3
+data/
+logs/
+
+# Build / installers
+dist/
+build/
+dist-installer/
+*.exe
+*.msi
+*.sha256
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary / downloads
+*.tmp
+*.log
+*.zip

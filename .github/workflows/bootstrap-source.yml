@@ -1,0 +1,41 @@
+name: Bootstrap source snapshot
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack-source:
+    if: ${{ hashFiles('.bootstrap/core.part*') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild source snapshot
+        shell: bash
+        run: |
+          cat .bootstrap/core.part* | tr -d '\n' | base64 --decode > /tmp/marketai-core.tar.zst
+          sudo apt-get update
+          sudo apt-get install -y zstd
+          tar --zstd -xf /tmp/marketai-core.tar.zst -C .
+          rm -rf .bootstrap
+
+      - name: Commit expanded source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: expand MarketAI v0.0 source snapshot"
+          git push origin HEAD:main
