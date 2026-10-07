@@ -1,10 +1,10 @@
 {
   "available": false,
-  "version": "0.0",
+  "version": "1.0",
   "channel": "stable",
   "platform": "windows",
   "download_url": "",
   "sha256": "",
   "mandatory": false,
-  "notes": "Primeira versão comercial."
+  "notes": "MarketAI 1.0 SUPER FINAL — Intelligence Core, Radar, Sentinel, Profit Engine, Forecast, Autopilot e Copilot."
 }

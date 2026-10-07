@@ -1,15 +1,244 @@
-# MarketAI v0.0 — Commercial Cloud Edition
+# MarketAI v1.0 SUPER FINAL
 
-Este pacote transforma o MarketAI em um software comercial por assinatura. Ele é dividido em dois componentes:
+> **Inteligência comercial para e-commerce, pricing, margem, monitoramento e decisão.**
 
-- `desktop/` — aplicativo Windows distribuído aos clientes;
-- `cloud/` — API central que guarda as credenciais de marketplaces, autentica usuários, aplica licenças/cotas, recebe webhooks e executa as análises.
+O MarketAI deixou de ser apenas um analisador de preços. A versão **v1.0 SUPER FINAL** reúne análise de mercado, cálculo financeiro, monitoramento contínuo, histórico, score proprietário, alertas, previsão e assistência por IA em uma arquitetura **Desktop + Cloud** preparada para operação comercial.
 
-## O que mudou
+> **Regra de ouro:** MarketAI não fabrica preço, estoque, vendas ou tendências. Recursos como Radar, Forecast e Copilot dependem dos dados realmente coletados pela conta. Se a evidência não for suficiente, o sistema bloqueia a recomendação ou informa a ausência de dados.
 
-O cliente não precisa mais possuir OpenAI, Mercado Livre, eBay ou SerpApi. Essas credenciais existem apenas no servidor. O desktop guarda somente a sessão da conta protegida com Windows DPAPI.
+## Preview
 
-A edição inclui: cadastro/login, teste grátis de 7 dias/10 análises, três planos, limite de dispositivos, cota mensal, assinaturas Mercado Pago, licenças manuais B2B, rotação de refresh token, atualização via manifesto, API administrativa e MarketAI LIVE MARKET no servidor.
+### Dashboard
+
+![MarketAI Dashboard](docs/images/marketai-dashboard.svg)
+
+### Nova análise
+
+![MarketAI Nova Análise](docs/images/marketai-analysis.svg)
+
+### Admin Console
+
+![MarketAI Admin Console](docs/images/marketai-admin.svg)
+
+### Histórico real
+
+![MarketAI Histórico](docs/images/marketai-history-real.png)
+
+## O que existe na v1.0
+
+### MarketAI Intelligence Core
+
+- **Market Score 0–100** — score proprietário baseado em margem, folga de preço, qualidade dos dados e profundidade da amostra.
+- **Data Quality Score A–E** — mede confiabilidade da amostra, compatibilidade dos anúncios, quantidade usada e diversidade de fontes.
+- **Profit Engine** — lucro líquido, margem líquida, ROI, break-even e custo variável total.
+- **Sentinel** — produtos monitorados persistentes por conta, snapshots históricos e verificações automáticas.
+- **Radar** — ordena oportunidades usando Market Score e momentum calculado a partir de snapshots reais.
+- **Forecast** — projeções de 7, 30 e 60 períodos por regressão linear simples sobre snapshots reais.
+- **Autopilot de preço** — preço sugerido respeitando estratégia e piso mínimo de margem.
+- **Copilot contextual** — responde usando dados da própria conta; pode operar com IA quando configurada ou em modo determinístico sem inventar informação.
+- **Central de alertas** — alertas persistentes de preço, margem e eventos relevantes do Sentinel.
+
+### Análise de produto e mercado
+
+- Identificação por nome, variante e dados do produto.
+- Compatibilidade por marca/modelo e atributos de variante.
+- Filtros para concentração de perfume, volume, capacidade, potência e condição.
+- Rejeição de decants, amostras, kits, réplicas, usados/refurbished e variantes incompatíveis quando aplicável.
+- Match Score por anúncio.
+- Separação entre anúncios compatíveis, descartados e outliers.
+- Bloqueio de recomendação quando a amostra é ambígua, insuficiente ou indisponível.
+- Mercado por país e moeda.
+- Conversão cambial e cálculo de custo real.
+- Estratégias de preço e simulador de margem.
+- Histórico e exportações.
+
+## Fontes e integrações de mercado
+
+A arquitetura suporta integrações de mercado no Cloud. As credenciais ficam no servidor e **nunca precisam ser distribuídas para o cliente Desktop**.
+
+As integrações presentes na base incluem Mercado Livre/Mercado Libre, eBay e fontes adicionais configuradas no servidor. A disponibilidade de cada fonte depende das respectivas credenciais, APIs e permissões.
+
+## MarketAI Sentinel
+
+O Sentinel mantém uma lista de produtos monitorados por usuário e registra snapshots de mercado. O worker `cloud/app/sentinel_worker.py` pode executar ciclos automáticos no servidor mesmo quando o Desktop está fechado.
+
+Os snapshots alimentam:
+
+- histórico de mediana, mínimo e máximo;
+- quantidade de anúncios compatíveis;
+- Data Quality Score;
+- Market Score;
+- margem registrada;
+- preço sugerido;
+- Radar;
+- Forecast;
+- alertas;
+- contexto do Copilot.
+
+## Profit Engine
+
+O cálculo financeiro considera:
+
+```text
+Preço de venda
+- custo unitário
+- custo fixo por unidade
+- comissão do marketplace
+- impostos
+- mídia/Ads
+- taxa de pagamento
+- perda estimada com devoluções
+= lucro líquido
+```
+
+Também retorna **margem líquida**, **ROI**, **break-even** e indicador de saúde da operação.
+
+## Pagamentos Multi-Gateway
+
+O MarketAI possui uma camada de cobrança por país e moeda:
+
+| Método | Provedor | Modelo |
+| --- | --- | --- |
+| Pix | Mercado Pago | pagamento avulso que credita período do plano |
+| Cartão de crédito/débito | Stripe Checkout | recorrente |
+| PayPal | PayPal | recorrente nos mercados/moedas suportados pela conta |
+| Mercado Pago | Mercado Pago | recorrente no Brasil |
+
+Moedas comerciais padrão presentes na base incluem **BRL, USD, EUR, GBP, CAD, MXN e JPY**, com possibilidade de sobrescrever preços por variáveis de ambiente.
+
+Consulte [`PAYMENTS-SETUP.md`](PAYMENTS-SETUP.md).
+
+## Planos e recursos
+
+| Plano | Preço BR padrão | Análises/mês | Dispositivos | Sentinel | Radar | Forecast | Copilot | Autopilot |
+| --- | ---: | ---: | ---: | :---: | :---: | :---: | :---: | :---: |
+| Essencial | R$ 49,90 | 100 | 1 | ✅ | — | — | — | — |
+| Pro | R$ 99,90 | 500 | 2 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Business | R$ 199,90 | 2000 | 5 | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+Limites de monitoramento atuais: **5 produtos** no Essencial, **50** no Pro e **500** no Business.
+
+Os preços e limites podem ser alterados antes do lançamento.
+
+## Teste grátis
+
+A configuração padrão fornece:
+
+- **7 dias** de teste;
+- **10 análises**;
+- 1 dispositivo durante o trial.
+
+Esses valores são configuráveis por ambiente.
+
+## Arquitetura
+
+```text
+┌───────────────────────────┐
+│     MarketAI Desktop      │
+│   Windows / UI comercial  │
+└─────────────┬─────────────┘
+              │ HTTPS / JWT
+              ▼
+┌───────────────────────────┐
+│       MarketAI Cloud      │
+│ FastAPI + autenticação    │
+├───────────────────────────┤
+│ Analysis / Market Engine  │
+│ Intelligence Core         │
+│ Sentinel Worker           │
+│ Billing Multi-Gateway     │
+│ Licenças / dispositivos   │
+│ Admin Console / auditoria │
+└─────────────┬─────────────┘
+              │
+       ┌──────┴──────┐
+       ▼             ▼
+  PostgreSQL     APIs externas
+```
+
+O Desktop mantém somente a sessão necessária. Chaves de OpenAI, marketplaces, gateways de pagamento e demais integrações comerciais permanecem no Cloud.
+
+## Segurança
+
+- senhas com **Argon2**;
+- access token JWT de curta duração;
+- refresh token aleatório persistido no servidor somente como SHA-256 e rotacionado;
+- sessão local protegida por **Windows DPAPI**;
+- limite de dispositivos por plano;
+- credenciais de APIs mantidas exclusivamente no servidor;
+- webhooks de pagamento validados/sincronizados com o provedor;
+- trilha de auditoria administrativa;
+- UUID local de dispositivo sem fingerprint invasivo de hardware;
+- `.env`, bancos locais, caches, tokens e secrets excluídos do versionamento.
+
+## Admin Console
+
+O painel administrativo está disponível em:
+
+```text
+https://SEU-DOMINIO/admin
+```
+
+Ele centraliza usuários, assinaturas, pagamentos, licenças, dispositivos, consumo, planos e auditoria.
+
+Consulte [`ADMIN-PANEL.md`](ADMIN-PANEL.md).
+
+## API principal
+
+Algumas rotas centrais:
+
+```text
+POST   /v1/auth/register
+POST   /v1/auth/login
+POST   /v1/auth/refresh
+GET    /v1/account/me
+POST   /v1/devices/activate
+POST   /v1/licenses/activate
+POST   /v1/billing/checkout
+POST   /v1/analysis
+GET    /v1/updates/latest
+
+GET    /v1/intelligence/capabilities
+POST   /v1/intelligence/profit
+POST   /v1/intelligence/market-score
+GET    /v1/intelligence/watches
+POST   /v1/intelligence/watches
+POST   /v1/intelligence/watches/{id}/check
+GET    /v1/intelligence/watches/{id}/history
+GET    /v1/intelligence/radar
+GET    /v1/intelligence/alerts
+GET    /v1/intelligence/forecast/{id}
+POST   /v1/intelligence/copilot
+```
+
+## Estrutura do repositório
+
+```text
+MarketAI/
+├── cloud/
+│   ├── app/
+│   │   ├── intelligence.py
+│   │   ├── intelligence_engine.py
+│   │   ├── sentinel_worker.py
+│   │   ├── billing.py
+│   │   ├── market_engine.py
+│   │   └── services/
+│   ├── admin/
+│   ├── tests/
+│   └── docker-compose.yml
+├── desktop/
+│   ├── backend/
+│   ├── frontend/
+│   ├── installer/
+│   ├── tests/
+│   └── docs/
+├── docs/images/
+├── ADMIN-PANEL.md
+├── PAYMENTS-SETUP.md
+├── PRODUCTION-SETUP.md
+├── LAUNCH-CHECKLIST.md
+└── SUPER-FINAL-v1.0.md
+```
 
 ## Desenvolvimento local
 
@@ -24,9 +253,17 @@ copy .env.example .env
 uvicorn app.main:app --reload --port 9000
 ```
 
-### Desktop
+### Sentinel Worker
 
 Em outro terminal:
+
+```bat
+cd cloud
+.venv\Scripts\activate
+python -m app.sentinel_worker
+```
+
+### Desktop
 
 ```bat
 cd desktop
@@ -36,83 +273,51 @@ run_desktop_dev.bat
 
 ## Produção
 
-1. Crie um PostgreSQL.
-2. Publique `cloud/` no Railway usando o `Dockerfile` e `railway.toml` incluídos.
-3. Configure `DATABASE_URL`, `JWT_SECRET`, `ADMIN_API_KEY` e as chaves reais de mercado no servidor.
-4. Configure `MERCADOPAGO_ACCESS_TOKEN`.
-5. Aponte `PUBLIC_API_URL`, `PUBLIC_APP_URL` e o webhook para seu domínio HTTPS.
-6. Antes do build, execute `set MARKETAI_CLOUD_URL=https://api.seudominio.com`. O `build_installer.bat` grava essa URL dentro do executável; o cliente final não precisa configurar nada.
-7. Execute `desktop/build_installer.bat`. O nome continua `MarketAI-Setup-v0.0.exe`.
+A base está preparada para separar aplicativo e serviços sensíveis. Antes de vender publicamente ainda é necessário configurar infraestrutura produtiva: domínio HTTPS, PostgreSQL, gateways reais, APIs de mercado, secrets, política comercial e assinatura de código Windows.
 
-## Planos padrão
+Veja:
 
-- Essencial: R$ 49,90/mês — 100 análises — 1 dispositivo
-- Pro: R$ 99,90/mês — 500 análises — 2 dispositivos
-- Business: R$ 199,90/mês — 2000 análises — 5 dispositivos
+- [`PRODUCTION-SETUP.md`](PRODUCTION-SETUP.md)
+- [`PAYMENTS-SETUP.md`](PAYMENTS-SETUP.md)
+- [`ADMIN-PANEL.md`](ADMIN-PANEL.md)
+- [`LAUNCH-CHECKLIST.md`](LAUNCH-CHECKLIST.md)
 
-Os preços podem ser alterados por variáveis de ambiente antes do lançamento.
+## Build do Windows
 
-## Licenças B2B
+O projeto continua configurado para gerar o instalador comercial definido para esta linha:
 
-Crie uma licença manual pela API administrativa:
-
-```bash
-curl -X POST https://api.seudominio.com/v1/admin/licenses \
-  -H "x-admin-key: SUA_CHAVE_ADMIN" \
-  -H "content-type: application/json" \
-  -d '{"plan_code":"pro","duration_days":365,"max_redemptions":1}'
+```text
+MarketAI-Setup-v0.0.exe
 ```
 
-A chave em texto puro é mostrada apenas no momento da criação.
+O software internamente está identificado como **MarketAI v1.0 SUPER FINAL**. O build final do `.exe`/instalador deve ser executado em Windows com as dependências descritas no projeto.
 
-## Segurança
+```bat
+build_desktop_installer.bat
+```
 
-- senhas: Argon2;
-- access token JWT curto;
-- refresh token aleatório, persistido no servidor somente como SHA-256 e rotacionado;
-- refresh/access token local protegido por DPAPI no Windows;
-- credenciais de marketplaces nunca são entregues ao cliente;
-- webhook Mercado Pago é sempre confirmado buscando a assinatura novamente na API do provedor;
-- dispositivo usa UUID local aleatório, não fingerprint invasivo de hardware.
+## Testes da SUPER FINAL
 
-## Antes de vender publicamente
+Na preparação desta versão foram validados:
 
-Ainda são dependências operacionais externas: domínio HTTPS, conta Mercado Pago produtiva, banco PostgreSQL, credenciais produtivas dos marketplaces, política comercial definitiva, e certificado de assinatura de código para reduzir alertas do SmartScreen.
+- suíte Cloud;
+- suíte Desktop;
+- Intelligence Engine;
+- pagamentos multi-gateway;
+- painel administrativo;
+- matching de produto;
+- pricing;
+- sintaxe JavaScript;
+- compilação Python.
+
+## Status
+
+**MarketAI v1.0 SUPER FINAL — desenvolvimento comercial / preparação de produção.**
+
+O código já contém a arquitetura e os módulos centrais da edição comercial. Serviços externos só operam de forma real quando as respectivas credenciais e infraestrutura produtiva são configuradas.
 
 ---
 
-## Pagamentos Multi-Gateway — atualização comercial
+### MarketAI
 
-Esta edição adiciona uma camada de cobrança por país:
-
-- **Pix (Brasil / Mercado Pago):** pagamento avulso que libera 30 dias do plano. Renovação manual.
-- **Cartão internacional (Stripe):** crédito ou débito via Stripe Checkout, assinatura mensal recorrente.
-- **PayPal:** assinatura mensal recorrente nos mercados/moedas suportados pela conta PayPal.
-- **Mercado Pago:** assinatura recorrente brasileira preservada como opção local.
-
-O cliente escolhe o país de cobrança e o MarketAI exibe somente os métodos configurados/adequados. As chaves ficam exclusivamente no Cloud.
-
-Veja `PAYMENTS-SETUP.md` para configuração dos gateways e webhooks.
-
----
-
-## Admin Console — operação comercial
-
-Esta edição inclui o painel administrativo completo em `/admin`.
-
-O painel centraliza clientes, assinaturas, pagamentos, licenças, dispositivos, consumo, planos e auditoria. O acesso usa uma conta administrativa própria; a antiga `ADMIN_API_KEY` continua disponível apenas para automações/API legada e não é exposta no navegador.
-
-Configuração mínima:
-
-```env
-ADMIN_PANEL_ENABLED=true
-ADMIN_EMAIL=admin@seudominio.com
-ADMIN_PASSWORD=<senha longa e exclusiva>
-ADMIN_NAME=Administrador MarketAI
-```
-
-Após publicar o Cloud:
-
-`https://api.seudominio.com/admin`
-
-Consulte `ADMIN-PANEL.md` para o guia completo.
+**Encontrar. Entender. Precificar. Monitorar. Decidir.**

@@ -56,3 +56,7 @@
 .payment-choice.selected{border-color:#38d39f;box-shadow:0 0 0 2px rgba(56,211,159,.12) inset}
 .pix-code{margin-top:12px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:12px;word-break:break-all}
 .pix-code code{display:block;max-height:110px;overflow:auto;white-space:normal}
+
+
+/* MarketAI Intelligence Core v1.0 */
+.intel-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px;padding:24px}.primary.compact{width:auto;min-width:190px}.intel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.intel-card{padding:22px}.intel-card h3{margin:4px 0 16px}.intel-list{display:grid;gap:10px}.intel-row{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:12px 14px;border:1px solid var(--border,#23342f);border-radius:12px;background:rgba(255,255,255,.02)}.intel-row small{grid-column:1/-1}.intel-row span{font-weight:800}.copilot-answer{margin-top:12px;padding:14px;border:1px solid var(--border,#23342f);border-radius:12px;min-height:52px}.alert-critical{border-color:#7d3030}.alert-opportunity{border-color:#2c7251}@media(max-width:900px){.intel-grid{grid-template-columns:1fr}.intel-hero{align-items:flex-start;flex-direction:column}.primary.compact{width:100%}}

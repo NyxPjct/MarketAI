@@ -739,3 +739,38 @@ async def cloud_sync_subscription():
         r=await cloud_service.request("POST","/v1/billing/sync",json_data={}); return JSONResponse(status_code=r.status_code,content=r.json())
     except Exception as e:
         return JSONResponse(status_code=503,content={"detail":"cloud_unavailable","message":str(e)})
+
+# ===================== MARKETAI INTELLIGENCE CORE =====================
+async def _proxy_intelligence(method: str, path: str, payload=None):
+    try:
+        r=await cloud_service.request(method,path,json_data=payload)
+        try: body=r.json()
+        except Exception: body={"detail":r.text[:500]}
+        return JSONResponse(status_code=r.status_code,content=body)
+    except Exception as e:
+        return JSONResponse(status_code=503,content={"detail":"cloud_unavailable","message":str(e)})
+
+@app.get("/api/intelligence/capabilities")
+async def intelligence_capabilities(): return await _proxy_intelligence("GET","/v1/intelligence/capabilities")
+@app.post("/api/intelligence/profit")
+async def intelligence_profit(payload: Dict[str,Any]=Body(...)): return await _proxy_intelligence("POST","/v1/intelligence/profit",payload)
+@app.get("/api/intelligence/watches")
+async def intelligence_watches(): return await _proxy_intelligence("GET","/v1/intelligence/watches")
+@app.post("/api/intelligence/watches")
+async def intelligence_watch_create(payload: Dict[str,Any]=Body(...)): return await _proxy_intelligence("POST","/v1/intelligence/watches",payload)
+@app.delete("/api/intelligence/watches/{watch_id}")
+async def intelligence_watch_delete(watch_id:str): return await _proxy_intelligence("DELETE",f"/v1/intelligence/watches/{watch_id}")
+@app.post("/api/intelligence/watches/{watch_id}/check")
+async def intelligence_watch_check(watch_id:str): return await _proxy_intelligence("POST",f"/v1/intelligence/watches/{watch_id}/check",{})
+@app.get("/api/intelligence/watches/{watch_id}/history")
+async def intelligence_watch_history(watch_id:str): return await _proxy_intelligence("GET",f"/v1/intelligence/watches/{watch_id}/history")
+@app.get("/api/intelligence/radar")
+async def intelligence_radar(): return await _proxy_intelligence("GET","/v1/intelligence/radar")
+@app.get("/api/intelligence/alerts")
+async def intelligence_alerts(): return await _proxy_intelligence("GET","/v1/intelligence/alerts")
+@app.post("/api/intelligence/alerts/{alert_id}/ack")
+async def intelligence_alert_ack(alert_id:str): return await _proxy_intelligence("POST",f"/v1/intelligence/alerts/{alert_id}/ack",{})
+@app.get("/api/intelligence/forecast/{watch_id}")
+async def intelligence_forecast(watch_id:str): return await _proxy_intelligence("GET",f"/v1/intelligence/forecast/{watch_id}")
+@app.post("/api/intelligence/copilot")
+async def intelligence_copilot(payload: Dict[str,Any]=Body(...)): return await _proxy_intelligence("POST","/v1/intelligence/copilot",payload)

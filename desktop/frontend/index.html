@@ -16,6 +16,7 @@
 
       <nav>
         <button class="nav-item active" data-view="analyze">⌁ <span>Nova análise</span></button>
+        <button class="nav-item" data-view="intelligence">✦ <span>Intelligence</span></button>
         <button class="nav-item" data-view="watchlist">★ <span>Monitorados</span></button>
         <button class="nav-item" data-view="history">◷ <span>Histórico</span></button>
         <button class="nav-item" data-view="account">◎ <span>Minha conta</span></button>
@@ -206,6 +207,20 @@
 
           <div class="disclaimer card"><strong>Importante</strong><p>O MarketAI v0.0 comercial não cria preços de mercado fictícios. Se não houver pelo menos 3 anúncios reais compatíveis, ou se as variantes estiverem misturadas, ele mostra apenas o preço mínimo calculado pelos seus custos e bloqueia a recomendação de mercado. Compatibilidade de anúncio não comprova autenticidade física do produto. NCM e tributação devem ser validados com contador/despachante.</p></div>
         </section>
+      </section>
+
+
+      <section id="view-intelligence" class="view">
+        <div class="intel-hero card">
+          <div><p class="eyebrow">MARKETAI INTELLIGENCE CORE</p><h2>Seu centro de comando comercial.</h2><p class="muted">Radar real, Sentinel, alertas, previsão, Profit Engine e Copilot — todos baseados nos dados coletados pela sua conta.</p></div>
+          <button class="primary compact" id="intelRefresh">ATUALIZAR CENTRAL</button>
+        </div>
+        <div class="intel-grid">
+          <div class="card intel-card"><p class="eyebrow">RADAR</p><h3>Oportunidades</h3><div id="intelRadar" class="intel-list"><div class="empty">Atualize para carregar.</div></div></div>
+          <div class="card intel-card"><p class="eyebrow">SENTINEL</p><h3>Alertas críticos</h3><div id="intelAlerts" class="intel-list"><div class="empty">Atualize para carregar.</div></div></div>
+          <div class="card intel-card"><p class="eyebrow">COPILOT</p><h3>Pergunte aos seus dados</h3><textarea id="copilotQuestion" rows="4" placeholder="Ex.: Qual produto merece mais atenção agora?"></textarea><button class="ghost" id="askCopilot">PERGUNTAR</button><div id="copilotAnswer" class="copilot-answer muted">O Copilot não inventa dados. Se não houver snapshots, ele avisa.</div></div>
+          <div class="card intel-card"><p class="eyebrow">PROFIT ENGINE</p><h3>Lucro líquido rápido</h3><div class="split"><label>Preço<input id="profitPrice" type="number" step="0.01" value="200"></label><label>Custo<input id="profitCost" type="number" step="0.01" value="100"></label></div><div class="four-col"><label>Marketplace %<input id="profitFee" type="number" step="0.1" value="16"></label><label>Impostos %<input id="profitTax" type="number" step="0.1" value="6"></label><label>Ads %<input id="profitAds" type="number" step="0.1" value="3"></label><label>Pagamento %<input id="profitPayment" type="number" step="0.1" value="2"></label></div><button class="ghost" id="calcProfit">CALCULAR</button><div id="profitOutput" class="copilot-answer muted">—</div></div>
+        </div>
       </section>
 
       <section id="view-watchlist" class="view">

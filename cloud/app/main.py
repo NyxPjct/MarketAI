@@ -48,10 +48,12 @@ async def lifespan(_app):
     finally: db.close()
     yield
 
-app=FastAPI(title="MarketAI Cloud",version="0.0",lifespan=lifespan)
+app=FastAPI(title="MarketAI Cloud",version="1.0",lifespan=lifespan)
 
 from app.admin import router as admin_router
+from app.intelligence import router as intelligence_router
 app.include_router(admin_router)
+app.include_router(intelligence_router)
 ADMIN_DIR=Path(__file__).resolve().parent.parent/"admin"
 if settings.admin_panel_enabled and ADMIN_DIR.exists():
     app.mount("/admin/assets", StaticFiles(directory=str(ADMIN_DIR)), name="admin-assets")
@@ -63,7 +65,7 @@ def admin_panel():
     return FileResponse(str(ADMIN_DIR/"index.html"))
 
 @app.get("/health")
-def health(): return {"ok":True,"service":"MarketAI Cloud","version":"0.0"}
+def health(): return {"ok":True,"service":"MarketAI Cloud","version":"1.0","edition":"SUPER FINAL","intelligence_core":True}
 
 @app.get("/v1/plans")
 def plans(country_code:str="BR",currency:str="",db:Session=Depends(get_db)):
@@ -244,7 +246,7 @@ async def analysis(request:Request,user:User=Depends(current_user),db:Session=De
 @app.get("/v1/updates/latest")
 def latest_update(platform:str="windows",channel:str="stable"):
     path=Path(os.getenv("UPDATE_MANIFEST_PATH",str(Path(__file__).resolve().parent.parent/"releases/windows-stable.json")))
-    if not path.exists(): return {"available":False,"version":"0.0"}
+    if not path.exists(): return {"available":False,"version":"1.0"}
     import json; return json.loads(path.read_text(encoding="utf-8"))
 
 @app.post("/v1/admin/licenses")

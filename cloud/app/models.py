@@ -130,3 +130,44 @@ class ProviderPlan(Base):
     provider_product_id: Mapped[str|None]=mapped_column(String(160),nullable=True)
     provider_plan_id: Mapped[str]=mapped_column(String(160),index=True)
     created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),default=utcnow)
+
+class ProductWatch(Base):
+    __tablename__="product_watches"
+    id: Mapped[str]=mapped_column(String(36),primary_key=True,default=uid)
+    user_id: Mapped[str]=mapped_column(ForeignKey("users.id"),index=True)
+    product_name: Mapped[str]=mapped_column(String(240),index=True)
+    variant_text: Mapped[str]=mapped_column(String(240),default="")
+    country: Mapped[str]=mapped_column(String(8),default="BR",index=True)
+    settings_json: Mapped[str]=mapped_column(Text,default="{}")
+    active: Mapped[bool]=mapped_column(Boolean,default=True,index=True)
+    autopilot_enabled: Mapped[bool]=mapped_column(Boolean,default=False)
+    created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),default=utcnow)
+    updated_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),default=utcnow,onupdate=utcnow)
+
+class MarketSnapshot(Base):
+    __tablename__="market_snapshots"
+    id: Mapped[str]=mapped_column(String(36),primary_key=True,default=uid)
+    watch_id: Mapped[str]=mapped_column(ForeignKey("product_watches.id"),index=True)
+    user_id: Mapped[str]=mapped_column(ForeignKey("users.id"),index=True)
+    market_median: Mapped[float|None]=mapped_column(Float,nullable=True)
+    market_min: Mapped[float|None]=mapped_column(Float,nullable=True)
+    market_max: Mapped[float|None]=mapped_column(Float,nullable=True)
+    listing_count: Mapped[int]=mapped_column(Integer,default=0)
+    quality_score: Mapped[float]=mapped_column(Float,default=0)
+    market_score: Mapped[float|None]=mapped_column(Float,nullable=True)
+    net_margin: Mapped[float|None]=mapped_column(Float,nullable=True)
+    suggested_price: Mapped[float|None]=mapped_column(Float,nullable=True)
+    payload_json: Mapped[str]=mapped_column(Text,default="{}")
+    created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),default=utcnow,index=True)
+
+class IntelligenceAlert(Base):
+    __tablename__="intelligence_alerts"
+    id: Mapped[str]=mapped_column(String(36),primary_key=True,default=uid)
+    user_id: Mapped[str]=mapped_column(ForeignKey("users.id"),index=True)
+    watch_id: Mapped[str|None]=mapped_column(ForeignKey("product_watches.id"),nullable=True,index=True)
+    severity: Mapped[str]=mapped_column(String(24),default="info",index=True)
+    kind: Mapped[str]=mapped_column(String(48),default="market",index=True)
+    title: Mapped[str]=mapped_column(String(220))
+    message: Mapped[str]=mapped_column(Text,default="")
+    acknowledged: Mapped[bool]=mapped_column(Boolean,default=False,index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),default=utcnow,index=True)

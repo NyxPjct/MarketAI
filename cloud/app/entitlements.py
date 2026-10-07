@@ -23,7 +23,9 @@ def entitlement(db:Session,user:User):
     devices=1 if trialing else (plan.device_limit if plan else 1)
     row=db.query(UsageCounter).filter_by(user_id=user.id,period_key=period_key()).first()
     used=row.analyses_used if row else 0
-    return {"active":active,"status":sub.status,"trialing":bool(trialing),"plan_code":sub.plan_code,"plan_name":plan.name if plan else sub.plan_code,"provider":sub.provider,"auto_renew":sub.provider in {"mercadopago","stripe","paypal"} and sub.status in {"active","pending","past_due"},"quota":quota,"used":used,"remaining":max(0,quota-used),"device_limit":devices,"trial_end":sub.trial_end.isoformat() if sub.trial_end else None,"current_period_end":sub.current_period_end.isoformat() if sub.current_period_end else None}
+    features={"essencial":["analysis","profit","sentinel"],"pro":["analysis","profit","sentinel","radar","forecast","copilot","autopilot"],"business":["analysis","profit","sentinel","radar","forecast","copilot","autopilot","api","teams","enterprise"]}.get(sub.plan_code,["analysis"])
+    watch_limit=5 if sub.plan_code=="essencial" else 50 if sub.plan_code=="pro" else 500
+    return {"active":active,"status":sub.status,"trialing":bool(trialing),"plan_code":sub.plan_code,"plan_name":plan.name if plan else sub.plan_code,"provider":sub.provider,"auto_renew":sub.provider in {"mercadopago","stripe","paypal"} and sub.status in {"active","pending","past_due"},"quota":quota,"used":used,"remaining":max(0,quota-used),"device_limit":devices,"features":features,"watch_limit":watch_limit,"trial_end":sub.trial_end.isoformat() if sub.trial_end else None,"current_period_end":sub.current_period_end.isoformat() if sub.current_period_end else None}
 
 def consume_analysis(db:Session,user:User):
     ent=entitlement(db,user)

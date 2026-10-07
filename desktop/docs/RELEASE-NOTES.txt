@@ -1,20 +1,19 @@
-MARKETAI v0.0 — COMMERCIAL CLOUD MULTI-PAY
+MARKETAI 1.0 — SUPER FINAL
 
-- Conta e autenticação centralizadas
-- Teste grátis e cotas por plano
-- Licença manual B2B
-- Limite de dispositivos
-- Pix via Mercado Pago no Brasil (30 dias por pagamento aprovado)
-- Assinatura recorrente via Mercado Pago
-- Cartão internacional de crédito/débito via Stripe Checkout
-- Assinatura recorrente via PayPal
-- Seleção de país, gateway e moeda na tela de planos
-- Preços comerciais configuráveis por moeda
-- Webhooks verificados para Mercado Pago, Stripe e PayPal
-- Proteção contra crédito duplicado em webhook Pix repetido
-- Sincronização manual recupera pagamentos quando webhook atrasa
-- Bloqueio contra criação acidental de uma segunda assinatura recorrente ativa
-- Chaves de marketplaces e pagamentos somente no servidor
-- Análise LIVE MARKET processada no Cloud
-- Atualização automática por manifesto + SHA-256
-- Nenhum preço fictício em análises comerciais
+- Intelligence Core comercial
+- Market Score 0–100
+- Data Quality Score A–E
+- Profit Engine: lucro líquido, ROI e break-even
+- Sentinel persistente com snapshots históricos
+- Worker do Sentinel para monitoramento programado no Cloud
+- Alertas de variação de preço e margem crítica
+- Radar baseado somente em snapshots reais
+- Forecast de preço baseado em histórico real
+- Autopilot com piso de margem
+- Copilot contextual com fallback determinístico
+- Recursos por plano Essencial / Pro / Business
+- MultiPay: Mercado Pago/Pix, Stripe e PayPal
+- Desktop + Cloud + Admin Console
+- MarketAI nunca fabrica mediana, tendência, venda ou estoque quando faltam dados reais
+
+O instalador comercial mantém o nome MarketAI-Setup-v0.0.exe conforme o nome de distribuição solicitado, mas o produto interno é MarketAI 1.0 SUPER FINAL.

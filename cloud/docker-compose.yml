@@ -15,5 +15,14 @@ services:
       ADMIN_API_KEY: dev-admin
     ports: ["9000:9000"]
     depends_on: [db]
+  sentinel:
+    build: .
+    command: ["python", "-m", "app.sentinel_worker"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://marketai:marketai-dev@db:5432/marketai
+      JWT_SECRET: dev-change-me-dev-change-me-dev-change-me
+      SENTINEL_INTERVAL_MINUTES: 60
+      SENTINEL_BATCH_SIZE: 50
+    depends_on: [db]
 volumes:
   marketai_pg:

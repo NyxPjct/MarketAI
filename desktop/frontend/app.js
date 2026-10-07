@@ -52,7 +52,7 @@ function switchView(name){
   if(name==='integrations') loadIntegrations();
   if(name==='settings') loadSettings();
 }
-$$('.nav-item').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+$$('.nav-item').forEach(btn => btn.addEventListener('click', () => { switchView(btn.dataset.view); if(btn.dataset.view==='intelligence') loadIntelligence(); }));
 
 const loadingSteps = [
   'Identificando produto, variante e atributos.',
@@ -453,3 +453,29 @@ function newer(a,b){const x=vtuple(a),y=vtuple(b);for(let i=0;i<4;i++){if((x[i]|
 async function checkUpdate(){try{const r=await fetch('/api/update/check');const d=await r.json();const current=($('#appVersion')?.textContent||'v0.0').replace('MarketAI','').trim();if(d.available&&newer(d.version,current)){latestUpdate=d;const b=$('#updateAvailable');b.hidden=false;b.textContent=`Atualizar para v${d.version}`;if(d.mandatory)setTimeout(()=>startUpdate(true),500)}}catch(e){}}
 async function startUpdate(mandatory=false){if(!latestUpdate)return;if(!mandatory&&!confirm(`Instalar MarketAI v${latestUpdate.version}?\n\n${latestUpdate.notes||''}`))return;const b=$('#updateAvailable');b.disabled=true;b.textContent='Baixando atualização…';try{const r=await fetch('/api/update/install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(latestUpdate)});const d=await r.json();if(!r.ok)throw new Error(d.message||d.detail||'Falha na atualização');alert(d.message||'Instalador iniciado.');}catch(e){alert(e.message);b.disabled=false;b.textContent=`Atualizar para v${latestUpdate.version}`}}
 $('#updateAvailable')?.addEventListener('click',()=>startUpdate(false));setTimeout(checkUpdate,1800);
+
+
+// ===================== MARKETAI INTELLIGENCE CORE =====================
+function intelMoney(v){return v==null?'—':fmtBRL(Number(v))}
+async function intelJson(url,opts={}){const r=await fetch(url,opts);let d={};try{d=await r.json()}catch{};if(!r.ok)throw new Error(d.message||d.detail||'Falha no Intelligence Core');return d}
+async function loadIntelligence(){
+  const radar=$('#intelRadar'), alerts=$('#intelAlerts');
+  if(radar)radar.innerHTML='<div class="empty">Carregando Radar…</div>'; if(alerts)alerts.innerHTML='<div class="empty">Carregando Sentinel…</div>';
+  try{
+    const [r,a]=await Promise.all([intelJson('/api/intelligence/radar'),intelJson('/api/intelligence/alerts')]);
+    radar.innerHTML=(r.items||[]).length?(r.items||[]).slice(0,8).map((x,i)=>`<div class="intel-row"><b>#${i+1} ${escapeHtml(x.product_name)}</b><span>${x.score}/100</span><small>${intelMoney(x.median)} · tendência ${Number(x.price_trend_percent||0).toFixed(1)}%</small></div>`).join(''):'<div class="empty">Ainda não há snapshots. Adicione produtos ao Sentinel e faça verificações.</div>';
+    const open=(a.items||[]).filter(x=>!x.acknowledged); alerts.innerHTML=open.length?open.slice(0,8).map(x=>`<div class="intel-row alert-${escapeAttr(x.severity)}"><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.message)}</small></div>`).join(''):'<div class="empty">Nenhum alerta pendente.</div>';
+  }catch(e){radar.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`;alerts.innerHTML='<div class="empty">Entre na conta e verifique seu plano.</div>'}
+}
+$('#intelRefresh')?.addEventListener('click',loadIntelligence);
+$('#askCopilot')?.addEventListener('click',async()=>{const out=$('#copilotAnswer');out.textContent='Pensando com seus dados…';try{const d=await intelJson('/api/intelligence/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:$('#copilotQuestion').value})});out.textContent=d.answer||'Sem resposta.'}catch(e){out.textContent=e.message}});
+$('#calcProfit')?.addEventListener('click',async()=>{const out=$('#profitOutput');out.textContent='Calculando…';try{const d=await intelJson('/api/intelligence/profit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sale_price:num($('#profitPrice').value),unit_cost:num($('#profitCost').value),marketplace_fee_percent:num($('#profitFee').value),taxes_percent:num($('#profitTax').value),ads_percent:num($('#profitAds').value),payment_fee_percent:num($('#profitPayment').value),minimum_margin_percent:15})});out.innerHTML=`<strong>${intelMoney(d.net_profit)}</strong> lucro líquido · ${Number(d.net_margin_percent).toFixed(1)}% margem · ROI ${Number(d.roi_percent).toFixed(1)}% · break-even ${intelMoney(d.break_even_price)}`;}catch(e){out.textContent=e.message}});
+
+$('#saveWatch')?.addEventListener('click',async()=>{
+  if(!currentAnalysis||!currentFormSnapshot)return;
+  try{
+    const payload={...currentFormSnapshot,product_name:currentAnalysis.request?.product_name||currentAnalysis.product?.product_name||currentFormSnapshot.product_name,variant_text:currentAnalysis.request?.variant_text||currentFormSnapshot.variant_text||'',destination_country:currentFormSnapshot.destination_country||'BR',autopilot_enabled:false};
+    const d=await intelJson('/api/intelligence/watches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    $('#saveWatch').textContent='✓ Sentinel ativo'; setTimeout(()=>$('#saveWatch').textContent='★ Monitorar',1800);
+  }catch(e){console.warn('Sentinel cloud',e)}
+});
