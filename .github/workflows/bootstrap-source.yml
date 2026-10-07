@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   unpack-source:
-    if: ${{ hashFiles('.bootstrap/core.part*') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,6 +20,10 @@ jobs:
       - name: Rebuild source snapshot
         shell: bash
         run: |
+          if ! compgen -G ".bootstrap/core.part*" > /dev/null; then
+            echo "No bootstrap snapshot found; nothing to expand."
+            exit 0
+          fi
           cat .bootstrap/core.part* | tr -d '\n' | base64 --decode > /tmp/marketai-core.tar.zst
           sudo apt-get update
           sudo apt-get install -y zstd
