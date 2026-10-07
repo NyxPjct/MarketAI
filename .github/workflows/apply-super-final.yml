@@ -1,0 +1,59 @@
+name: Apply MarketAI v1.0 SUPER FINAL
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/apply-super-final.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-super-final:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install zstd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd
+
+      - name: Rebuild and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .upgrade/v1.part* | tr -d '\n\r' > /tmp/marketai-v1.b64
+          base64 --decode /tmp/marketai-v1.b64 > /tmp/marketai-v1.tar.zst
+          echo "705a3372430915f877ae595b83678f8ab49ca23767da04b92f2508662d4a27ab  /tmp/marketai-v1.tar.zst" | sha256sum -c -
+          zstd -t /tmp/marketai-v1.tar.zst
+          zstd -dc /tmp/marketai-v1.tar.zst | tar -xf - -C .
+          rm -rf .upgrade
+          rm -f .github/workflows/apply-super-final.yml
+
+      - name: Validate source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q cloud/app desktop/backend
+          python -m py_compile cloud/app/intelligence.py cloud/app/intelligence_engine.py cloud/app/sentinel_worker.py
+
+      - name: Commit SUPER FINAL
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git commit -m "feat: MarketAI v1.0 SUPER FINAL"
+          git push
