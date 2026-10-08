@@ -1,0 +1,72 @@
+name: Refresh README Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/frontend/**"
+      - "tools/capture_readme_screenshots.py"
+      - ".github/workflows/readme-screenshots.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: marketai-readme-screenshots
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: desktop/requirements.txt
+
+      - name: Install Desktop and browser dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r desktop/requirements.txt playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Start MarketAI Desktop backend
+        working-directory: desktop
+        env:
+          MARKETAI_CLOUD_URL: https://marketai-cloud-production.up.railway.app
+        run: |
+          python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 > /tmp/marketai-desktop.log 2>&1 &
+          echo $! > /tmp/marketai-desktop.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:8000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/marketai-desktop.log
+          exit 1
+
+      - name: Capture current UI
+        run: python tools/capture_readme_screenshots.py
+
+      - name: Commit screenshots
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/*.png
+          if git diff --cached --quiet; then
+            echo "Screenshots already current."
+            exit 0
+          fi
+          git commit -m "docs: refresh MarketAI v1.0.3 screenshots"
+          git push
