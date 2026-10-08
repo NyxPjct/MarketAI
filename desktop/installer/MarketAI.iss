@@ -1,5 +1,5 @@
 #define MyAppName "MarketAI"
-#define MyAppVersion "1.0.2"
+#define MyAppVersion "1.0.3"
 #define MyAppPublisher "MarketAI Community"
 #define MyAppExeName "MarketAI.exe"
 
@@ -28,7 +28,7 @@ RestartApplications=yes
 UsePreviousAppDir=yes
 UsePreviousGroup=yes
 UsePreviousTasks=yes
-VersionInfoVersion=1.0.2.0
+VersionInfoVersion=1.0.3.0
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription=MarketAI Community - Inteligência Comercial
 VersionInfoProductName={#MyAppName}
@@ -38,7 +38,7 @@ LicenseFile=..\..\LICENSE
 InfoBeforeFile=..\docs\PRIVACIDADE.txt
 InfoAfterFile=..\docs\RELEASE-NOTES.txt
 AppMutex=Local\MarketAI.Desktop.v1.0
-UninstallDisplayName=MarketAI v1.0.2 Community
+UninstallDisplayName=MarketAI v1.0.3 Community
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
