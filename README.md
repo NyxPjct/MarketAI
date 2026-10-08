@@ -13,22 +13,22 @@ O **MarketAI Community** é um projeto gratuito e de código aberto para anális
 
 ## Download para Windows
 
-A versão atual é **v1.0.2** e os instaladores seguem o número da versão:
+A versão atual é **v1.0.3** e os instaladores seguem o número da versão:
 
 ```text
-MarketAI-Setup-v1.0.2.exe
+MarketAI-Setup-v1.0.3.exe
 ```
 
 Download direto da versão atual:
 
-- [MarketAI-Setup-v1.0.2.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.2/MarketAI-Setup-v1.0.2.exe)
-- [SHA-256](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.2/MarketAI-Setup-v1.0.2.sha256)
-- Release: [v1.0.2](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.2)
+- [MarketAI-Setup-v1.0.3.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.3/MarketAI-Setup-v1.0.3.exe)
+- [SHA-256](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.3/MarketAI-Setup-v1.0.3.sha256)
+- Release: [v1.0.3](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.3)
 
 SHA-256:
 
 ```text
-1250fa521a3460a6397c8a871cd0adab68ca689c2abf83fc324e634faf0ad979
+e76e9ad5167c1f6c2b803b7d86592ea98e570ee8b8e876fc97911691a835d3d7
 ```
 
 Todas as versões ficam em:
@@ -205,7 +205,7 @@ run_desktop_dev.bat
 O nome do instalador acompanha automaticamente a versão definida no projeto.
 
 ```text
-v1.0.2 -> MarketAI-Setup-v1.0.2.exe
+v1.0.2 -> MarketAI-Setup-v1.0.3.exe
 v1.0.3 -> MarketAI-Setup-v1.0.3.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
