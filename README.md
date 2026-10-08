@@ -315,13 +315,13 @@ O repositório possui pipeline de qualidade e distribuição para Windows:
 
 - **MarketAI CI** roda em pushes e Pull Requests para `main`, validando testes Cloud/Desktop, compilação Python e sintaxe do frontend.
 - **Windows Build & Release** gera `MarketAI-Setup-v0.0.exe` em runner Windows, verifica SHA-256 e publica artifact.
-- Tags `v*` podem gerar **GitHub Release automática** com instalador e checksum.
+- Alterar `.release/windows.json` dispara a **GitHub Release automática** com instalador e checksum.
 - O build comercial exige uma **URL HTTPS real do MarketAI Cloud**; localhost é bloqueado em modo de release.
 - O pipeline suporta **Code Signing opcional** com certificado PFX armazenado apenas em GitHub Actions Secrets.
 - Cada instalador recebe **build provenance attestation**.
 - Após um release, o pipeline tenta publicar o manifesto `cloud/releases/windows-stable.json` usado pelo atualizador do Desktop.
 
-Para releases por tag, configure a variável do repositório `MARKETAI_CLOUD_URL`. Para assinatura digital, configure os secrets `MARKETAI_SIGN_PFX_BASE64` e `MARKETAI_SIGN_PASSWORD`.
+O release automático lê a URL pública do Cloud e a versão em `.release/windows.json`. Para assinatura digital, configure os secrets `MARKETAI_SIGN_PFX_BASE64` e `MARKETAI_SIGN_PASSWORD`.
 
 Consulte [`RELEASE-PIPELINE.md`](RELEASE-PIPELINE.md).
 
