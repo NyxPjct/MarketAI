@@ -7,7 +7,39 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class="app-shell">
+  <section id="authGate" class="auth-gate">
+    <div class="auth-backdrop"></div>
+    <div class="auth-shell">
+      <div class="auth-brand">
+        <div class="brand-mark auth-logo">M</div>
+        <div>
+          <p class="eyebrow">MARKETAI COMMUNITY</p>
+          <h1>Inteligência comercial gratuita para todo mundo.</h1>
+          <p>Crie sua conta e mantenha suas análises, monitoramentos e histórico separados com segurança.</p>
+          <div class="auth-badges"><span>100% GRATUITO</span><span>OPEN SOURCE</span><span>SEM PAYWALL</span></div>
+        </div>
+      </div>
+      <div class="auth-panel">
+        <div class="card settings-card auth-card" id="loginCard">
+          <div class="card-head"><div><p class="eyebrow">BEM-VINDO</p><h2>Entrar no MarketAI</h2><p class="muted">Acesse sua conta para continuar.</p></div></div>
+          <label>E-mail<input id="cloudEmail" type="email" autocomplete="email" placeholder="voce@empresa.com"></label>
+          <label>Senha<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="••••••••"></label>
+          <div class="settings-actions"><button id="cloudLogin" class="primary" type="button"><span>ENTRAR</span><b>→</b></button><button id="showRegister" class="ghost" type="button">Criar conta grátis</button></div>
+          <p class="micro cloud-note">Gratuito, open source e sem assinatura.</p>
+        </div>
+        <div class="card settings-card auth-card" id="registerCard" hidden>
+          <div class="card-head"><div><p class="eyebrow">CONTA GRATUITA</p><h2>Criar conta</h2><p class="muted">Todos os recursos do MarketAI ficam liberados. Não existe plano pago.</p></div></div>
+          <label>Nome<input id="regName" autocomplete="name" placeholder="Seu nome"></label>
+          <label>E-mail<input id="regEmail" type="email" autocomplete="email" placeholder="voce@empresa.com"></label>
+          <label>Senha<input id="regPassword" type="password" autocomplete="new-password" placeholder="mínimo 8 caracteres"></label>
+          <div class="settings-actions"><button id="cloudRegister" class="primary" type="button"><span>CRIAR CONTA</span><b>→</b></button><button id="showLogin" class="ghost" type="button">Já tenho conta</button></div>
+          <p class="micro cloud-note">Ao criar a conta, seus dados ficam vinculados somente ao seu usuário.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="app-shell" id="appShell" hidden>
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">M</div>
@@ -26,7 +58,7 @@
 
       <div class="sidebar-foot">
         <div class="status-dot-wrap"><i class="status-dot"></i><span id="apiStatus">verificando API…</span></div>
-        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v0.0</small>
+        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.0.2</small>
       </div>
     </aside>
 
@@ -236,37 +268,27 @@
 
       <section id="view-account" class="view">
         <div class="account-grid">
-          <div class="card settings-card" id="loginCard">
-            <div class="card-head"><div><p class="eyebrow">MARKETAI CLOUD</p><h2>Entrar</h2><p class="muted">Sua assinatura libera análises e mantém as chaves de mercado fora do computador.</p></div></div>
-            <label>E-mail<input id="cloudEmail" type="email" placeholder="voce@empresa.com"></label>
-            <label>Senha<input id="cloudPassword" type="password" placeholder="••••••••"></label>
-            <div class="settings-actions"><button id="cloudLogin" class="primary" type="button"><span>ENTRAR</span><b>→</b></button><button id="showRegister" class="ghost" type="button">Criar conta</button></div>
-          </div>
-          <div class="card settings-card" id="registerCard" hidden>
-            <div class="card-head"><div><p class="eyebrow">7 DIAS GRÁTIS</p><h2>Criar conta</h2><p class="muted">O teste inclui 10 análises reais e 1 dispositivo.</p></div></div>
-            <label>Nome<input id="regName" placeholder="Seu nome"></label><label>E-mail<input id="regEmail" type="email"></label><label>Senha<input id="regPassword" type="password" placeholder="mínimo 8 caracteres"></label>
-            <div class="settings-actions"><button id="cloudRegister" class="primary" type="button"><span>COMEÇAR TESTE</span><b>→</b></button><button id="showLogin" class="ghost" type="button">Já tenho conta</button></div>
-          </div>
-          <div class="card settings-card wide-settings" id="accountCard" hidden>
-            <div class="card-head"><div><p class="eyebrow">SUA CONTA</p><h2 id="accountName">—</h2><p id="accountEmail" class="muted">—</p></div><span id="accountPlan" class="secure-chip">—</span></div>
-            <div class="metrics-grid compact"><div class="metric"><span>Análises restantes</span><strong id="accountRemaining">—</strong></div><div class="metric"><span>Cota mensal</span><strong id="accountQuota">—</strong></div><div class="metric"><span>Status</span><strong id="accountStatus">—</strong></div></div>
-            <div class="settings-actions"><button id="refreshAccount" class="ghost">Atualizar</button><button id="cancelSubscription" class="ghost danger">Cancelar assinatura</button><button id="cloudLogout" class="ghost danger">Sair</button></div>
-          </div>
-          <div class="card settings-card wide-settings" id="plansCard">
-            <div class="card-head"><div><p class="eyebrow">PLANOS E PAGAMENTO</p><h2>Assinatura MarketAI</h2><p class="muted">Escolha o país de cobrança, o meio de pagamento e depois o plano.</p></div></div>
-            <div class="split">
-              <label>País de cobrança<select id="billingCountry">
-                <option value="BR">🇧🇷 Brasil</option><option value="US">🇺🇸 Estados Unidos</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="GB">🇬🇧 Reino Unido</option><option value="CA">🇨🇦 Canadá</option><option value="MX">🇲🇽 México</option><option value="AR">🇦🇷 Argentina</option><option value="JP">🇯🇵 Japão</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="AU">🇦🇺 Austrália</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="IT">🇮🇹 Itália</option><option value="INT">🌐 Outro país / Internacional</option>
-              </select></label>
-              <label>Meio escolhido<input id="billingMethodLabel" value="Selecione abaixo" readonly></label>
+          <div class="card settings-card wide-settings" id="accountCard">
+            <div class="card-head"><div><p class="eyebrow">SUA CONTA</p><h2 id="accountName">—</h2><p id="accountEmail" class="muted">—</p></div><span id="accountPlan" class="secure-chip">COMMUNITY</span></div>
+            <div class="metrics-grid compact">
+              <div class="metric"><span>Acesso</span><strong id="accountRemaining">GRÁTIS</strong></div>
+              <div class="metric"><span>Análises</span><strong id="accountQuota">ILIMITADAS</strong></div>
+              <div class="metric"><span>Status</span><strong id="accountStatus">ATIVO</strong></div>
             </div>
-            <div id="paymentMethods" class="integrations-grid"></div>
-            <div id="paymentFeedback" class="empty" hidden></div>
-            <div id="cloudPlans" class="integrations-grid"></div>
-            <p class="micro">Pix é exclusivo do ecossistema bancário brasileiro e não possui renovação automática nesta versão. Cartões internacionais e PayPal dependem da disponibilidade do provedor, da bandeira, do banco emissor e do país.</p>
-            <div class="split"><label>Chave de licença<input id="licenseKey" placeholder="MAI-XXXXX-XXXXX-XXXXX-XXXXX"></label><button id="activateLicense" class="ghost" type="button">Ativar licença</button></div>
+            <div class="settings-actions"><button id="refreshAccount" class="ghost">Atualizar conta</button><button id="cloudLogout" class="ghost danger">Sair</button></div>
           </div>
-          <div class="card settings-card wide-settings"><div class="card-head"><div><p class="eyebrow">DISPOSITIVOS</p><h2>Computadores autorizados</h2></div></div><div id="deviceList" class="history-list"><div class="empty">Entre na sua conta para visualizar.</div></div></div>
+
+          <div class="card settings-card wide-settings community-card">
+            <div class="card-head"><div><p class="eyebrow">OPEN SOURCE</p><h2>MarketAI Community</h2><p class="muted">Sem planos pagos, sem cota mensal e sem bloqueio de recursos.</p></div><span class="secure-chip">R$ 0</span></div>
+            <div class="onboarding-grid">
+              <div><strong>Todos os módulos</strong><span>Radar, Sentinel, Forecast, Profit Engine, Copilot e Autopilot.</span></div>
+              <div><strong>Conta individual</strong><span>Cada pessoa acessa os próprios dados, histórico e monitoramentos.</span></div>
+              <div><strong>Uso profissional</strong><span>Pode ser usado no trabalho e no dia a dia sem assinatura.</span></div>
+              <div><strong>Código aberto</strong><span>O projeto e a comunidade podem evoluir juntos.</span></div>
+            </div>
+          </div>
+
+          <div class="card settings-card wide-settings"><div class="card-head"><div><p class="eyebrow">DISPOSITIVOS</p><h2>Seus computadores</h2><p class="muted">Dispositivos vinculados à sua conta.</p></div></div><div id="deviceList" class="history-list"><div class="empty">Carregando dispositivos…</div></div></div>
         </div>
       </section>
 
