@@ -18,8 +18,10 @@ on:
         default: 'v1.0.0'
         type: string
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - '.release/windows.json'
 
 permissions:
   contents: write
@@ -63,12 +65,13 @@ jobs:
             $tag = '${{ inputs.release_tag }}'.Trim()
             $create = '${{ inputs.create_release }}'.ToLowerInvariant()
           } else {
-            $cloud = '${{ vars.MARKETAI_CLOUD_URL }}'.Trim()
-            $tag = '${{ github.ref_name }}'.Trim()
-            $create = 'true'
+            $config = Get-Content '.release/windows.json' -Raw | ConvertFrom-Json
+            $cloud = ([string]$config.cloud_url).Trim()
+            $tag = ([string]$config.release_tag).Trim()
+            $create = ([string]$config.create_release).ToLowerInvariant()
           }
           if ([string]::IsNullOrWhiteSpace($cloud)) {
-            throw 'MARKETAI_CLOUD_URL ausente. Em releases por tag, configure Settings > Actions > Variables > MARKETAI_CLOUD_URL.'
+            throw 'cloud_url ausente. Informe no workflow manual ou em .release/windows.json.'
           }
           if (-not $cloud.StartsWith('https://')) {
             throw 'O build comercial exige MARKETAI_CLOUD_URL com HTTPS.'
