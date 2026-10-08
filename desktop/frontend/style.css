@@ -60,3 +60,61 @@
 
 /* MarketAI Intelligence Core v1.0 */
 .intel-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px;padding:24px}.primary.compact{width:auto;min-width:190px}.intel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.intel-card{padding:22px}.intel-card h3{margin:4px 0 16px}.intel-list{display:grid;gap:10px}.intel-row{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:12px 14px;border:1px solid var(--border,#23342f);border-radius:12px;background:rgba(255,255,255,.02)}.intel-row small{grid-column:1/-1}.intel-row span{font-weight:800}.copilot-form{display:grid;gap:12px}.field-textarea{background:rgba(9,19,15,.92);min-height:108px}.intel-action{width:max-content;min-width:132px;padding:10px 16px;color:var(--text);border-color:#294338;background:rgba(255,255,255,.02)}.intel-action:hover{border-color:#3f7d61;color:var(--green);background:rgba(121,242,176,.04)}.copilot-answer{margin-top:12px;padding:14px;border:1px solid var(--border,#23342f);border-radius:12px;min-height:52px;background:rgba(255,255,255,.02)}.alert-critical{border-color:#7d3030}.alert-opportunity{border-color:#2c7251}@media(max-width:900px){.intel-grid{grid-template-columns:1fr}.intel-hero{align-items:flex-start;flex-direction:column}.primary.compact{width:100%}.intel-action{width:100%}}
+
+
+/* MarketAI Community Auth Gate */
+.auth-gate{
+  min-height:100vh;
+  position:relative;
+  display:grid;
+  place-items:center;
+  padding:32px;
+  overflow:auto;
+  background:
+    radial-gradient(circle at 20% 15%,rgba(72,239,164,.13),transparent 34%),
+    radial-gradient(circle at 82% 72%,rgba(39,141,92,.11),transparent 30%),
+    #050b08;
+}
+.auth-backdrop{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:34px 34px;
+  mask-image:linear-gradient(to bottom,black,transparent 90%);
+}
+.auth-shell{
+  position:relative;
+  z-index:1;
+  width:min(1040px,100%);
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(360px,.75fr);
+  gap:44px;
+  align-items:center;
+}
+.auth-brand{display:flex;gap:20px;align-items:flex-start}
+.auth-logo{width:58px;height:58px;min-width:58px;font-size:24px;border-radius:16px;box-shadow:0 0 30px rgba(75,242,166,.18)}
+.auth-brand h1{font-size:clamp(32px,4vw,54px);line-height:1.04;margin:8px 0 14px;max-width:720px;letter-spacing:-.04em}
+.auth-brand>div>p:not(.eyebrow){max-width:640px;color:var(--muted);font-size:15px;line-height:1.7}
+.auth-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.auth-badges span{border:1px solid rgba(75,242,166,.22);background:rgba(75,242,166,.06);color:#a7f7c9;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:800;letter-spacing:.08em}
+.auth-panel{width:100%}
+.auth-card{padding:26px;background:linear-gradient(180deg,rgba(15,31,24,.96),rgba(8,20,15,.98));box-shadow:0 24px 80px rgba(0,0,0,.36);border-color:rgba(92,224,158,.16)}
+.auth-card .settings-actions{margin-top:4px}
+.auth-card .ghost{width:100%}
+.community-card{border-color:rgba(75,242,166,.16);background:linear-gradient(180deg,rgba(15,31,24,.8),rgba(8,20,15,.82))}
+.community-card .onboarding-grid{margin-top:4px}
+@media(max-width:860px){
+  .auth-gate{padding:20px}
+  .auth-shell{grid-template-columns:1fr;gap:26px;max-width:620px}
+  .auth-brand h1{font-size:36px}
+  .auth-brand{gap:14px}
+  .auth-logo{width:48px;height:48px;min-width:48px;font-size:20px}
+}
+@media(max-width:520px){
+  .auth-gate{padding:14px}
+  .auth-brand{display:block}
+  .auth-logo{margin-bottom:18px}
+  .auth-brand h1{font-size:30px}
+  .auth-card{padding:20px}
+}
