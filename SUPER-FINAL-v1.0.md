@@ -1,19 +1,29 @@
-# MarketAI 1.0 — SUPER FINAL
+# MarketAI 1.0 — histórico da evolução
 
-A versão 1.0 transforma o MarketAI de analisador de preço em plataforma de inteligência comercial.
+A linha 1.0 introduziu o Intelligence Core do MarketAI:
 
-## Intelligence Core
-- Market Score proprietário 0–100
+- Market Score 0–100
 - Data Quality Score A–E
-- Profit Engine com margem líquida, ROI e break-even
-- Sentinel persistente por usuário
-- snapshots históricos reais
-- alertas de preço e margem
-- Radar ordenado por score + momentum real
-- Forecast de preço sobre snapshots reais
-- Autopilot de preço com piso de margem
-- Copilot contextual, com fallback determinístico e IA opcional
-- recursos liberados por plano
+- Profit Engine
+- Sentinel e snapshots
+- alertas
+- Radar
+- Forecast
+- Autopilot
+- Copilot contextual
 
-## Regra de ouro
-O MarketAI 1.0 não fabrica preço, venda, estoque ou tendência. Radar, Forecast e Copilot dependem de dados reais coletados.
+## Mudança de direção na v1.0.2
+
+A partir da **v1.0.2**, o projeto passa a ser **MarketAI Community**:
+
+- 100% gratuito;
+- open source sob Apache License 2.0;
+- sem paywall;
+- sem planos pagos;
+- sem trial;
+- todos os módulos liberados para contas autenticadas;
+- login/criação de conta como primeira tela;
+- instaladores nomeados de acordo com a versão.
+
+A regra de qualidade permanece: o MarketAI não fabrica preço, venda, estoque ou
+tendência quando faltam dados reais.
