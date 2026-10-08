@@ -13,6 +13,17 @@ const uploadPrompt = $('#uploadPrompt');
 let currentPreviewURL = '';
 let currentAnalysis = null;
 let currentFormSnapshot = null;
+let activeAccountId = 'guest';
+
+function accountStorageKey(base){
+  return `${base}:${activeAccountId || 'guest'}`;
+}
+function readAccountItems(base){
+  try{return JSON.parse(localStorage.getItem(accountStorageKey(base))||'[]')}catch{return []}
+}
+function writeAccountItems(base,items){
+  localStorage.setItem(accountStorageKey(base),JSON.stringify(items));
+}
 
 const countryCurrency = {BR:'BRL',US:'USD',CN:'CNY',FR:'EUR',DE:'EUR',GB:'GBP',JP:'JPY',KR:'KRW',MX:'MXN',AR:'ARS',CA:'CAD'};
 const originCountry = form.elements.origin_country;
@@ -224,13 +235,13 @@ function listingMerchant(x){
 
 function saveHistory(d){
   const rec=d.pricing.strategies.recommended;
-  const items=JSON.parse(localStorage.getItem('marketai-history')||'[]');
+  const items=readAccountItems('marketai-history');
   items.unshift({date:new Date().toISOString(),name:d.product.product_name||d.request.typed_name,recommended:rec?.price??null,score:d.pricing.opportunity.score??null,marketMedian:d.market.reliable?d.pricing.market.median:null,mode:d.market.quality.state});
-  localStorage.setItem('marketai-history',JSON.stringify(items.slice(0,80)));
+  writeAccountItems('marketai-history',items.slice(0,80));
 }
 
 function renderHistory(){
-  const items=JSON.parse(localStorage.getItem('marketai-history')||'[]');
+  const items=readAccountItems('marketai-history');
   $('#historyList').innerHTML=items.length?items.map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${new Date(x.date).toLocaleString('pt-BR')} · ${historyModeLabel(x.mode)}</small></div><div><small>MarketAI</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem recomendação':fmtBRL(x.recommended)}</div></div>`).join(''):'<div class="empty">Nenhuma análise salva ainda.</div>';
   renderHistoryChart(items);
 }
@@ -246,20 +257,20 @@ function renderHistoryChart(items){
   const line=(key)=>data.map((x,i)=>pt(num(x[key]),i).join(',')).join(' ');
   el.innerHTML=`<div class="chart-title">${escapeHtml(latest)}</div><svg viewBox="0 0 ${w} ${h}" role="img"><line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" class="axis"/><polyline points="${line('marketMedian')}" class="line median-line"/><polyline points="${line('recommended')}" class="line rec-line"/>${data.map((x,i)=>{const [cx,cy]=pt(num(x.recommended),i);return `<circle cx="${cx}" cy="${cy}" r="4" class="dot"><title>${fmtBRL(x.recommended)} — ${new Date(x.date).toLocaleDateString('pt-BR')}</title></circle>`}).join('')}</svg><div class="legend"><span><i class="rec-key"></i>Preço recomendado</span><span><i class="med-key"></i>Mediana</span></div>`;
 }
-$('#clearHistory').addEventListener('click',()=>{localStorage.removeItem('marketai-history');renderHistory()});
+$('#clearHistory').addEventListener('click',()=>{localStorage.removeItem(accountStorageKey('marketai-history'));renderHistory()});
 
 $('#saveWatch').addEventListener('click',()=>{
-  if(!currentAnalysis)return; const items=JSON.parse(localStorage.getItem('marketai-watch')||'[]'); const rec=currentAnalysis.pricing.strategies.recommended;
+  if(!currentAnalysis)return; const items=readAccountItems('marketai-watch'); const rec=currentAnalysis.pricing.strategies.recommended;
   const item={date:new Date().toISOString(),name:currentAnalysis.product.product_name||currentAnalysis.request.typed_name,score:currentAnalysis.pricing.opportunity.score??null,recommended:rec?.price??null,median:currentAnalysis.market.reliable?currentAnalysis.pricing.market.median:null,status:currentAnalysis.market.quality.state,form:currentFormSnapshot};
-  const filtered=items.filter(x=>x.name!==item.name); filtered.unshift(item); localStorage.setItem('marketai-watch',JSON.stringify(filtered.slice(0,30))); $('#saveWatch').textContent='✓ Monitorado'; setTimeout(()=>$('#saveWatch').textContent='★ Monitorar',1400);
+  const filtered=items.filter(x=>x.name!==item.name); filtered.unshift(item); writeAccountItems('marketai-watch',filtered.slice(0,30)); $('#saveWatch').textContent='✓ Monitorado'; setTimeout(()=>$('#saveWatch').textContent='★ Monitorar',1400);
 });
 function renderWatchlist(){
-  const items=JSON.parse(localStorage.getItem('marketai-watch')||'[]');
+  const items=readAccountItems('marketai-watch');
   $('#watchList').innerHTML=items.length?items.map((x,i)=>`<div class="history-item watch-item"><div><strong>${escapeHtml(x.name)}</strong><small>Salvo ${new Date(x.date).toLocaleString('pt-BR')} · ${historyModeLabel(x.status)}</small></div><div><small>Score</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem preço':fmtBRL(x.recommended)}</div><button class="ghost reanalyze" data-i="${i}">Reanalisar</button></div>`).join(''):'<div class="empty">Nenhum produto monitorado.</div>';
   $$('.reanalyze').forEach(btn=>btn.addEventListener('click',()=>loadWatch(items[num(btn.dataset.i)])));
 }
 function loadWatch(item){ Object.entries(item.form||{}).forEach(([k,v])=>{const el=form.elements[k];if(el)el.value=v;}); switchView('analyze'); result.hidden=true; form.style.display='grid'; window.scrollTo({top:0,behavior:'smooth'}); }
-$('#clearWatchlist').addEventListener('click',()=>{localStorage.removeItem('marketai-watch');renderWatchlist()});
+$('#clearWatchlist').addEventListener('click',()=>{localStorage.removeItem(accountStorageKey('marketai-watch'));renderWatchlist()});
 
 $('#printReport').addEventListener('click',()=>window.print());
 $('#exportCsv').addEventListener('click',()=>{
@@ -339,11 +350,11 @@ $('#savePreferences')?.addEventListener('click',async()=>{
 function downloadJson(filename,data){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'0.0',exported_at:new Date().toISOString(),history:JSON.parse(localStorage.getItem('marketai-history')||'[]'),watchlist:JSON.parse(localStorage.getItem('marketai-watch')||'[]')}));
+$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.0.2',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
 $('#importBackupBtn')?.addEventListener('click',()=>$('#importBackupFile').click());
 $('#importBackupFile')?.addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
-  try{const d=JSON.parse(await file.text());if(d.format!=='MarketAIBackup')throw new Error('Arquivo não reconhecido.');if(Array.isArray(d.history))localStorage.setItem('marketai-history',JSON.stringify(d.history));if(Array.isArray(d.watchlist))localStorage.setItem('marketai-watch',JSON.stringify(d.watchlist));renderHistory();renderWatchlist();alert('Backup importado.');}catch(err){alert('Não foi possível importar o backup.\n\n'+err.message)}finally{e.target.value=''}
+  try{const d=JSON.parse(await file.text());if(d.format!=='MarketAIBackup')throw new Error('Arquivo não reconhecido.');if(Array.isArray(d.history))writeAccountItems('marketai-history',d.history);if(Array.isArray(d.watchlist))writeAccountItems('marketai-watch',d.watchlist);renderHistory();renderWatchlist();alert('Backup importado.');}catch(err){alert('Não foi possível importar o backup.\n\n'+err.message)}finally{e.target.value=''}
 });
 $('#exportDiagnostics')?.addEventListener('click',async()=>{try{const r=await fetch('/api/app/diagnostics');downloadJson(`marketai-diagnostico-${new Date().toISOString().replaceAll(':','-')}.json`,await r.json())}catch(e){alert('Não foi possível gerar o diagnóstico.')}});
 $('#openDataFolder')?.addEventListener('click',async()=>{try{const r=await fetch('/api/app/open-data-folder',{method:'POST'});const d=await r.json();if(!d.ok)alert(`Pasta de dados: ${d.path||'—'}`)}catch(e){alert('Não foi possível abrir a pasta de dados.')}});
@@ -438,6 +449,7 @@ async function loadCloudStatus(){
     setAuthScreen(logged);
     if(logged){
       const u=d.user||{},e=d.entitlement||{};
+      activeAccountId=String(u.id||u.email||'account');
       if($('#accountName'))$('#accountName').textContent=u.full_name||'Conta MarketAI';
       if($('#accountEmail'))$('#accountEmail').textContent=u.email||'—';
       if($('#accountPlan'))$('#accountPlan').textContent='COMMUNITY';
@@ -448,6 +460,7 @@ async function loadCloudStatus(){
     }
   }catch(e){
     cloudAccount={authenticated:false,error:e.message};
+    activeAccountId='guest';
     setAuthScreen(false);
   }
 }
@@ -492,6 +505,7 @@ $('#regPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')$('#cloudRe
 $('#cloudLogout')?.addEventListener('click',async()=>{
   await fetch('/api/cloud/logout',{method:'POST'});
   cloudAccount=null;
+  activeAccountId='guest';
   await loadCloudStatus();
 });
 $('#refreshAccount')?.addEventListener('click',loadCloudStatus);
