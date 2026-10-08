@@ -19,7 +19,19 @@ A versão atual é **v1.0.2** e os instaladores seguem o número da versão:
 MarketAI-Setup-v1.0.2.exe
 ```
 
-Os releases ficam disponíveis em:
+Download direto da versão atual:
+
+- [MarketAI-Setup-v1.0.2.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.2/MarketAI-Setup-v1.0.2.exe)
+- [SHA-256](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.2/MarketAI-Setup-v1.0.2.sha256)
+- Release: [v1.0.2](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.2)
+
+SHA-256:
+
+```text
+1250fa521a3460a6397c8a871cd0adab68ca689c2abf83fc324e634faf0ad979
+```
+
+Todas as versões ficam em:
 
 https://github.com/NyxPjct/MarketAI/releases
 
