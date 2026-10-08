@@ -34,6 +34,27 @@ def test_local_history_is_scoped_by_account():
 def test_versioned_installer_configuration():
     version = (ROOT / "backend" / "version.py").read_text(encoding="utf-8")
     iss = (ROOT / "installer" / "MarketAI.iss").read_text(encoding="utf-8")
-    assert 'APP_VERSION = "1.0.2"' in version
-    assert '#define MyAppVersion "1.0.2"' in iss
+    assert 'APP_VERSION = "1.0.3"' in version
+    assert '#define MyAppVersion "1.0.3"' in iss
     assert 'OutputBaseFilename=MarketAI-Setup-v{#MyAppVersion}' in iss
+
+
+def test_hidden_attribute_wins_over_layout_css():
+    css = (ROOT / "frontend" / "style.css").read_text(encoding="utf-8")
+    assert "[hidden]{display:none!important}" in css
+    assert ".auth-gate[hidden],.app-shell[hidden],.app-modal[hidden]{display:none!important}" in css
+
+
+def test_marketai_confirmation_modal_exists():
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    js = (ROOT / "frontend" / "app.js").read_text(encoding="utf-8")
+    assert 'id="appModal"' in html
+    assert "function openAppModal" in js
+    assert "Conta criada" in js or "CONTA CRIADA" in js
+
+
+def test_monochrome_market_theme():
+    css = (ROOT / "frontend" / "style.css").read_text(encoding="utf-8")
+    assert "--bg:#050505" in css
+    assert "--green:#f5f5f5" in css
+    assert "Monochrome Market Theme" in css
