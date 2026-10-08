@@ -1,23 +1,47 @@
-MARKETAI v0.0 — POLÍTICA DE PRIVACIDADE
-Última atualização: 07/10/2026
+MARKETAI COMMUNITY — NOTA DE PRIVACIDADE
+Última atualização: 08/10/2026
 
-1. DADOS DA CONTA
-Na edição MarketAI Cloud, o serviço pode tratar nome, e-mail, identificador aleatório do dispositivo, plano, status da assinatura, cota de uso e eventos técnicos necessários à segurança e operação da conta.
+1. CONTAS
+O MarketAI pode tratar nome, e-mail, identificador aleatório da instalação e
+informações técnicas necessárias para autenticação, segurança e funcionamento
+da conta.
 
-2. ANÁLISES
-Os termos de busca, variante, país, custos informados e, quando utilizada, a imagem do produto são enviados ao MarketAI Cloud para executar a análise. O servidor pode encaminhar somente os dados necessários aos provedores de mercado, câmbio e IA configurados pelo operador do MarketAI.
+2. DADOS POR USUÁRIO
+Análises, produtos monitorados, snapshots, alertas e demais dados persistentes
+do Intelligence Core são associados ao usuário autenticado. A arquitetura deve
+impedir que uma conta consulte os dados privados de outra.
 
-3. CREDENCIAIS DE TERCEIROS
-Clientes não recebem as chaves de Mercado Livre, eBay, SerpApi, OpenAI ou Mercado Pago usadas pelo serviço. Essas credenciais permanecem no servidor.
+3. ANÁLISES
+Termos de busca, variante, país, custos informados e, quando utilizada, a imagem
+do produto podem ser enviados ao MarketAI Cloud para executar a análise. O
+servidor pode encaminhar os dados estritamente necessários às fontes externas
+configuradas pelo operador da instância.
 
-4. DADOS LOCAIS
-O aplicativo pode manter preferências, histórico, monitorados, logs técnicos e a sessão da conta no computador. No Windows, tokens de sessão são protegidos com DPAPI no perfil do usuário. O identificador de dispositivo é um UUID aleatório local; o MarketAI não precisa criar fingerprint invasivo de hardware.
+4. SERVIÇOS EXTERNOS
+Marketplaces, agregadores, provedores de IA, câmbio e hospedagem possuem
+políticas próprias. Uma instalação auto-hospedada pode escolher quais serviços
+externos utilizar.
 
-5. PAGAMENTOS
-Pagamentos e assinaturas podem ser processados por Mercado Pago, Stripe e PayPal. Dados sensíveis de cartão e credenciais PayPal são coletados e processados nos ambientes dos respectivos provedores; o MarketAI mantém somente identificadores, método, valor/moeda, status e datas necessários para conciliação, suporte e liberação/bloqueio da licença. O MarketAI não armazena número completo de cartão ou CVV.
+5. CREDENCIAIS
+Tokens e chaves de integrações não devem ser incluídos no executável público nem
+publicados no repositório. Na arquitetura hospedada, credenciais sensíveis ficam
+no servidor. No modo local/self-host, são responsabilidade do operador.
 
-6. RETENÇÃO E EXCLUSÃO
-Dados locais podem ser removidos do computador. Dados de conta e faturamento devem observar prazos legais, antifraude, fiscais e contratuais aplicáveis. Antes do lançamento público, o operador deve disponibilizar canal de suporte para solicitações de acesso, correção e exclusão quando juridicamente cabíveis.
+6. DADOS LOCAIS
+O Desktop pode manter preferências, histórico local, logs técnicos e a sessão da
+conta. No Windows, a sessão pode ser protegida com DPAPI. O identificador da
+instalação é um UUID aleatório; o MarketAI não depende de fingerprint invasivo
+de hardware.
 
-7. SERVIÇOS DE TERCEIROS
-Marketplaces, agregadores, provedores de IA, câmbio, hospedagem e pagamento possuem políticas próprias. O operador deve publicar a lista definitiva de subprocessadores/serviços antes do lançamento comercial.
+7. PAGAMENTOS
+A edição Community não exige pagamento, assinatura ou licença comercial para
+usar os recursos do MarketAI.
+
+8. EXCLUSÃO E RETENÇÃO
+Dados locais podem ser removidos do computador. Quem opera uma instância pública
+do Cloud deve definir procedimentos de retenção, backup, acesso, correção e
+exclusão compatíveis com a legislação aplicável.
+
+9. OPEN SOURCE
+O código do MarketAI é público, mas isso não torna públicos os dados privados,
+tokens ou conteúdo das contas dos usuários.
