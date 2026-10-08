@@ -10,7 +10,7 @@ def test_login_gate_is_primary_screen():
     assert html.index('id="authGate"') < html.index('id="appShell"')
     assert "100% GRATUITO" in html
     assert "OPEN SOURCE" in html
-    assert "SEM PAYWALL" in html
+    assert "DADOS REAIS" in html
 
 
 def test_paid_ui_is_not_present():
