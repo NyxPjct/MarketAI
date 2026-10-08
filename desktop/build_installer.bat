@@ -1,17 +1,17 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title MarketAI v0.0 - Build Comercial
+title MarketAI - Build Windows
 
 echo =======================================================
-echo       MarketAI v0.0 - Build Comercial para Windows
+echo       MarketAI - Build Windows
 echo =======================================================
 echo.
 
 if "%MARKETAI_CLOUD_URL%"=="" (
   if "%MARKETAI_REQUIRE_CLOUD_URL%"=="1" (
     echo [ERRO] MARKETAI_CLOUD_URL e obrigatoria neste build.
-    echo Defina uma URL HTTPS de producao antes de gerar o instalador comercial.
+    echo Defina uma URL HTTPS de producao antes de gerar o instalador.
     goto :fail
   )
   echo [AVISO] MARKETAI_CLOUD_URL nao definida. Este build usara o Cloud local para desenvolvimento.
@@ -20,6 +20,18 @@ if "%MARKETAI_CLOUD_URL%"=="" (
   echo Cloud de producao: %MARKETAI_CLOUD_URL%
   > backend\cloud_build.py echo CLOUD_URL = "%MARKETAI_CLOUD_URL%"
 )
+
+set "APP_VERSION="
+for /f "tokens=3" %%V in ('findstr /b /c:"#define MyAppVersion" "installer\MarketAI.iss"') do set "APP_VERSION=%%~V"
+if "%APP_VERSION%"=="" (
+  echo [ERRO] Nao foi possivel identificar MyAppVersion em installer\MarketAI.iss.
+  goto :fail
+)
+set "INSTALLER_NAME=MarketAI-Setup-v%APP_VERSION%.exe"
+set "CHECKSUM_NAME=MarketAI-Setup-v%APP_VERSION%.sha256"
+echo Versao do build: %APP_VERSION%
+echo Instalador: %INSTALLER_NAME%
+echo.
 
 set "PYTHON_CMD=py -3"
 where py >nul 2>nul
@@ -110,20 +122,20 @@ echo [8/9] Gerando instalador final...
 "%ISCC%" "installer\MarketAI.iss"
 if errorlevel 1 goto :fail
 
-if not exist "dist-installer\MarketAI-Setup-v0.0.exe" (
+if not exist "dist-installer\%INSTALLER_NAME%" (
   echo [ERRO] O instalador nao foi encontrado com o nome esperado.
   goto :fail
 )
 
 echo [9/9] Finalizando pacote...
 if "%WILL_SIGN%"=="1" (
-  echo Assinando MarketAI-Setup-v0.0.exe...
-  "%SIGNTOOL%" sign /fd SHA256 /f "%MARKETAI_SIGN_PFX%" /p "%MARKETAI_SIGN_PASSWORD%" /tr http://timestamp.digicert.com /td SHA256 "dist-installer\MarketAI-Setup-v0.0.exe"
+  echo Assinando %INSTALLER_NAME%...
+  "%SIGNTOOL%" sign /fd SHA256 /f "%MARKETAI_SIGN_PFX%" /p "%MARKETAI_SIGN_PASSWORD%" /tr http://timestamp.digicert.com /td SHA256 "dist-installer\%INSTALLER_NAME%"
   if errorlevel 1 goto :fail
 )
 
 echo Gerando SHA-256 do instalador...
-powershell -NoProfile -Command "$h=(Get-FileHash -Algorithm SHA256 'dist-installer\MarketAI-Setup-v0.0.exe').Hash.ToLower(); Set-Content -Encoding ASCII 'dist-installer\MarketAI-Setup-v0.0.sha256' ($h + '  MarketAI-Setup-v0.0.exe'); Write-Host ('SHA-256: ' + $h)"
+powershell -NoProfile -Command "$h=(Get-FileHash -Algorithm SHA256 ('dist-installer\\' + $env:INSTALLER_NAME)).Hash.ToLower(); Set-Content -Encoding ASCII ('dist-installer\\' + $env:CHECKSUM_NAME) ($h + '  ' + $env:INSTALLER_NAME); Write-Host ('SHA-256: ' + $h)"
 if errorlevel 1 goto :fail
 
 echo.
@@ -133,8 +145,8 @@ echo.
 echo Executavel desktop:
 echo   %CD%\dist\MarketAI.exe
 echo.
-echo INSTALADOR COMERCIAL FINAL:
-echo   %CD%\dist-installer\MarketAI-Setup-v0.0.exe
+echo INSTALADOR FINAL:
+echo   %CD%\dist-installer\%INSTALLER_NAME%
 if "%WILL_SIGN%"=="1" echo   Assinatura digital: APLICADA
 if not "%WILL_SIGN%"=="1" echo   Assinatura digital: NAO APLICADA
 
@@ -147,6 +159,6 @@ exit /b 0
 
 :fail
 echo.
-echo [ERRO] O build comercial nao foi concluido. Veja as mensagens acima.
+echo [ERRO] O build nao foi concluido. Veja as mensagens acima.
 if not "%MARKETAI_CI%"=="1" pause
 exit /b 1
