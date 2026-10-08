@@ -1,13 +1,54 @@
-# MarketAI v1.0 SUPER FINAL
+# MarketAI Community
 
 ![MarketAI CI](https://github.com/NyxPjct/MarketAI/actions/workflows/ci.yml/badge.svg)
 ![Windows Build & Release](https://github.com/NyxPjct/MarketAI/actions/workflows/windows-release.yml/badge.svg)
 
-> **Inteligência comercial para e-commerce, pricing, margem, monitoramento e decisão.**
+> **Inteligência comercial gratuita e open source para quem compra, vende, pesquisa e trabalha com produtos.**
 
-O MarketAI deixou de ser apenas um analisador de preços. A versão **v1.0 SUPER FINAL** reúne análise de mercado, cálculo financeiro, monitoramento contínuo, histórico, score proprietário, alertas, previsão e assistência por IA em uma arquitetura **Desktop + Cloud** preparada para operação comercial.
+O **MarketAI Community** é um projeto gratuito e de código aberto para análise de mercado, pricing, margem, monitoramento e apoio à decisão. Cada pessoa usa sua própria conta, com dados, histórico e produtos monitorados separados.
 
-> **Regra de ouro:** MarketAI não fabrica preço, estoque, vendas ou tendências. Recursos como Radar, Forecast e Copilot dependem dos dados realmente coletados pela conta. Se a evidência não for suficiente, o sistema bloqueia a recomendação ou informa a ausência de dados.
+**Não existem planos pagos, assinatura, trial, cota mensal de análises ou recursos Premium.** Todos os módulos do MarketAI são liberados para contas Community.
+
+> **Regra de ouro:** MarketAI não fabrica preço, estoque, vendas ou tendências. Radar, Forecast e Copilot usam os dados realmente coletados pela conta. Quando a evidência não é suficiente, o sistema informa isso em vez de inventar uma resposta.
+
+## Download para Windows
+
+A versão atual é **v1.0.2** e os instaladores seguem o número da versão:
+
+```text
+MarketAI-Setup-v1.0.2.exe
+```
+
+Os releases ficam disponíveis em:
+
+https://github.com/NyxPjct/MarketAI/releases
+
+## Login primeiro
+
+Ao abrir o MarketAI, a primeira tela é **Entrar / Criar conta**.
+
+A conta serve para separar análises, histórico, produtos monitorados, snapshots, alertas, configurações e o contexto usado pelo Intelligence Core.
+
+Depois do login, o usuário entra no painel principal.
+
+## 100% gratuito
+
+A edição Community libera análise sem cota mensal paga, MarketAI Intelligence Core, Market Score, Data Quality Score, Profit Engine, Sentinel, Radar, Forecast, Autopilot, Copilot, alertas, histórico e múltiplos dispositivos da mesma conta.
+
+Não existe checkout ativo na edição Community. As rotas históricas de cobrança/licença permanecem apenas por compatibilidade de código e ficam desabilitadas na experiência Community.
+
+## Open Source
+
+O MarketAI é distribuído sob a **Apache License 2.0**.
+
+Isso permite estudar, usar, modificar e distribuir o software, inclusive em ambientes profissionais, respeitando os termos da licença.
+
+Arquivos importantes:
+
+- [LICENSE](LICENSE)
+- [NOTICE](NOTICE)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
 
 ## Preview
 
@@ -23,221 +64,100 @@ O MarketAI deixou de ser apenas um analisador de preços. A versão **v1.0 SUPER
 
 ![MarketAI Admin Console](docs/images/marketai-admin.svg)
 
-## O que existe na v1.0
+## Intelligence Core
 
-### MarketAI Intelligence Core
+**Market Score 0–100** considera qualidade da amostra, margem, folga de preço e contexto de mercado.
 
-- **Market Score 0–100** — score proprietário baseado em margem, folga de preço, qualidade dos dados e profundidade da amostra.
-- **Data Quality Score A–E** — mede confiabilidade da amostra, compatibilidade dos anúncios, quantidade usada e diversidade de fontes.
-- **Profit Engine** — lucro líquido, margem líquida, ROI, break-even e custo variável total.
-- **Sentinel** — produtos monitorados persistentes por conta, snapshots históricos e verificações automáticas.
-- **Radar** — ordena oportunidades usando Market Score e momentum calculado a partir de snapshots reais.
-- **Forecast** — projeções de 7, 30 e 60 períodos por regressão linear simples sobre snapshots reais.
-- **Autopilot de preço** — preço sugerido respeitando estratégia e piso mínimo de margem.
-- **Copilot contextual** — responde usando dados da própria conta; pode operar com IA quando configurada ou em modo determinístico sem inventar informação.
-- **Central de alertas** — alertas persistentes de preço, margem e eventos relevantes do Sentinel.
+**Data Quality Score A–E** mostra o quanto a análise está sustentada por dados compatíveis.
 
-### Análise de produto e mercado
+**Profit Engine** calcula lucro líquido, margem líquida, ROI e break-even.
 
-- Identificação por nome, variante e dados do produto.
-- Compatibilidade por marca/modelo e atributos de variante.
-- Filtros para concentração de perfume, volume, capacidade, potência e condição.
-- Rejeição de decants, amostras, kits, réplicas, usados/refurbished e variantes incompatíveis quando aplicável.
-- Match Score por anúncio.
-- Separação entre anúncios compatíveis, descartados e outliers.
-- Bloqueio de recomendação quando a amostra é ambígua, insuficiente ou indisponível.
-- Mercado por país e moeda.
-- Conversão cambial e cálculo de custo real.
-- Estratégias de preço e simulador de margem.
-- Histórico e exportações.
+**Sentinel** mantém produtos monitorados por usuário e registra snapshots reais mesmo com o Desktop fechado quando o worker está ativo.
 
-## Fontes e integrações de mercado
+**Radar** ordena oportunidades a partir dos dados reais armazenados pelo Sentinel.
 
-A arquitetura suporta integrações de mercado no Cloud. As credenciais ficam no servidor e **nunca precisam ser distribuídas para o cliente Desktop**.
+**Forecast** projeta comportamento com base no histórico coletado. Sem histórico suficiente, não gera tendência fictícia.
 
-As integrações presentes na base incluem Mercado Livre/Mercado Libre, eBay e fontes adicionais configuradas no servidor. A disponibilidade de cada fonte depende das respectivas credenciais, APIs e permissões.
+**Autopilot** calcula preços sugeridos respeitando estratégia e piso de margem.
 
-## MarketAI Sentinel
+**Copilot** responde usando o contexto real da conta. Quando IA externa não está configurada, pode operar em modo determinístico sem inventar fatos.
 
-O Sentinel mantém uma lista de produtos monitorados por usuário e registra snapshots de mercado. O worker `cloud/app/sentinel_worker.py` pode executar ciclos automáticos no servidor mesmo quando o Desktop está fechado.
+## Análise de produto e mercado
 
-Os snapshots alimentam:
+- identificação por nome, variante e imagem;
+- GTIN/EAN/UPC opcional;
+- comparação por marca, modelo e atributos;
+- concentração, volume, capacidade e potência;
+- rejeição de kits, amostras, decants, testers, réplicas e variantes incompatíveis quando aplicável;
+- Match Score;
+- separação de compatíveis, descartados e outliers;
+- bloqueio de recomendação quando a amostra é insuficiente ou ambígua;
+- conversão cambial;
+- custo real;
+- estratégias de preço;
+- simulador de margem;
+- histórico e exportações.
 
-- histórico de mediana, mínimo e máximo;
-- quantidade de anúncios compatíveis;
-- Data Quality Score;
-- Market Score;
-- margem registrada;
-- preço sugerido;
-- Radar;
-- Forecast;
-- alertas;
-- contexto do Copilot.
+## Fontes externas
 
-## Profit Engine
+A base possui suporte para integrações como Mercado Livre/Mercado Libre, eBay, Google Shopping/SerpApi e recursos de IA.
 
-O cálculo financeiro considera:
+O **MarketAI é gratuito**, mas serviços externos podem possuir suas próprias regras, credenciais, cotas ou custos. O projeto não transforma APIs pagas de terceiros em serviços gratuitos.
 
-```text
-Preço de venda
-- custo unitário
-- custo fixo por unidade
-- comissão do marketplace
-- impostos
-- mídia/Ads
-- taxa de pagamento
-- perda estimada com devoluções
-= lucro líquido
-```
-
-Também retorna **margem líquida**, **ROI**, **break-even** e indicador de saúde da operação.
-
-## Pagamentos Multi-Gateway
-
-O MarketAI possui uma camada de cobrança por país e moeda:
-
-| Método | Provedor | Modelo |
-| --- | --- | --- |
-| Pix | Mercado Pago | pagamento avulso que credita período do plano |
-| Cartão de crédito/débito | Stripe Checkout | recorrente |
-| PayPal | PayPal | recorrente nos mercados/moedas suportados pela conta |
-| Mercado Pago | Mercado Pago | recorrente no Brasil |
-
-Moedas comerciais padrão presentes na base incluem **BRL, USD, EUR, GBP, CAD, MXN e JPY**, com possibilidade de sobrescrever preços por variáveis de ambiente.
-
-Consulte [`PAYMENTS-SETUP.md`](PAYMENTS-SETUP.md).
-
-## Planos e recursos
-
-| Plano | Preço BR padrão | Análises/mês | Dispositivos | Sentinel | Radar | Forecast | Copilot | Autopilot |
-| --- | ---: | ---: | ---: | :---: | :---: | :---: | :---: | :---: |
-| Essencial | R$ 49,90 | 100 | 1 | ✅ | — | — | — | — |
-| Pro | R$ 99,90 | 500 | 2 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Business | R$ 199,90 | 2000 | 5 | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-Limites de monitoramento atuais: **5 produtos** no Essencial, **50** no Pro e **500** no Business.
-
-Os preços e limites podem ser alterados antes do lançamento.
-
-## Teste grátis
-
-A configuração padrão fornece:
-
-- **7 dias** de teste;
-- **10 análises**;
-- 1 dispositivo durante o trial.
-
-Esses valores são configuráveis por ambiente.
+Credenciais sensíveis ficam no Cloud ou na instalação local configurada pelo próprio operador e não devem ser publicadas no repositório.
 
 ## Arquitetura
 
 ```text
-┌───────────────────────────┐
-│     MarketAI Desktop      │
-│   Windows / UI comercial  │
-└─────────────┬─────────────┘
-              │ HTTPS / JWT
-              ▼
-┌───────────────────────────┐
-│       MarketAI Cloud      │
-│ FastAPI + autenticação    │
-├───────────────────────────┤
-│ Analysis / Market Engine  │
-│ Intelligence Core         │
-│ Sentinel Worker           │
-│ Billing Multi-Gateway     │
-│ Licenças / dispositivos   │
-│ Admin Console / auditoria │
-└─────────────┬─────────────┘
-              │
-       ┌──────┴──────┐
-       ▼             ▼
-  PostgreSQL     APIs externas
+┌──────────────────────────────┐
+│     MarketAI Desktop         │
+│ Windows · Login obrigatório  │
+└──────────────┬───────────────┘
+               │ HTTPS / JWT
+               ▼
+┌──────────────────────────────┐
+│       MarketAI Cloud         │
+│ FastAPI + autenticação       │
+├──────────────────────────────┤
+│ Market Engine                │
+│ Intelligence Core            │
+│ Sentinel Worker              │
+│ Contas / dispositivos        │
+│ Admin / auditoria            │
+└──────────────┬───────────────┘
+               │
+        ┌──────┴──────┐
+        ▼             ▼
+   PostgreSQL     APIs externas
 ```
 
-O Desktop mantém somente a sessão necessária. Chaves de OpenAI, marketplaces, gateways de pagamento e demais integrações comerciais permanecem no Cloud.
+## Segurança e contas
 
-## Segurança
+- senhas com Argon2;
+- JWT de curta duração;
+- refresh tokens rotacionados e armazenados como hash;
+- sessão local protegida por Windows DPAPI;
+- UUID local por instalação, sem fingerprint invasivo;
+- dados do Intelligence Core filtrados pelo usuário autenticado;
+- secrets fora do repositório;
+- .env, bancos locais, caches e tokens ignorados pelo Git;
+- HTTPS obrigatório no build oficial.
 
-- senhas com **Argon2**;
-- access token JWT de curta duração;
-- refresh token aleatório persistido no servidor somente como SHA-256 e rotacionado;
-- sessão local protegida por **Windows DPAPI**;
-- limite de dispositivos por plano;
-- credenciais de APIs mantidas exclusivamente no servidor;
-- webhooks de pagamento validados/sincronizados com o provedor;
-- trilha de auditoria administrativa;
-- UUID local de dispositivo sem fingerprint invasivo de hardware;
-- `.env`, bancos locais, caches, tokens e secrets excluídos do versionamento.
+## Produção Community
 
-## Admin Console
-
-O painel administrativo está disponível em:
+Instância atual do Cloud:
 
 ```text
-https://SEU-DOMINIO/admin
+https://marketai-cloud-production.up.railway.app
 ```
 
-Ele centraliza usuários, assinaturas, pagamentos, licenças, dispositivos, consumo, planos e auditoria.
-
-Consulte [`ADMIN-PANEL.md`](ADMIN-PANEL.md).
-
-## API principal
-
-Algumas rotas centrais:
+Health check:
 
 ```text
-POST   /v1/auth/register
-POST   /v1/auth/login
-POST   /v1/auth/refresh
-GET    /v1/account/me
-POST   /v1/devices/activate
-POST   /v1/licenses/activate
-POST   /v1/billing/checkout
-POST   /v1/analysis
-GET    /v1/updates/latest
-
-GET    /v1/intelligence/capabilities
-POST   /v1/intelligence/profit
-POST   /v1/intelligence/market-score
-GET    /v1/intelligence/watches
-POST   /v1/intelligence/watches
-POST   /v1/intelligence/watches/{id}/check
-GET    /v1/intelligence/watches/{id}/history
-GET    /v1/intelligence/radar
-GET    /v1/intelligence/alerts
-GET    /v1/intelligence/forecast/{id}
-POST   /v1/intelligence/copilot
+https://marketai-cloud-production.up.railway.app/health
 ```
 
-## Estrutura do repositório
-
-```text
-MarketAI/
-├── cloud/
-│   ├── app/
-│   │   ├── intelligence.py
-│   │   ├── intelligence_engine.py
-│   │   ├── sentinel_worker.py
-│   │   ├── billing.py
-│   │   ├── market_engine.py
-│   │   └── services/
-│   ├── admin/
-│   ├── tests/
-│   └── docker-compose.yml
-├── desktop/
-│   ├── backend/
-│   ├── frontend/
-│   ├── installer/
-│   ├── tests/
-│   └── docs/
-├── docs/images/
-├── ADMIN-PANEL.md
-├── PAYMENTS-SETUP.md
-├── PRODUCTION-SETUP.md
-├── LAUNCH-CHECKLIST.md
-└── SUPER-FINAL-v1.0.md
-```
+A infraestrutura usa MarketAI Cloud + PostgreSQL + Sentinel Worker. O projeto também pode ser auto-hospedado.
 
 ## Desenvolvimento local
 
@@ -254,8 +174,6 @@ uvicorn app.main:app --reload --port 9000
 
 ### Sentinel Worker
 
-Em outro terminal:
-
 ```bat
 cd cloud
 .venv\Scripts\activate
@@ -270,69 +188,71 @@ set MARKETAI_CLOUD_URL=http://127.0.0.1:9000
 run_desktop_dev.bat
 ```
 
-## Produção
+## Build Windows
 
-A base está preparada para separar aplicativo e serviços sensíveis. Antes de vender publicamente ainda é necessário configurar infraestrutura produtiva: domínio HTTPS, PostgreSQL, gateways reais, APIs de mercado, secrets, política comercial e assinatura de código Windows.
-
-Veja:
-
-- [`PRODUCTION-SETUP.md`](PRODUCTION-SETUP.md)
-- [`PAYMENTS-SETUP.md`](PAYMENTS-SETUP.md)
-- [`ADMIN-PANEL.md`](ADMIN-PANEL.md)
-- [`LAUNCH-CHECKLIST.md`](LAUNCH-CHECKLIST.md)
-
-## Build do Windows
-
-O projeto continua configurado para gerar o instalador comercial definido para esta linha:
+O nome do instalador acompanha automaticamente a versão definida no projeto.
 
 ```text
-MarketAI-Setup-v0.0.exe
+v1.0.2 -> MarketAI-Setup-v1.0.2.exe
+v1.0.3 -> MarketAI-Setup-v1.0.3.exe
+v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
 
-O software internamente está identificado como **MarketAI v1.0 SUPER FINAL**. O build final do `.exe`/instalador deve ser executado em Windows com as dependências descritas no projeto.
+Build local:
 
 ```bat
-build_desktop_installer.bat
+cd desktop
+build_installer.bat
 ```
 
-## Testes da SUPER FINAL
+## CI/CD
 
-Na preparação desta versão foram validados:
+Em pushes e Pull Requests, o GitHub Actions executa testes Cloud/Desktop, compilação Python e validação do JavaScript.
 
-- suíte Cloud;
-- suíte Desktop;
-- Intelligence Engine;
-- pagamentos multi-gateway;
-- painel administrativo;
-- matching de produto;
-- pricing;
-- sintaxe JavaScript;
-- compilação Python.
+A alteração de .release/windows.json dispara o build Windows e pode publicar:
 
-## CI/CD e Releases
+```text
+MarketAI-Setup-vX.Y.Z.exe
+MarketAI-Setup-vX.Y.Z.sha256
+RELEASE-NOTES.txt
+```
 
-O repositório possui pipeline de qualidade e distribuição para Windows:
+O pipeline também suporta SHA-256, build provenance attestation, Code Signing opcional, GitHub Release automática e manifesto para auto-update.
 
-- **MarketAI CI** roda em pushes e Pull Requests para `main`, validando testes Cloud/Desktop, compilação Python e sintaxe do frontend.
-- **Windows Build & Release** gera `MarketAI-Setup-v0.0.exe` em runner Windows, verifica SHA-256 e publica artifact.
-- Alterar `.release/windows.json` dispara a **GitHub Release automática** com instalador e checksum.
-- O build comercial exige uma **URL HTTPS real do MarketAI Cloud**; localhost é bloqueado em modo de release.
-- O pipeline suporta **Code Signing opcional** com certificado PFX armazenado apenas em GitHub Actions Secrets.
-- Cada instalador recebe **build provenance attestation**.
-- Após um release, o pipeline tenta publicar o manifesto `cloud/releases/windows-stable.json` usado pelo atualizador do Desktop.
+Veja [RELEASE-PIPELINE.md](RELEASE-PIPELINE.md).
 
-O release automático lê a URL pública do Cloud e a versão em `.release/windows.json`. Para assinatura digital, configure os secrets `MARKETAI_SIGN_PFX_BASE64` e `MARKETAI_SIGN_PASSWORD`.
+## Estrutura
 
-Consulte [`RELEASE-PIPELINE.md`](RELEASE-PIPELINE.md).
+```text
+MarketAI/
+├── cloud/
+│   ├── app/
+│   ├── admin/
+│   ├── tests/
+│   └── docker-compose.yml
+├── desktop/
+│   ├── backend/
+│   ├── frontend/
+│   ├── installer/
+│   ├── tests/
+│   └── docs/
+├── docs/images/
+├── LICENSE
+├── NOTICE
+├── CONTRIBUTING.md
+└── SECURITY.md
+```
 
-## Status
+## Filosofia do projeto
 
-**MarketAI v1.0 SUPER FINAL — desenvolvimento comercial / preparação de produção.**
+O objetivo é simples:
 
-O código já contém a arquitetura e os módulos centrais da edição comercial. Serviços externos só operam de forma real quando as respectivas credenciais e infraestrutura produtiva são configuradas.
+> criar uma ferramenta de inteligência comercial útil para estudantes, vendedores, pequenos negócios, profissionais e equipes sem colocar os recursos principais atrás de um paywall.
+
+Contribuições são bem-vindas.
 
 ---
 
-### MarketAI
+### MarketAI Community
 
 **Encontrar. Entender. Precificar. Monitorar. Decidir.**
