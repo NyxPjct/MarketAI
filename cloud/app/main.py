@@ -21,12 +21,18 @@ def utcnow(): return datetime.now(timezone.utc)
 def _aware(dt): return dt if (dt is None or dt.tzinfo) else dt.replace(tzinfo=timezone.utc)
 
 def seed(db:Session):
-    defaults=[("essencial","Essencial",float(os.getenv("PLAN_ESSENCIAL_PRICE","49.90")),100,1),("pro","Pro",float(os.getenv("PLAN_PRO_PRICE","99.90")),500,2),("business","Business",float(os.getenv("PLAN_BUSINESS_PRICE","199.90")),2000,5)]
-    for code,name,price,quota,devices in defaults:
-        p=db.get(Plan,code)
-        if not p: db.add(Plan(code=code,name=name,price_brl=price,analyses_per_month=quota,device_limit=devices))
-        elif settings.sync_plan_defaults_on_startup:
-            p.name=name; p.price_brl=price; p.analyses_per_month=quota; p.device_limit=devices
+    community=db.get(Plan,"community")
+    if not community:
+        community=Plan(code="community",name="Community — Gratuito",price_brl=0.0,analyses_per_month=0,device_limit=999999,active=True)
+        db.add(community)
+    else:
+        community.name="Community — Gratuito"; community.price_brl=0.0; community.analyses_per_month=0; community.device_limit=999999; community.active=True
+    for legacy_code in ("essencial","pro","business"):
+        legacy=db.get(Plan,legacy_code)
+        if legacy: legacy.active=False
+    # Existing accounts are migrated to the free Community edition.
+    for sub in db.query(Subscription).all():
+        sub.plan_code="community"; sub.status="active"; sub.provider="open_source"; sub.trial_end=None; sub.current_period_end=None
     if settings.admin_email and settings.admin_password:
         admin=db.query(User).filter_by(email=settings.admin_email).first()
         if not admin:
@@ -48,7 +54,7 @@ async def lifespan(_app):
     finally: db.close()
     yield
 
-app=FastAPI(title="MarketAI Cloud",version="1.0",lifespan=lifespan)
+app=FastAPI(title="MarketAI Cloud",version="1.0.2",lifespan=lifespan)
 
 from app.admin import router as admin_router
 from app.intelligence import router as intelligence_router
@@ -65,19 +71,32 @@ def admin_panel():
     return FileResponse(str(ADMIN_DIR/"index.html"))
 
 @app.get("/health")
-def health(): return {"ok":True,"service":"MarketAI Cloud","version":"1.0","edition":"SUPER FINAL","intelligence_core":True}
+def health(): return {"ok":True,"service":"MarketAI Cloud","version":"1.0.2","edition":"Community Open Source","intelligence_core":True,"free":True,"open_source":True}
 
 @app.get("/v1/plans")
 def plans(country_code:str="BR",currency:str="",db:Session=Depends(get_db)):
-    currency=(currency or currency_for_country(country_code)).upper()
-    rows=[]
-    for p in db.query(Plan).filter_by(active=True).all():
-        rows.append({"code":p.code,"name":p.name,"price_brl":p.price_brl,"price":plan_price(p,currency),"currency":currency,"analyses_per_month":p.analyses_per_month,"device_limit":p.device_limit})
-    return {"plans":rows,"trial":{"days":settings.trial_days,"analyses":settings.trial_analyses},"country_code":country_code.upper(),"currency":currency}
+    return {
+        "plans":[{
+            "code":"community",
+            "name":"Community — Gratuito",
+            "price_brl":0.0,
+            "price":0.0,
+            "currency":(currency or currency_for_country(country_code)).upper(),
+            "analyses_per_month":None,
+            "device_limit":None,
+            "unlimited":True,
+            "all_features":True,
+        }],
+        "trial":None,
+        "billing_enabled":False,
+        "open_source":True,
+        "country_code":country_code.upper(),
+        "currency":(currency or currency_for_country(country_code)).upper(),
+    }
 
 @app.get("/v1/billing/methods")
 def billing_methods(country_code:str="BR"):
-    return {"country_code":country_code.upper(),"currency":currency_for_country(country_code),"methods":payment_methods(country_code)}
+    return {"country_code":country_code.upper(),"currency":currency_for_country(country_code),"methods":[],"billing_enabled":False,"message":"MarketAI is free and open source."}
 
 def account_payload(db,user):
     return {"user":{"id":user.id,"email":user.email,"full_name":user.full_name,"role":user.role},"entitlement":entitlement(db,user)}
@@ -93,7 +112,7 @@ def register(payload:dict=Body(...),db:Session=Depends(get_db)):
     if "@" not in email or len(password)<8: raise HTTPException(400,"invalid_email_or_password")
     if db.query(User).filter_by(email=email).first(): raise HTTPException(409,"email_already_registered")
     user=User(email=email,password_hash=hash_password(password),full_name=name,terms_version=settings.terms_version); db.add(user); db.flush()
-    sub=Subscription(user_id=user.id,plan_code="essencial",status="trialing",provider="trial",trial_end=utcnow()+timedelta(days=settings.trial_days)); db.add(sub); db.add(AuditEvent(user_id=user.id,event="register",detail="trial_started")); db.commit(); db.refresh(user)
+    sub=Subscription(user_id=user.id,plan_code="community",status="active",provider="open_source",trial_end=None,current_period_end=None); db.add(sub); db.add(AuditEvent(user_id=user.id,event="register",detail="community_account_created")); db.commit(); db.refresh(user)
     return issue_tokens(db,user,str(payload.get("device_uuid") or ""))
 
 @app.post("/v1/auth/login")
@@ -124,11 +143,8 @@ def activate_device(payload:dict=Body(...),user:User=Depends(current_user),db:Se
     device_uuid=str(payload.get("device_uuid") or "").strip(); name=str(payload.get("name") or "Windows PC")[:160]
     if not device_uuid: raise HTTPException(400,"device_uuid_required")
     ent=entitlement(db,user)
-    if not ent["active"]: raise HTTPException(402,"subscription_inactive")
     row=db.query(Device).filter_by(user_id=user.id,device_uuid=device_uuid).first()
     if row: row.active=True; row.name=name; row.last_seen=utcnow(); db.commit(); return {"ok":True,"device_id":row.id,"entitlement":ent}
-    active_count=db.query(Device).filter_by(user_id=user.id,active=True).count()
-    if active_count>=ent["device_limit"]: raise HTTPException(409,"device_limit_reached")
     row=Device(user_id=user.id,device_uuid=device_uuid,name=name); db.add(row); db.commit(); return {"ok":True,"device_id":row.id,"entitlement":entitlement(db,user)}
 
 @app.get("/v1/devices")
@@ -143,40 +159,18 @@ def remove_device(device_id:str,user:User=Depends(current_user),db:Session=Depen
 
 @app.post("/v1/licenses/activate")
 def activate_license(payload:dict=Body(...),user:User=Depends(current_user),db:Session=Depends(get_db)):
-    code=str(payload.get("license_key") or "").strip().upper(); lic=db.query(License).filter_by(code_hash=license_hash(code),active=True).first()
-    if not lic or lic.redeemed_count>=lic.max_redemptions: raise HTTPException(400,"invalid_or_exhausted_license")
-    existing=db.query(LicenseRedemption).filter_by(license_id=lic.id,user_id=user.id).first()
-    if not existing:
-        db.add(LicenseRedemption(license_id=lic.id,user_id=user.id)); lic.redeemed_count+=1
-    sub=user.subscription or Subscription(user_id=user.id); db.add(sub); sub.plan_code=lic.plan_code; sub.status="active"; sub.provider="license"; base=max(utcnow(),_aware(sub.current_period_end) or utcnow()); sub.current_period_end=base+timedelta(days=lic.duration_days); db.commit()
-    return account_payload(db,user)
+    raise HTTPException(410,"licenses_disabled_open_source_edition")
 
 @app.post("/v1/billing/checkout")
 async def billing_checkout(payload:dict=Body(...),user:User=Depends(current_user),db:Session=Depends(get_db)):
-    plan=db.get(Plan,str(payload.get("plan_code") or ""))
-    if not plan or not plan.active: raise HTTPException(404,"plan_not_found")
-    method=str(payload.get("payment_method") or "mercadopago")
-    country=str(payload.get("country_code") or "BR")
-    currency=str(payload.get("currency") or "")
-    ent=entitlement(db,user)
-    if ent.get("active") and not ent.get("trialing") and user.subscription and user.subscription.provider in {"mercadopago","stripe","paypal"} and user.subscription.status=="active":
-        raise HTTPException(409,"active_recurring_subscription_must_be_canceled_first")
-    allowed={m["id"] for m in payment_methods(country)}
-    if method not in allowed: raise HTTPException(400,"payment_method_not_available_for_country")
-    try: return await create_checkout(db,user,plan,method,country,currency)
-    except RuntimeError as e: raise HTTPException(503,str(e))
+    raise HTTPException(410,"billing_disabled_open_source_edition")
 
 @app.post("/v1/billing/sync")
 async def billing_sync(user:User=Depends(current_user),db:Session=Depends(get_db)):
-    await sync_user_subscription(db,user)
     return account_payload(db,user)
 
 @app.post("/v1/billing/cancel")
 async def billing_cancel(user:User=Depends(current_user),db:Session=Depends(get_db)):
-    try: await cancel_subscription(db,user)
-    except RuntimeError as e:
-        code=400 if str(e) in {"no_recurring_subscription","pix_has_no_automatic_renewal","subscription_provider_not_cancelable"} else 503
-        raise HTTPException(code,str(e))
     return account_payload(db,user)
 
 @app.post("/v1/webhooks/mercadopago")
@@ -234,19 +228,17 @@ async def analysis(request:Request,user:User=Depends(current_user),db:Session=De
         raise HTTPException(403,"device_not_authorized")
     device.last_seen=utcnow(); db.commit()
     ent=entitlement(db,user)
-    if not ent["active"]: raise HTTPException(402,"subscription_inactive")
-    if ent["remaining"]<=0: raise HTTPException(429,"monthly_quota_exhausted")
     form=await request.form(); fields={k:str(v) for k,v in form.items() if k!="image"}; image=form.get("image"); image_bytes=None; ctype=None
     if image is not None and hasattr(image,"read"):
         image_bytes=await image.read(); ctype=getattr(image,"content_type",None)
     try: result=await run_analysis(fields,image_bytes,ctype)
     except ValueError as e: raise HTTPException(400,str(e))
-    ent_after=consume_analysis(db,user); result["account"]={"plan":ent_after["plan_name"],"analyses_remaining":ent_after["remaining"],"analyses_quota":ent_after["quota"]}; return result
+    ent_after=consume_analysis(db,user); result["account"]={"plan":ent_after["plan_name"],"analyses_remaining":None,"analyses_quota":None,"unlimited":True}; return result
 
 @app.get("/v1/updates/latest")
 def latest_update(platform:str="windows",channel:str="stable"):
     path=Path(os.getenv("UPDATE_MANIFEST_PATH",str(Path(__file__).resolve().parent.parent/"releases/windows-stable.json")))
-    if not path.exists(): return {"available":False,"version":"1.0"}
+    if not path.exists(): return {"available":False,"version":"1.0.2"}
     import json; return json.loads(path.read_text(encoding="utf-8"))
 
 @app.post("/v1/admin/licenses")
