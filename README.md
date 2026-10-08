@@ -62,19 +62,45 @@ Arquivos importantes:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
-## Preview
+## Screenshots — MarketAI v1.0.3
 
-### Dashboard
+As capturas abaixo são geradas automaticamente a partir da interface atual do Desktop em **1600×900**, usando dados de demonstração apenas para preencher a apresentação visual — nenhum preço de mercado fictício é tratado como dado real.
 
-![MarketAI Dashboard](docs/images/marketai-dashboard.svg)
+### Login / criação de conta
 
-### Nova análise
+A autenticação é a primeira tela do aplicativo. O visual atual usa a identidade monocromática do MarketAI Community.
 
-![MarketAI Nova Análise](docs/images/marketai-analysis.svg)
+![MarketAI v1.0.3 — Login Community](docs/screenshots/01-login-community-v1.0.3.png)
 
-### Admin Console
+### Dashboard / Nova análise
 
-![MarketAI Admin Console](docs/images/marketai-admin.svg)
+Tela principal para identificação do produto, variante, país, custos e início da análise de mercado.
+
+![MarketAI v1.0.3 — Dashboard](docs/screenshots/02-dashboard-v1.0.3.png)
+
+### Intelligence Core
+
+Radar, Sentinel, Copilot e Profit Engine reunidos no centro de comando comercial.
+
+![MarketAI v1.0.3 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.0.3.png)
+
+### Minha conta
+
+Acesso Community gratuito, dados por usuário e gerenciamento de dispositivos vinculados.
+
+![MarketAI v1.0.3 — Minha conta](docs/screenshots/04-minha-conta-v1.0.3.png)
+
+### Configurações
+
+Preferências locais, backup, privacidade e status da conexão com o MarketAI Cloud.
+
+![MarketAI v1.0.3 — Configurações](docs/screenshots/05-configuracoes-v1.0.3.png)
+
+### Confirmação de conta criada
+
+O cadastro usa um modal nativo do próprio design system do MarketAI, sem alertas padrão do navegador/Windows.
+
+![MarketAI v1.0.3 — Conta criada](docs/screenshots/06-conta-criada-modal-v1.0.3.png)
 
 ## Intelligence Core
 
