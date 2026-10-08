@@ -275,7 +275,7 @@ $('#clearWatchlist').addEventListener('click',()=>{localStorage.removeItem(accou
 $('#printReport').addEventListener('click',()=>window.print());
 $('#exportCsv').addEventListener('click',()=>{
   if(!currentAnalysis)return; const d=currentAnalysis, rec=d.pricing.strategies.recommended;
-  const rows=[['MarketAI v1.0.2 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
+  const rows=[['MarketAI v1.0.3 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
   const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`marketai-${slugify(d.request.typed_name)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 });
 
@@ -350,7 +350,7 @@ $('#savePreferences')?.addEventListener('click',async()=>{
 function downloadJson(filename,data){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.0.2',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
+$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.0.3',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
 $('#importBackupBtn')?.addEventListener('click',()=>$('#importBackupFile').click());
 $('#importBackupFile')?.addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
@@ -366,15 +366,11 @@ async function handleFirstRun(){
   try{
     const r=await fetch('/api/setup/status'); const d=await r.json();
     if(d.preferences) applyPreferencesToForm(d.preferences);
-    if(!d.first_run_completed) $('#onboarding').hidden=false;
+    if(!d.first_run_completed){
+      await fetch('/api/setup/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    }
   }catch{}
 }
-async function completeOnboarding(goSettings){
-  try{await fetch('/api/setup/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})}catch{}
-  $('#onboarding').hidden=true; if(goSettings)switchView('settings');
-}
-$('#onboardingConfigure')?.addEventListener('click',async()=>{await completeOnboarding(false);switchView('account');});
-$('#onboardingLater')?.addEventListener('click',()=>completeOnboarding(false));
 loadAppInfo(); loadSettings(true); handleFirstRun();
 
 const integrationLabels={mercadolivre:'Mercado Livre',ebay:'eBay',google_shopping:'Google Shopping via SerpApi',bcb:'Banco Central — PTAX',vision:'Visão por IA'};
@@ -417,6 +413,7 @@ $('#refreshIntegrations')?.addEventListener('click',loadIntegrations);
 
 // ===================== MARKETAI COMMUNITY ACCOUNT =====================
 let cloudAccount=null;
+let appModalOnClose=null;
 
 function cloudError(d){
   const code=d?.detail||d?.message||'';
@@ -425,6 +422,7 @@ function cloudError(d){
     email_already_registered:'Este e-mail já possui uma conta.',
     invalid_email_or_password:'Informe um e-mail válido e uma senha com pelo menos 8 caracteres.',
     terms_required:'É necessário aceitar os termos para criar a conta.',
+    account_inactive:'Esta conta está desativada.',
     cloud_unavailable:'O MarketAI Cloud está indisponível no momento. Tente novamente em instantes.'
   };
   return map[code]||code||'Não foi possível concluir a operação.';
@@ -432,36 +430,94 @@ function cloudError(d){
 
 function setAuthScreen(logged){
   const gate=$('#authGate'), shell=$('#appShell');
-  if(gate)gate.hidden=logged;
-  if(shell)shell.hidden=!logged;
+  if(gate){
+    gate.hidden=!!logged;
+    gate.setAttribute('aria-hidden',logged?'true':'false');
+  }
+  if(shell){
+    shell.hidden=!logged;
+    shell.setAttribute('aria-hidden',logged?'false':'true');
+  }
+  document.body.classList.toggle('is-authenticated',!!logged);
   if(!logged){
     if($('#loginCard'))$('#loginCard').hidden=false;
     if($('#registerCard'))$('#registerCard').hidden=true;
   }
 }
 
+function applyAccountData(d={}){
+  const u=d.user||{},e=d.entitlement||{};
+  cloudAccount={authenticated:true,...d};
+  activeAccountId=String(u.id||u.email||'account');
+  if($('#accountName'))$('#accountName').textContent=u.full_name||'Conta MarketAI';
+  if($('#accountEmail'))$('#accountEmail').textContent=u.email||'—';
+  if($('#accountPlan'))$('#accountPlan').textContent='COMMUNITY';
+  if($('#accountRemaining'))$('#accountRemaining').textContent='GRÁTIS';
+  if($('#accountQuota'))$('#accountQuota').textContent='ILIMITADAS';
+  if($('#accountStatus'))$('#accountStatus').textContent='ATIVO';
+  setAuthScreen(true);
+}
+
+function setAuthFeedback(id,message='',kind='error'){
+  const el=$(id); if(!el)return;
+  el.textContent=message;
+  el.className=`auth-feedback ${kind}`;
+  el.hidden=!message;
+}
+
+function setAuthBusy(button,busy,label){
+  if(!button)return;
+  if(!button.dataset.defaultLabel)button.dataset.defaultLabel=button.querySelector('span')?.textContent||label;
+  button.disabled=busy;
+  const span=button.querySelector('span');
+  if(span)span.textContent=busy?label:button.dataset.defaultLabel;
+  button.classList.toggle('is-busy',busy);
+}
+
+function openAppModal({eyebrow='MARKETAI',title='Tudo certo.',message='',symbol='✓',button='CONTINUAR',onClose=null}={}){
+  const modal=$('#appModal'); if(!modal)return;
+  $('#appModalEyebrow').textContent=eyebrow;
+  $('#appModalTitle').textContent=title;
+  $('#appModalMessage').textContent=message;
+  $('#appModalSymbol').textContent=symbol;
+  $('#appModalAction span').textContent=button;
+  appModalOnClose=onClose;
+  modal.hidden=false;
+  modal.setAttribute('aria-hidden','false');
+  setTimeout(()=>$('#appModalAction')?.focus(),20);
+}
+
+function closeAppModal(){
+  const modal=$('#appModal'); if(!modal)return;
+  modal.hidden=true;
+  modal.setAttribute('aria-hidden','true');
+  const callback=appModalOnClose;
+  appModalOnClose=null;
+  if(typeof callback==='function')callback();
+}
+
+$('#appModalAction')?.addEventListener('click',closeAppModal);
+$('[data-modal-close]')?.addEventListener('click',closeAppModal);
+document.addEventListener('keydown',e=>{if(e.key==='Escape' && !$('#appModal')?.hidden)closeAppModal()});
+
 async function loadCloudStatus(){
   try{
     const r=await fetch('/api/cloud/status');
     const d=await r.json();
-    cloudAccount=d;
-    const logged=!!d.authenticated;
-    setAuthScreen(logged);
-    if(logged){
-      const u=d.user||{},e=d.entitlement||{};
-      activeAccountId=String(u.id||u.email||'account');
-      if($('#accountName'))$('#accountName').textContent=u.full_name||'Conta MarketAI';
-      if($('#accountEmail'))$('#accountEmail').textContent=u.email||'—';
-      if($('#accountPlan'))$('#accountPlan').textContent='COMMUNITY';
-      if($('#accountRemaining'))$('#accountRemaining').textContent='GRÁTIS';
-      if($('#accountQuota'))$('#accountQuota').textContent='ILIMITADAS';
-      if($('#accountStatus'))$('#accountStatus').textContent='ATIVO';
-      await loadDevices();
+    if(!r.ok || !d.authenticated){
+      cloudAccount={authenticated:false,...d};
+      activeAccountId='guest';
+      setAuthScreen(false);
+      return false;
     }
+    applyAccountData(d);
+    await loadDevices();
+    return true;
   }catch(e){
     cloudAccount={authenticated:false,error:e.message};
     activeAccountId='guest';
     setAuthScreen(false);
+    return false;
   }
 }
 
@@ -469,44 +525,84 @@ async function doCloudAuth(path,payload){
   const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   let d={};try{d=await r.json()}catch{}
   if(!r.ok)throw new Error(cloudError(d));
-  await loadCloudStatus();
+
+  // Login/register already returns the authenticated account. Apply it immediately
+  // instead of depending on a second request before hiding the login screen.
+  applyAccountData(d);
+  loadDevices();
   return d;
 }
 
 $('#cloudLogin')?.addEventListener('click',async()=>{
+  const button=$('#cloudLogin');
+  setAuthFeedback('#loginFeedback','');
+  setAuthBusy(button,true,'ENTRANDO…');
   try{
-    await doCloudAuth('/api/cloud/login',{email:$('#cloudEmail').value,password:$('#cloudPassword').value});
+    await doCloudAuth('/api/cloud/login',{
+      email:$('#cloudEmail').value.trim(),
+      password:$('#cloudPassword').value
+    });
     switchView('analyze');
-  }catch(e){alert(e.message)}
+  }catch(e){
+    setAuthScreen(false);
+    setAuthFeedback('#loginFeedback',e.message,'error');
+  }finally{
+    setAuthBusy(button,false,'ENTRANDO…');
+  }
 });
 
 $('#cloudRegister')?.addEventListener('click',async()=>{
+  const button=$('#cloudRegister');
+  setAuthFeedback('#registerFeedback','');
+  setAuthBusy(button,true,'CRIANDO…');
   try{
-    await doCloudAuth('/api/cloud/register',{full_name:$('#regName').value,email:$('#regEmail').value,password:$('#regPassword').value});
-    alert('Conta criada! Todos os recursos do MarketAI estão liberados gratuitamente.');
+    const data=await doCloudAuth('/api/cloud/register',{
+      full_name:$('#regName').value.trim(),
+      email:$('#regEmail').value.trim(),
+      password:$('#regPassword').value
+    });
     switchView('analyze');
-  }catch(e){alert(e.message)}
+    openAppModal({
+      eyebrow:'CONTA CRIADA',
+      title:'Bem-vindo ao MarketAI.',
+      message:`Sua conta ${data.user?.email||''} foi criada com sucesso. Todos os recursos Community estão liberados gratuitamente.`,
+      symbol:'✓',
+      button:'ENTRAR NO MARKETAI',
+      onClose:()=>switchView('analyze')
+    });
+  }catch(e){
+    setAuthScreen(false);
+    $('#loginCard').hidden=true;
+    $('#registerCard').hidden=false;
+    setAuthFeedback('#registerFeedback',e.message,'error');
+  }finally{
+    setAuthBusy(button,false,'CRIANDO…');
+  }
 });
 
 $('#showRegister')?.addEventListener('click',()=>{
+  setAuthFeedback('#loginFeedback','');
   $('#loginCard').hidden=true;
   $('#registerCard').hidden=false;
   $('#regName')?.focus();
 });
 $('#showLogin')?.addEventListener('click',()=>{
+  setAuthFeedback('#registerFeedback','');
   $('#registerCard').hidden=true;
   $('#loginCard').hidden=false;
   $('#cloudEmail')?.focus();
 });
 
-$('#cloudPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')$('#cloudLogin')?.click()});
-$('#regPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')$('#cloudRegister')?.click()});
+$('#cloudPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter' && !$('#cloudLogin')?.disabled)$('#cloudLogin')?.click()});
+$('#regPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter' && !$('#cloudRegister')?.disabled)$('#cloudRegister')?.click()});
 
 $('#cloudLogout')?.addEventListener('click',async()=>{
   await fetch('/api/cloud/logout',{method:'POST'});
   cloudAccount=null;
   activeAccountId='guest';
-  await loadCloudStatus();
+  setAuthScreen(false);
+  $('#cloudPassword').value='';
+  $('#cloudEmail')?.focus();
 });
 $('#refreshAccount')?.addEventListener('click',loadCloudStatus);
 
@@ -525,10 +621,10 @@ async function loadDevices(){
 setAuthScreen(false);
 loadCloudStatus();
 
-// O Cloud mantém cada conta isolada, mas não existe plano pago nem cota mensal.
+// O Cloud mantém cada conta isolada, sem plano pago e sem cota mensal.
 const _analysisSubmitNote=document.createElement('div');
 _analysisSubmitNote.className='micro cloud-note';
-_analysisSubmitNote.textContent='MarketAI Community: análises gratuitas e sem cota mensal. Os dados ficam vinculados à sua conta.';
+_analysisSubmitNote.textContent='MarketAI Community · gratuito · open source · dados vinculados à sua conta.';
 form?.querySelector('.wide')?.appendChild(_analysisSubmitNote);
 
 
