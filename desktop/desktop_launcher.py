@@ -14,7 +14,7 @@ import uvicorn
 import webview
 
 APP_NAME = "MarketAI"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 MUTEX_NAME = "Local\\MarketAI.Desktop.v1.0"
 
 
@@ -90,7 +90,7 @@ def configure_paths() -> None:
     data_root = user_data_directory()
     os.environ["MARKETAI_DATA_DIR"] = str(data_root)
 
-    # Compatibilidade: um .env legado ainda pode ser importado, mas a edição comercial
+    # Compatibilidade: um .env legado ainda pode ser importado, mas a edição Community
     # grava novas credenciais criptografadas pelo Windows DPAPI.
     legacy_env = data_root / ".env"
     portable_env = install_directory() / ".env"
@@ -151,7 +151,7 @@ def main() -> int:
         storage_dir.mkdir(parents=True, exist_ok=True)
 
         webview.create_window(
-            f"MarketAI v{APP_VERSION} — Inteligência Comercial",
+            f"MarketAI v{APP_VERSION} — Inteligência Comercial · Community",
             f"http://127.0.0.1:{port}",
             width=1440,
             height=900,
