@@ -1,6 +1,6 @@
 #define MyAppName "MarketAI"
-#define MyAppVersion "1.0.1"
-#define MyAppPublisher "MarketAI"
+#define MyAppVersion "1.0.2"
+#define MyAppPublisher "MarketAI Community"
 #define MyAppExeName "MarketAI.exe"
 
 [Setup]
@@ -17,7 +17,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\dist-installer
-OutputBaseFilename=MarketAI-Setup-v0.0
+OutputBaseFilename=MarketAI-Setup-v{#MyAppVersion}
 SetupIconFile=..\marketai.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/ultra64
@@ -28,17 +28,17 @@ RestartApplications=yes
 UsePreviousAppDir=yes
 UsePreviousGroup=yes
 UsePreviousTasks=yes
-VersionInfoVersion=1.0.1.0
+VersionInfoVersion=1.0.2.0
 VersionInfoCompany={#MyAppPublisher}
-VersionInfoDescription=MarketAI - Inteligência Comercial
+VersionInfoDescription=MarketAI Community - Inteligência Comercial
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 MinVersion=10.0.17763
-LicenseFile=..\docs\EULA.txt
+LicenseFile=..\..\LICENSE
 InfoBeforeFile=..\docs\PRIVACIDADE.txt
 InfoAfterFile=..\docs\RELEASE-NOTES.txt
 AppMutex=Local\MarketAI.Desktop.v1.0
-UninstallDisplayName=MarketAI v1.0.1 SUPER FINAL
+UninstallDisplayName=MarketAI v1.0.2 Community
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
@@ -49,7 +49,7 @@ Name: "desktopicon"; Description: "Criar atalho na Área de Trabalho"; GroupDesc
 [Files]
 Source: "..\dist\MarketAI.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\.env.example"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\docs\EULA.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\..\LICENSE"; DestDir: "{app}\docs"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "..\docs\PRIVACIDADE.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "..\docs\TERCEIROS.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "..\docs\RELEASE-NOTES.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
@@ -57,7 +57,7 @@ Source: "..\docs\CHECKLIST-COMERCIAL.txt"; DestDir: "{app}\docs"; Flags: ignorev
 
 [Icons]
 Name: "{group}\MarketAI"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{group}\Termos de Uso"; Filename: "{app}\docs\EULA.txt"
+Name: "{group}\Licença Open Source"; Filename: "{app}\docs\LICENSE.txt"
 Name: "{group}\Política de Privacidade"; Filename: "{app}\docs\PRIVACIDADE.txt"
 Name: "{group}\Notas da versão"; Filename: "{app}\docs\RELEASE-NOTES.txt"
 Name: "{group}\Desinstalar MarketAI"; Filename: "{uninstallexe}"
