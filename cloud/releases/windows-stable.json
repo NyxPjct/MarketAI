@@ -1,10 +1,12 @@
 {
-  "available": false,
-  "version": "1.0",
+  "available": true,
+  "version": "1.0.0",
   "channel": "stable",
   "platform": "windows",
-  "download_url": "",
-  "sha256": "",
+  "download_url": "https://github.com/NyxPjct/MarketAI/releases/download/v1.0.0/MarketAI-Setup-v0.0.exe",
+  "sha256": "762fc9bd6ee902ac37c40136acf608bc83e38f02d2a44d9f59b592addf4e958f",
+  "release_url": "https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.0",
+  "published_at": "2026-10-08T00:14:47Z",
   "mandatory": false,
   "notes": "MarketAI 1.0 SUPER FINAL — Intelligence Core, Radar, Sentinel, Profit Engine, Forecast, Autopilot e Copilot."
 }
