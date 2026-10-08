@@ -187,7 +187,7 @@ jobs:
           $endpoint = "repos/$repo/contents/cloud/releases/windows-stable.json"
           $existingSha = $null
           try {
-            $existing = gh api "$endpoint?ref=main" | ConvertFrom-Json
+            $existing = gh api "${endpoint}?ref=main" | ConvertFrom-Json
             $existingSha = $existing.sha
           } catch { }
           $args = @('api','--method','PUT',$endpoint,'-f',"message=chore: publish Windows update manifest $tag",'-f',"content=$b64",'-f','branch=main')
