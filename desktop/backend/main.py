@@ -598,7 +598,7 @@ async def analyze_local(
             "catalog_diagnostic": catalog_result.get("diagnostic"),
         },
         "notes": [
-            "O MarketAI v0.0 comercial nunca fabrica anúncios ou uma mediana de mercado quando não há dados reais suficientes.",
+            "O MarketAI Community nunca fabrica anúncios ou uma mediana de mercado quando não há dados reais suficientes.",
             f"Uma recomendação de mercado só é liberada com pelo menos {MIN_PRICING_LISTINGS} anúncios compatíveis e sem ambiguidade crítica de variante.",
             "NCM e tributação real devem ser validados com contador/despachante.",
         ],
@@ -610,8 +610,8 @@ async def radar_removed():
     return JSONResponse(
         status_code=410,
         content={
-            "status": "disabled_in_commercial_release",
-            "message": "O Radar demonstrativo foi removido da edição comercial. Ele retornará somente quando operar com fontes reais de fornecedores.",
+            "status": "legacy_endpoint_disabled",
+            "message": "O Radar local legado foi desativado. Use o MarketAI Intelligence Core conectado à sua conta para trabalhar com snapshots reais.",
         },
     )
 
