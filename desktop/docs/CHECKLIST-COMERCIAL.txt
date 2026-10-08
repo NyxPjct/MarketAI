@@ -1,29 +1,36 @@
-MARKETAI v0.0 — CHECKLIST ANTES DE DISTRIBUIR PUBLICAMENTE
+MARKETAI COMMUNITY — CHECKLIST DE RELEASE
 
-[OK NO PROJETO]
-- instalador MarketAI-Setup-v0.0.exe configurado;
-- aplicativo desktop em janela própria;
-- instância única;
-- dados separados da pasta do programa;
-- conta, planos, cotas e dispositivos controlados no MarketAI Cloud;
-- chaves de marketplaces e gateways somente no servidor;
-- Pix, Mercado Pago, Stripe e PayPal integrados na camada de cobrança;
-- webhooks com validação configurável/obrigatória em produção;
-- sem telemetria própria;
-- logs e diagnóstico;
-- EULA, privacidade e avisos de terceiros;
-- preço de mercado fictício removido;
-- Radar demonstrativo removido;
-- testes automatizados incluídos.
+[BASE DO PROJETO]
+- MarketAI 100% gratuito para todas as contas;
+- código-fonte distribuído sob Apache License 2.0;
+- login / criação de conta como tela inicial;
+- dados persistentes separados por conta;
+- Intelligence Core liberado sem paywall;
+- análises sem cota mensal paga;
+- Sentinel, Radar, Forecast, Profit Engine, Autopilot e Copilot liberados;
+- preços fictícios continuam proibidos;
+- instalador usa o número real da versão;
+- SHA-256 e provenance gerados no pipeline;
+- suporte opcional a Code Signing;
+- Cloud, PostgreSQL e Sentinel Worker suportados;
+- self-hosting documentado.
 
-[ANTES DE VENDER EM ESCALA]
-1. Comprar certificado de Code Signing e assinar EXE + Setup para reduzir alertas do SmartScreen.
-2. Definir o nome jurídico real do fornecedor/desenvolvedor para substituir "MarketAI" como publisher, se aplicável.
-3. Revisar EULA e Política de Privacidade com assessoria jurídica adequada ao modelo de negócio e aos países atendidos.
-4. Testar o Setup em máquinas limpas com Windows 10 e Windows 11.
-5. Definir suporte ao cliente, política de atualização, reembolso e canal oficial de download.
-6. Publicar MarketAI Cloud com PostgreSQL, HTTPS e domínio próprio.
-7. Configurar Stripe, PayPal e Mercado Pago em produção e cadastrar os três webhooks.
-8. Manter ALLOW_UNVERIFIED_WEBHOOKS=false em produção.
-9. Testar pagamentos reais de baixo valor e estornos/cancelamentos em cada gateway antes do lançamento.
-10. Confirmar obrigações fiscais, tributárias e de proteção ao consumidor para cada mercado onde o software será vendido.
+[ANTES DE PUBLICAR UMA NOVA VERSÃO]
+1. Atualizar a versão no Desktop e no instalador.
+2. Atualizar .release/windows.json.
+3. Rodar a suíte Cloud e Desktop.
+4. Validar node --check frontend/app.js.
+5. Testar login e criação de conta.
+6. Confirmar que uma conta não acessa dados de outra.
+7. Confirmar que não há paywall, checkout ou bloqueio por plano na experiência Community.
+8. Testar uma análise com dados reais e outra sem amostra suficiente.
+9. Testar Sentinel, Radar, Forecast e Copilot.
+10. Testar o instalador em Windows 10/11 quando possível.
+11. Validar o SHA-256 do instalador.
+12. Confirmar que nenhuma credencial real entrou no repositório.
+13. Se disponível, aplicar Code Signing.
+14. Verificar o manifesto do auto-update.
+
+[IMPORTANTE]
+O MarketAI é gratuito, mas APIs, hospedagem e serviços externos podem ter custos,
+cotas ou termos próprios. Isso não cria um plano pago dentro do MarketAI.
