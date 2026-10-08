@@ -14,18 +14,17 @@ from app.intelligence_engine import data_quality_score, market_score, profit_eng
 router=APIRouter(prefix="/v1/intelligence",tags=["intelligence"])
 def now(): return datetime.now(timezone.utc)
 
-def features(plan):
-    base={"profit","sentinel"}
-    if plan in {"pro","business"}: base|={"radar","forecast","copilot","autopilot"}
-    if plan=="business": base|={"api","teams","enterprise"}
-    return sorted(base)
+ALL_FEATURES={"profit","sentinel","radar","forecast","copilot","autopilot","api","teams","enterprise"}
 
-def limit_for(plan): return 5 if plan=="essencial" else 50 if plan=="pro" else 500
+def features(_plan=None):
+    return sorted(ALL_FEATURES)
+
+def limit_for(_plan=None):
+    return None
 
 def require(db,user,feature):
     ent=entitlement(db,user)
-    if not ent.get("active"): raise HTTPException(402,"subscription_inactive")
-    if feature not in features(ent.get("plan_code")): raise HTTPException(403,f"feature_requires_upgrade:{feature}")
+    if not ent.get("active"): raise HTTPException(401,"authentication_required")
     return ent
 
 def watch_json(w):
@@ -35,7 +34,8 @@ def watch_json(w):
 
 @router.get("/capabilities")
 def capabilities(user:User=Depends(current_user),db:Session=Depends(get_db)):
-    ent=entitlement(db,user); return {"plan":ent.get("plan_code"),"features":features(ent.get("plan_code")),"watch_limit":limit_for(ent.get("plan_code"))}
+    ent=entitlement(db,user)
+    return {"plan":"community","features":features(),"watch_limit":None,"unlimited":True,"open_source":True}
 
 @router.post("/profit")
 def profit(payload:dict=Body(...),user:User=Depends(current_user),db:Session=Depends(get_db)):
@@ -51,8 +51,7 @@ def watches(user:User=Depends(current_user),db:Session=Depends(get_db)):
 
 @router.post("/watches")
 def create_watch(payload:dict=Body(...),user:User=Depends(current_user),db:Session=Depends(get_db)):
-    ent=require(db,user,"sentinel"); count=db.query(ProductWatch).filter_by(user_id=user.id,active=True).count()
-    if count>=limit_for(ent.get("plan_code")): raise HTTPException(409,"watch_limit_reached")
+    require(db,user,"sentinel")
     name=str(payload.get("product_name") or "").strip()
     if not name: raise HTTPException(400,"product_name_required")
     variant=str(payload.get("variant_text") or "")
