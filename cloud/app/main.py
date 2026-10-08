@@ -27,9 +27,18 @@ def seed(db:Session):
         db.add(community)
     else:
         community.name="Community — Gratuito"; community.price_brl=0.0; community.analyses_per_month=0; community.device_limit=999999; community.active=True
-    for legacy_code in ("essencial","pro","business"):
-        legacy=db.get(Plan,legacy_code)
-        if legacy: legacy.active=False
+    legacy_defaults=[
+        ("essencial","Essencial (legado)",49.90,100,1),
+        ("pro","Pro (legado)",99.90,500,2),
+        ("business","Business (legado)",199.90,2000,5),
+    ]
+    for code,name,price,quota,devices in legacy_defaults:
+        legacy=db.get(Plan,code)
+        if not legacy:
+            legacy=Plan(code=code,name=name,price_brl=price,analyses_per_month=quota,device_limit=devices,active=False)
+            db.add(legacy)
+        else:
+            legacy.active=False
     # Existing accounts are migrated to the free Community edition.
     for sub in db.query(Subscription).all():
         sub.plan_code="community"; sub.status="active"; sub.provider="open_source"; sub.trial_end=None; sub.current_period_end=None
