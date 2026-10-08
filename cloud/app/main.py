@@ -63,7 +63,7 @@ async def lifespan(_app):
     finally: db.close()
     yield
 
-app=FastAPI(title="MarketAI Cloud",version="1.0.2",lifespan=lifespan)
+app=FastAPI(title="MarketAI Cloud",version="1.0.3",lifespan=lifespan)
 
 from app.admin import router as admin_router
 from app.intelligence import router as intelligence_router
@@ -80,7 +80,7 @@ def admin_panel():
     return FileResponse(str(ADMIN_DIR/"index.html"))
 
 @app.get("/health")
-def health(): return {"ok":True,"service":"MarketAI Cloud","version":"1.0.2","edition":"Community Open Source","intelligence_core":True,"free":True,"open_source":True}
+def health(): return {"ok":True,"service":"MarketAI Cloud","version":"1.0.3","edition":"Community Open Source","intelligence_core":True,"free":True,"open_source":True}
 
 @app.get("/v1/plans")
 def plans(country_code:str="BR",currency:str="",db:Session=Depends(get_db)):
@@ -247,7 +247,7 @@ async def analysis(request:Request,user:User=Depends(current_user),db:Session=De
 @app.get("/v1/updates/latest")
 def latest_update(platform:str="windows",channel:str="stable"):
     path=Path(os.getenv("UPDATE_MANIFEST_PATH",str(Path(__file__).resolve().parent.parent/"releases/windows-stable.json")))
-    if not path.exists(): return {"available":False,"version":"1.0.2"}
+    if not path.exists(): return {"available":False,"version":"1.0.3"}
     import json; return json.loads(path.read_text(encoding="utf-8"))
 
 @app.post("/v1/admin/licenses")
