@@ -71,7 +71,7 @@ form.addEventListener('submit', async (e) => {
   let i=0; const timer=setInterval(()=>{$('#loadingText').textContent=loadingSteps[(++i)%loadingSteps.length]},1100);
   try{
     const data=new FormData(form); const r=await fetch('/api/analyze',{method:'POST',body:data});
-    if(!r.ok){let d={};try{d=await r.json()}catch{};const code=d.detail||'';if(r.status===401||r.status===402){switchView('account');throw new Error(r.status===401?'Entre na sua conta MarketAI para analisar produtos.':'Sua assinatura/teste não está ativo. Abra Minha conta para renovar ou ativar uma licença.')}if(r.status===403&&code==='device_not_authorized'){switchView('account');throw new Error('Este computador não está autorizado no seu plano. Remova outro dispositivo ou faça upgrade.')}if(r.status===429)throw new Error('Sua cota mensal de análises terminou. Faça upgrade do plano para continuar.');throw new Error(d.message||d.detail||'Não foi possível concluir a análise.')}
+    if(!r.ok){let d={};try{d=await r.json()}catch{};const code=d.detail||'';if(r.status===401){setAuthScreen(false);throw new Error('Entre na sua conta MarketAI para analisar produtos.')}if(r.status===403&&code==='device_not_authorized'){switchView('account');throw new Error('Este computador ainda não está vinculado à sua conta. Saia e entre novamente para reativá-lo.')}if(r.status===429)throw new Error('O servidor está temporariamente limitando requisições. Tente novamente em instantes.');throw new Error(d.message||d.detail||'Não foi possível concluir a análise.')}
     const analysis=await r.json(); currentAnalysis=analysis; renderAnalysis(analysis); saveHistory(analysis); result.hidden=false; result.scrollIntoView({behavior:'smooth',block:'start'});loadCloudStatus();
   }catch(err){ alert('Não consegui concluir a análise.\n\n'+err.message); form.style.display='grid'; }
   finally{ clearInterval(timer); loading.hidden=true; }
@@ -404,49 +404,120 @@ async function testIntegration(source,button){
 $('#refreshIntegrations')?.addEventListener('click',loadIntegrations);
 
 
-// ===================== MARKETAI CLOUD ACCOUNT =====================
+// ===================== MARKETAI COMMUNITY ACCOUNT =====================
 let cloudAccount=null;
-function cloudError(d){const c=d?.detail||d?.message||'';const map={active_recurring_subscription_must_be_canceled_first:'Você já possui uma assinatura recorrente ativa. Cancele a renovação atual antes de trocar de gateway.',payment_method_not_available_for_country:'Esse meio de pagamento não está disponível para o país selecionado.',pix_available_only_for_brazil:'Pix está disponível somente para cobrança no Brasil.'};return map[c]||c||'Não foi possível concluir a operação.'}
+
+function cloudError(d){
+  const code=d?.detail||d?.message||'';
+  const map={
+    invalid_credentials:'E-mail ou senha incorretos.',
+    email_already_registered:'Este e-mail já possui uma conta.',
+    invalid_email_or_password:'Informe um e-mail válido e uma senha com pelo menos 8 caracteres.',
+    terms_required:'É necessário aceitar os termos para criar a conta.',
+    cloud_unavailable:'O MarketAI Cloud está indisponível no momento. Tente novamente em instantes.'
+  };
+  return map[code]||code||'Não foi possível concluir a operação.';
+}
+
+function setAuthScreen(logged){
+  const gate=$('#authGate'), shell=$('#appShell');
+  if(gate)gate.hidden=logged;
+  if(shell)shell.hidden=!logged;
+  if(!logged){
+    if($('#loginCard'))$('#loginCard').hidden=false;
+    if($('#registerCard'))$('#registerCard').hidden=true;
+  }
+}
+
 async function loadCloudStatus(){
-  try{const r=await fetch('/api/cloud/status');const d=await r.json();cloudAccount=d;const logged=!!d.authenticated;
-    $('#loginCard').hidden=logged;$('#registerCard').hidden=true;$('#accountCard').hidden=!logged;
-    if(logged){const u=d.user||{},e=d.entitlement||{};$('#accountName').textContent=u.full_name||'Conta MarketAI';$('#accountEmail').textContent=u.email||'—';$('#accountPlan').textContent=e.plan_name||e.plan_code||'—';$('#accountRemaining').textContent=e.remaining??'—';$('#accountQuota').textContent=e.quota??'—';$('#accountStatus').textContent=e.trialing?'TESTE GRÁTIS':String(e.status||'—').toUpperCase();if($('#cancelSubscription'))$('#cancelSubscription').hidden=!e.auto_renew;await loadDevices();}
-  }catch(e){cloudAccount={authenticated:false,error:e.message}}
+  try{
+    const r=await fetch('/api/cloud/status');
+    const d=await r.json();
+    cloudAccount=d;
+    const logged=!!d.authenticated;
+    setAuthScreen(logged);
+    if(logged){
+      const u=d.user||{},e=d.entitlement||{};
+      if($('#accountName'))$('#accountName').textContent=u.full_name||'Conta MarketAI';
+      if($('#accountEmail'))$('#accountEmail').textContent=u.email||'—';
+      if($('#accountPlan'))$('#accountPlan').textContent='COMMUNITY';
+      if($('#accountRemaining'))$('#accountRemaining').textContent='GRÁTIS';
+      if($('#accountQuota'))$('#accountQuota').textContent='ILIMITADAS';
+      if($('#accountStatus'))$('#accountStatus').textContent='ATIVO';
+      await loadDevices();
+    }
+  }catch(e){
+    cloudAccount={authenticated:false,error:e.message};
+    setAuthScreen(false);
+  }
 }
-async function doCloudAuth(path,payload){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(cloudError(d));await loadCloudStatus();return d}
-$('#cloudLogin')?.addEventListener('click',async()=>{try{await doCloudAuth('/api/cloud/login',{email:$('#cloudEmail').value,password:$('#cloudPassword').value});alert('Conta conectada.');}catch(e){alert(e.message)}});
-$('#cloudRegister')?.addEventListener('click',async()=>{try{await doCloudAuth('/api/cloud/register',{full_name:$('#regName').value,email:$('#regEmail').value,password:$('#regPassword').value});alert('Conta criada. Seu teste gratuito começou.');}catch(e){alert(e.message)}});
-$('#showRegister')?.addEventListener('click',()=>{$('#loginCard').hidden=true;$('#registerCard').hidden=false});$('#showLogin')?.addEventListener('click',()=>{$('#registerCard').hidden=true;$('#loginCard').hidden=false});
-$('#cloudLogout')?.addEventListener('click',async()=>{await fetch('/api/cloud/logout',{method:'POST'});await loadCloudStatus()});$('#refreshAccount')?.addEventListener('click',async()=>{try{await fetch('/api/cloud/sync-subscription',{method:'POST'})}catch{};await loadCloudStatus()});
-let selectedPaymentMethod='';let paymentMethodsCache=[];let billingCurrency='BRL';
-function moneyFmt(value,currency){try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency:currency||'BRL'}).format(Number(value||0))}catch{return `${currency||''} ${Number(value||0).toFixed(2)}`}}
-async function loadPaymentMethods(){
-  const country=$('#billingCountry')?.value||'BR';const box=$('#paymentMethods');selectedPaymentMethod='';$('#billingMethodLabel').value='Selecione abaixo';
-  try{const r=await fetch(`/api/cloud/payment-methods?country_code=${encodeURIComponent(country)}`);const d=await r.json();if(!r.ok)throw new Error(cloudError(d));paymentMethodsCache=d.methods||[];billingCurrency=d.currency||'USD';
-    box.innerHTML=paymentMethodsCache.map(m=>`<button type="button" class="card integration payment-choice" data-method="${escapeHtml(m.id)}"><div class="integration-body"><div class="integration-title"><h3>${escapeHtml(m.name)}</h3><span class="integration-state ${m.recurring?'on':'warn'}">${escapeHtml(m.badge||'')}</span></div><p>${escapeHtml(m.description||'')}</p><small>${m.recurring?'Renovação automática':'Pagamento avulso / renovação manual'} · ${escapeHtml(m.currency||billingCurrency)}</small></div></button>`).join('')||'<div class="empty">Nenhum gateway configurado para este país.</div>';
-    $$('.payment-choice').forEach(b=>b.addEventListener('click',()=>{selectedPaymentMethod=b.dataset.method;$$('.payment-choice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');const m=paymentMethodsCache.find(x=>x.id===selectedPaymentMethod);billingCurrency=m?.currency||billingCurrency;$('#billingMethodLabel').value=m?.name||selectedPaymentMethod;loadPlans();}));
-  }catch(e){box.innerHTML=`<div class="empty">Não foi possível carregar os meios de pagamento: ${escapeHtml(e.message)}</div>`}
+
+async function doCloudAuth(path,payload){
+  const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  let d={};try{d=await r.json()}catch{}
+  if(!r.ok)throw new Error(cloudError(d));
+  await loadCloudStatus();
+  return d;
 }
-async function loadPlans(){try{const country=$('#billingCountry')?.value||'BR';const cur=selectedPaymentMethod?(paymentMethodsCache.find(x=>x.id===selectedPaymentMethod)?.currency||billingCurrency):billingCurrency;const r=await fetch(`/api/cloud/plans?country_code=${encodeURIComponent(country)}&currency=${encodeURIComponent(cur||'')}`);const d=await r.json();billingCurrency=d.currency||billingCurrency;$('#cloudPlans').innerHTML=(d.plans||[]).map(p=>`<div class="card integration"><div class="integration-body"><div class="integration-title"><h3>${escapeHtml(p.name)}</h3><span class="integration-state on">${escapeHtml(moneyFmt(p.price??p.price_brl,p.currency||d.currency||'BRL'))}/mês</span></div><p>${p.analyses_per_month} análises/mês · ${p.device_limit} dispositivo(s)</p><button class="ghost plan-buy" data-plan="${escapeHtml(p.code)}">${selectedPaymentMethod?'Pagar com '+escapeHtml(paymentMethodsCache.find(x=>x.id===selectedPaymentMethod)?.name||selectedPaymentMethod):'Escolha o pagamento acima'}</button></div></div>`).join('');$$('.plan-buy').forEach(b=>b.addEventListener('click',()=>buyPlan(b.dataset.plan)));}catch(e){$('#cloudPlans').innerHTML='<div class="empty">Cloud indisponível.</div>'}}
-async function buyPlan(code){if(!cloudAccount?.authenticated){switchView('account');alert('Entre na sua conta antes de assinar.');return}if(!selectedPaymentMethod){alert('Escolha primeiro o meio de pagamento.');return}try{const country=$('#billingCountry')?.value||'BR';const methodCurrency=paymentMethodsCache.find(x=>x.id===selectedPaymentMethod)?.currency||billingCurrency;const r=await fetch('/api/cloud/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan_code:code,payment_method:selectedPaymentMethod,country_code:country,currency:methodCurrency})});const d=await r.json();if(!r.ok)throw new Error(cloudError(d));const feed=$('#paymentFeedback');feed.hidden=false;
-  if(d.payment_method==='pix'){
-    feed.innerHTML=`<strong>Pix criado.</strong><br>${escapeHtml(d.expires_note||'Aguardando confirmação.')}${d.qr_code?`<div class="pix-code"><code>${escapeHtml(d.qr_code)}</code><br><button id="copyPix" class="ghost" type="button">Copiar Pix Copia e Cola</button></div>`:''}`;
-    $('#copyPix')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(d.qr_code||'');alert('Código Pix copiado.')}catch{prompt('Copie o código Pix:',d.qr_code||'')}});
-    if(d.checkout_url)await fetch('/api/app/open-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:d.checkout_url})});
-    alert('Pix gerado. Após o pagamento, clique em Atualizar para confirmar a liberação.');
-  }else if(d.checkout_url){await fetch('/api/app/open-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:d.checkout_url})});feed.textContent=`Checkout ${d.provider||selectedPaymentMethod} aberto no navegador. Depois da aprovação, volte ao MarketAI e clique em Atualizar.`;}
-  else feed.textContent='Checkout criado, mas o provedor não retornou um link. Verifique a configuração do gateway.';
-}catch(e){alert(e.message)}}
-$('#billingCountry')?.addEventListener('change',async()=>{await loadPaymentMethods();await loadPlans()});
-$('#activateLicense')?.addEventListener('click',async()=>{try{const r=await fetch('/api/cloud/license',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({license_key:$('#licenseKey').value})});const d=await r.json();if(!r.ok)throw new Error(cloudError(d));alert('Licença ativada.');await loadCloudStatus();}catch(e){alert(e.message)}});
-async function loadDevices(){const box=$('#deviceList');try{const r=await fetch('/api/cloud/devices');const d=await r.json();if(!r.ok)throw new Error(cloudError(d));box.innerHTML=(d.devices||[]).map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${x.active?'ATIVO':'DESATIVADO'} · ${escapeHtml(x.device_uuid)}</small></div>${x.active?`<button class="ghost device-remove" data-id="${x.id}">Remover</button>`:''}</div>`).join('')||'<div class="empty">Nenhum dispositivo.</div>';$$('.device-remove').forEach(b=>b.addEventListener('click',async()=>{await fetch('/api/cloud/devices/'+encodeURIComponent(b.dataset.id),{method:'DELETE'});await loadDevices()}));}catch(e){box.innerHTML='<div class="empty">Não foi possível carregar dispositivos.</div>'}}
-loadCloudStatus();loadPaymentMethods().then(loadPlans);
 
-// Inform the user clearly when the commercial cloud blocks an analysis.
-const _analysisSubmitNote=document.createElement('div');_analysisSubmitNote.className='micro cloud-note';_analysisSubmitNote.textContent='As análises comerciais são processadas no MarketAI Cloud e consomem a cota do seu plano.';form?.querySelector('.wide')?.appendChild(_analysisSubmitNote);
+$('#cloudLogin')?.addEventListener('click',async()=>{
+  try{
+    await doCloudAuth('/api/cloud/login',{email:$('#cloudEmail').value,password:$('#cloudPassword').value});
+    switchView('analyze');
+  }catch(e){alert(e.message)}
+});
+
+$('#cloudRegister')?.addEventListener('click',async()=>{
+  try{
+    await doCloudAuth('/api/cloud/register',{full_name:$('#regName').value,email:$('#regEmail').value,password:$('#regPassword').value});
+    alert('Conta criada! Todos os recursos do MarketAI estão liberados gratuitamente.');
+    switchView('analyze');
+  }catch(e){alert(e.message)}
+});
+
+$('#showRegister')?.addEventListener('click',()=>{
+  $('#loginCard').hidden=true;
+  $('#registerCard').hidden=false;
+  $('#regName')?.focus();
+});
+$('#showLogin')?.addEventListener('click',()=>{
+  $('#registerCard').hidden=true;
+  $('#loginCard').hidden=false;
+  $('#cloudEmail')?.focus();
+});
+
+$('#cloudPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')$('#cloudLogin')?.click()});
+$('#regPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')$('#cloudRegister')?.click()});
+
+$('#cloudLogout')?.addEventListener('click',async()=>{
+  await fetch('/api/cloud/logout',{method:'POST'});
+  cloudAccount=null;
+  await loadCloudStatus();
+});
+$('#refreshAccount')?.addEventListener('click',loadCloudStatus);
+
+async function loadDevices(){
+  const box=$('#deviceList');
+  if(!box)return;
+  try{
+    const r=await fetch('/api/cloud/devices');
+    const d=await r.json();
+    if(!r.ok)throw new Error(cloudError(d));
+    box.innerHTML=(d.devices||[]).map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${x.active?'ATIVO':'DESATIVADO'} · ${escapeHtml(x.device_uuid)}</small></div>${x.active?`<button class="ghost device-remove" data-id="${x.id}">Remover</button>`:''}</div>`).join('')||'<div class="empty">Nenhum dispositivo vinculado.</div>';
+    $$('.device-remove').forEach(b=>b.addEventListener('click',async()=>{await fetch('/api/cloud/devices/'+encodeURIComponent(b.dataset.id),{method:'DELETE'});await loadDevices()}));
+  }catch(e){box.innerHTML='<div class="empty">Não foi possível carregar dispositivos.</div>'}
+}
+
+setAuthScreen(false);
+loadCloudStatus();
+
+// O Cloud mantém cada conta isolada, mas não existe plano pago nem cota mensal.
+const _analysisSubmitNote=document.createElement('div');
+_analysisSubmitNote.className='micro cloud-note';
+_analysisSubmitNote.textContent='MarketAI Community: análises gratuitas e sem cota mensal. Os dados ficam vinculados à sua conta.';
+form?.querySelector('.wide')?.appendChild(_analysisSubmitNote);
 
 
-$('#cancelSubscription')?.addEventListener('click',async()=>{if(!confirm('Cancelar a renovação/assinatura do MarketAI?'))return;try{const r=await fetch('/api/cloud/cancel-subscription',{method:'POST'});const d=await r.json();if(!r.ok)throw new Error(cloudError(d));alert('Assinatura cancelada.');await loadCloudStatus();}catch(e){alert(e.message)}});
 let latestUpdate=null;
 function vtuple(v){return String(v||'0').replace(/^v/i,'').split('.').map(x=>parseInt(x)||0)}
 function newer(a,b){const x=vtuple(a),y=vtuple(b);for(let i=0;i<4;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false}return false}
@@ -465,7 +536,7 @@ async function loadIntelligence(){
     const [r,a]=await Promise.all([intelJson('/api/intelligence/radar'),intelJson('/api/intelligence/alerts')]);
     radar.innerHTML=(r.items||[]).length?(r.items||[]).slice(0,8).map((x,i)=>`<div class="intel-row"><b>#${i+1} ${escapeHtml(x.product_name)}</b><span>${x.score}/100</span><small>${intelMoney(x.median)} · tendência ${Number(x.price_trend_percent||0).toFixed(1)}%</small></div>`).join(''):'<div class="empty">Ainda não há snapshots. Adicione produtos ao Sentinel e faça verificações.</div>';
     const open=(a.items||[]).filter(x=>!x.acknowledged); alerts.innerHTML=open.length?open.slice(0,8).map(x=>`<div class="intel-row alert-${escapeAttr(x.severity)}"><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.message)}</small></div>`).join(''):'<div class="empty">Nenhum alerta pendente.</div>';
-  }catch(e){radar.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`;alerts.innerHTML='<div class="empty">Entre na conta e verifique seu plano.</div>'}
+  }catch(e){radar.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`;alerts.innerHTML='<div class="empty">Entre na sua conta para acessar o Intelligence Core.</div>'}
 }
 $('#intelRefresh')?.addEventListener('click',loadIntelligence);
 $('#askCopilot')?.addEventListener('click',async()=>{const out=$('#copilotAnswer');out.textContent='Pensando com seus dados…';try{const d=await intelJson('/api/intelligence/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:$('#copilotQuestion').value})});out.textContent=d.answer||'Sem resposta.'}catch(e){out.textContent=e.message}});
