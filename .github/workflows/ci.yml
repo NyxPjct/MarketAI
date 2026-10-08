@@ -1,0 +1,60 @@
+name: MarketAI CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketai-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Tests + static validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            cloud/requirements.txt
+            desktop/requirements.txt
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r cloud/requirements.txt -r desktop/requirements.txt
+          python -m pip check
+
+      - name: Cloud tests
+        working-directory: cloud
+        run: python -m pytest -q
+
+      - name: Desktop tests
+        working-directory: desktop
+        env:
+          PYTHONPATH: .
+        run: python -m pytest -q
+
+      - name: Python compile check
+        run: python -m compileall -q cloud/app desktop/backend
+
+      - name: Frontend JavaScript syntax
+        run: node --check desktop/frontend/app.js

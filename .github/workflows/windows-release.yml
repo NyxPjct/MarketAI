@@ -1,0 +1,204 @@
+name: Windows Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloud_url:
+        description: 'URL HTTPS do MarketAI Cloud usada pelo Desktop'
+        required: true
+        type: string
+      create_release:
+        description: 'Criar/atualizar GitHub Release'
+        required: true
+        default: false
+        type: boolean
+      release_tag:
+        description: 'Tag do release manual (ex.: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: marketai-windows-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Build commercial Windows installer
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      MARKETAI_CI: '1'
+      MARKETAI_REQUIRE_CLOUD_URL: '1'
+      PYTHONUTF8: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: desktop/requirements-desktop.txt
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Resolve release configuration
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+            $cloud = '${{ inputs.cloud_url }}'.Trim()
+            $tag = '${{ inputs.release_tag }}'.Trim()
+            $create = '${{ inputs.create_release }}'.ToLowerInvariant()
+          } else {
+            $cloud = '${{ vars.MARKETAI_CLOUD_URL }}'.Trim()
+            $tag = '${{ github.ref_name }}'.Trim()
+            $create = 'true'
+          }
+          if ([string]::IsNullOrWhiteSpace($cloud)) {
+            throw 'MARKETAI_CLOUD_URL ausente. Em releases por tag, configure Settings > Actions > Variables > MARKETAI_CLOUD_URL.'
+          }
+          if (-not $cloud.StartsWith('https://')) {
+            throw 'O build comercial exige MARKETAI_CLOUD_URL com HTTPS.'
+          }
+          if ($tag -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$') {
+            throw "Tag invalida: $tag. Use algo como v1.0.0."
+          }
+          "MARKETAI_CLOUD_URL=$cloud" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CREATE_RELEASE=$create" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Prepare optional code signing certificate
+        shell: pwsh
+        env:
+          SIGN_PFX_BASE64: ${{ secrets.MARKETAI_SIGN_PFX_BASE64 }}
+          SIGN_PASSWORD: ${{ secrets.MARKETAI_SIGN_PASSWORD }}
+        run: |
+          if (-not [string]::IsNullOrWhiteSpace($env:SIGN_PFX_BASE64) -and -not [string]::IsNullOrWhiteSpace($env:SIGN_PASSWORD)) {
+            $pfx = Join-Path $env:RUNNER_TEMP 'marketai-signing.pfx'
+            [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:SIGN_PFX_BASE64))
+            "MARKETAI_SIGN_PFX=$pfx" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "SIGNING_ENABLED=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          } else {
+            "SIGNING_ENABLED=false" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          }
+
+      - name: Build MarketAI installer
+        working-directory: desktop
+        shell: cmd
+        env:
+          MARKETAI_SIGN_PASSWORD: ${{ secrets.MARKETAI_SIGN_PASSWORD }}
+        run: build_installer.bat
+
+      - name: Verify installer and checksum
+        shell: pwsh
+        run: |
+          $installer = 'desktop/dist-installer/MarketAI-Setup-v0.0.exe'
+          $checksum = 'desktop/dist-installer/MarketAI-Setup-v0.0.sha256'
+          if (-not (Test-Path $installer)) { throw 'Installer not generated.' }
+          if (-not (Test-Path $checksum)) { throw 'Checksum file not generated.' }
+          $actual = (Get-FileHash -Algorithm SHA256 $installer).Hash.ToLowerInvariant()
+          $expected = ((Get-Content $checksum -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
+          if ($actual -ne $expected) { throw 'SHA-256 verification failed.' }
+          "INSTALLER_SHA256=$actual" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          if ($env:SIGNING_ENABLED -eq 'true') {
+            $exeSig = Get-AuthenticodeSignature 'desktop/dist/MarketAI.exe'
+            $setupSig = Get-AuthenticodeSignature $installer
+            if ($exeSig.Status -ne 'Valid' -or $setupSig.Status -ne 'Valid') {
+              throw "Code signing verification failed. EXE=$($exeSig.Status) SETUP=$($setupSig.Status)"
+            }
+          }
+
+      - name: Build provenance attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: desktop/dist-installer/MarketAI-Setup-v0.0.exe
+
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MarketAI-Windows-${{ env.RELEASE_TAG }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            desktop/dist-installer/MarketAI-Setup-v0.0.exe
+            desktop/dist-installer/MarketAI-Setup-v0.0.sha256
+            desktop/docs/RELEASE-NOTES.txt
+
+      - name: Create or update GitHub Release
+        if: env.CREATE_RELEASE == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:RELEASE_TAG
+          $installer = 'desktop/dist-installer/MarketAI-Setup-v0.0.exe'
+          $checksum = 'desktop/dist-installer/MarketAI-Setup-v0.0.sha256'
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $installer $checksum --clobber --repo $env:GITHUB_REPOSITORY
+          } else {
+            gh release create $tag $installer $checksum --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "MarketAI $tag — SUPER FINAL" --notes-file 'desktop/docs/RELEASE-NOTES.txt'
+          }
+
+      - name: Publish updater manifest to main
+        if: env.CREATE_RELEASE == 'true'
+        continue-on-error: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:RELEASE_TAG
+          $version = $tag.TrimStart('v','V')
+          $repo = $env:GITHUB_REPOSITORY
+          $download = "https://github.com/$repo/releases/download/$tag/MarketAI-Setup-v0.0.exe"
+          $releaseUrl = "https://github.com/$repo/releases/tag/$tag"
+          $manifest = [ordered]@{
+            available = $true
+            version = $version
+            channel = 'stable'
+            platform = 'windows'
+            download_url = $download
+            sha256 = $env:INSTALLER_SHA256
+            release_url = $releaseUrl
+            published_at = (Get-Date).ToUniversalTime().ToString('o')
+          }
+          $json = ($manifest | ConvertTo-Json -Depth 4) + "`n"
+          $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+          $endpoint = "repos/$repo/contents/cloud/releases/windows-stable.json"
+          $existingSha = $null
+          try {
+            $existing = gh api "$endpoint?ref=main" | ConvertFrom-Json
+            $existingSha = $existing.sha
+          } catch { }
+          $args = @('api','--method','PUT',$endpoint,'-f',"message=chore: publish Windows update manifest $tag",'-f',"content=$b64",'-f','branch=main')
+          if ($existingSha) { $args += @('-f',"sha=$existingSha") }
+          & gh @args
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish updater manifest.' }
+
+      - name: Build summary
+        shell: pwsh
+        run: |
+          Add-Content $env:GITHUB_STEP_SUMMARY '## MarketAI Windows Build'
+          Add-Content $env:GITHUB_STEP_SUMMARY ''
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Installer: **MarketAI-Setup-v0.0.exe**"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Product version: **1.0 SUPER FINAL**"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Release tag: **$env:RELEASE_TAG**"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- SHA-256: ``$env:INSTALLER_SHA256``"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Code signing configured: **$env:SIGNING_ENABLED**"

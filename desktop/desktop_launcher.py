@@ -14,8 +14,8 @@ import uvicorn
 import webview
 
 APP_NAME = "MarketAI"
-APP_VERSION = "0.0"
-MUTEX_NAME = "Local\\MarketAI.Desktop.v0.0"
+APP_VERSION = "1.0"
+MUTEX_NAME = "Local\\MarketAI.Desktop.v1.0"
 
 
 def install_directory() -> Path:

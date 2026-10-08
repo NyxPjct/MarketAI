@@ -1,5 +1,8 @@
 # MarketAI v1.0 SUPER FINAL
 
+![MarketAI CI](https://github.com/NyxPjct/MarketAI/actions/workflows/ci.yml/badge.svg)
+![Windows Build & Release](https://github.com/NyxPjct/MarketAI/actions/workflows/windows-release.yml/badge.svg)
+
 > **Inteligência comercial para e-commerce, pricing, margem, monitoramento e decisão.**
 
 O MarketAI deixou de ser apenas um analisador de preços. A versão **v1.0 SUPER FINAL** reúne análise de mercado, cálculo financeiro, monitoramento contínuo, histórico, score proprietário, alertas, previsão e assistência por IA em uma arquitetura **Desktop + Cloud** preparada para operação comercial.
@@ -305,6 +308,22 @@ Na preparação desta versão foram validados:
 - pricing;
 - sintaxe JavaScript;
 - compilação Python.
+
+## CI/CD e Releases
+
+O repositório possui pipeline de qualidade e distribuição para Windows:
+
+- **MarketAI CI** roda em pushes e Pull Requests para `main`, validando testes Cloud/Desktop, compilação Python e sintaxe do frontend.
+- **Windows Build & Release** gera `MarketAI-Setup-v0.0.exe` em runner Windows, verifica SHA-256 e publica artifact.
+- Tags `v*` podem gerar **GitHub Release automática** com instalador e checksum.
+- O build comercial exige uma **URL HTTPS real do MarketAI Cloud**; localhost é bloqueado em modo de release.
+- O pipeline suporta **Code Signing opcional** com certificado PFX armazenado apenas em GitHub Actions Secrets.
+- Cada instalador recebe **build provenance attestation**.
+- Após um release, o pipeline tenta publicar o manifesto `cloud/releases/windows-stable.json` usado pelo atualizador do Desktop.
+
+Para releases por tag, configure a variável do repositório `MARKETAI_CLOUD_URL`. Para assinatura digital, configure os secrets `MARKETAI_SIGN_PFX_BASE64` e `MARKETAI_SIGN_PASSWORD`.
+
+Consulte [`RELEASE-PIPELINE.md`](RELEASE-PIPELINE.md).
 
 ## Status
 

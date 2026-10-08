@@ -9,6 +9,11 @@ echo =======================================================
 echo.
 
 if "%MARKETAI_CLOUD_URL%"=="" (
+  if "%MARKETAI_REQUIRE_CLOUD_URL%"=="1" (
+    echo [ERRO] MARKETAI_CLOUD_URL e obrigatoria neste build.
+    echo Defina uma URL HTTPS de producao antes de gerar o instalador comercial.
+    goto :fail
+  )
   echo [AVISO] MARKETAI_CLOUD_URL nao definida. Este build usara o Cloud local para desenvolvimento.
   > backend\cloud_build.py echo CLOUD_URL = "http://127.0.0.1:9000"
 ) else (
@@ -16,17 +21,21 @@ if "%MARKETAI_CLOUD_URL%"=="" (
   > backend\cloud_build.py echo CLOUD_URL = "%MARKETAI_CLOUD_URL%"
 )
 
+set "PYTHON_CMD=py -3"
 where py >nul 2>nul
 if errorlevel 1 (
-  echo [ERRO] Python nao encontrado.
-  echo Instale Python 3.11 ou 3.12 e marque "Add Python to PATH".
-  pause
-  exit /b 1
+  where python >nul 2>nul
+  if errorlevel 1 (
+    echo [ERRO] Python nao encontrado.
+    echo Instale Python 3.11 ou 3.12 e marque "Add Python to PATH".
+    goto :fail
+  )
+  set "PYTHON_CMD=python"
 )
 
 if not exist ".venv-desktop\Scripts\python.exe" (
   echo [1/9] Criando ambiente de build...
-  py -3 -m venv .venv-desktop
+  %PYTHON_CMD% -m venv .venv-desktop
   if errorlevel 1 goto :fail
 )
 
@@ -93,7 +102,7 @@ if not defined ISCC (
   echo.
   echo [ACAO NECESSARIA] Instale o Inno Setup 6 e rode este arquivo novamente.
   echo https://jrsoftware.org/isdl.php
-  pause
+  if not "%MARKETAI_CI%"=="1" pause
   exit /b 2
 )
 
@@ -130,12 +139,14 @@ if "%WILL_SIGN%"=="1" echo   Assinatura digital: APLICADA
 if not "%WILL_SIGN%"=="1" echo   Assinatura digital: NAO APLICADA
 
 echo =======================================================
-explorer "%CD%\dist-installer"
-pause
+if not "%MARKETAI_CI%"=="1" (
+  explorer "%CD%\dist-installer"
+  pause
+)
 exit /b 0
 
 :fail
 echo.
 echo [ERRO] O build comercial nao foi concluido. Veja as mensagens acima.
-pause
+if not "%MARKETAI_CI%"=="1" pause
 exit /b 1
