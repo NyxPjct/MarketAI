@@ -1,27 +1,27 @@
-MARKETAI 1.0.2 — COMMUNITY OPEN SOURCE
+MARKETAI 1.0.3 — LOGIN FIX + MONOCHROME MARKET THEME
 
-Mudanças principais:
-- MarketAI agora é 100% gratuito para todas as contas
-- removidos paywall, trial e cota mensal paga
-- todos os módulos do Intelligence Core liberados
-- login/criação de conta virou a tela principal do aplicativo
-- cada usuário mantém seus próprios dados, histórico e monitoramentos
-- checkout e ativação de licença desabilitados na edição Community
-- licença open source Apache 2.0 adicionada ao repositório
-- instaladores agora usam o número real da versão
-- novo padrão: MarketAI-Setup-v1.0.2.exe
-- documentação e ambiente de produção atualizados para Community/self-hosting
+Correções:
+- login corrigido: autenticação bem-sucedida agora fecha a tela de login de forma determinística
+- corrigido conflito entre display:grid e atributo hidden na tela de autenticação
+- botão Entrar agora mostra estado "ENTRANDO…" e bloqueia cliques duplicados
+- mensagens de erro de login/cadastro aparecem dentro da interface, sem alert nativo
 
-Também inclui:
-- correção visual do Copilot
-- Market Score 0–100
-- Data Quality Score A–E
-- Profit Engine
-- Sentinel
-- Radar
-- Forecast
-- Autopilot
-- Copilot contextual
-- alertas persistentes
-- Desktop + Cloud + PostgreSQL + Sentinel Worker
-- MarketAI nunca fabrica mediana, tendência, venda ou estoque quando faltam dados reais
+Criação de conta:
+- confirmação agora aparece em modal próprio do MarketAI
+- modal informa que a conta foi criada e que os recursos Community estão liberados
+- botão "ENTRAR NO MARKETAI" leva ao painel após o cadastro
+
+Novo visual:
+- tema verde removido
+- nova identidade preto, branco e tons de cinza
+- estilo inspirado em terminal/painel de mercado
+- cards, inputs, tabelas, sidebar, badges, Intelligence Core e tela de login redesenhados
+- tela de login com grid discreto e contraste monocromático
+
+Base Community preservada:
+- 100% gratuito e open source
+- sem paywall, assinatura ou cota mensal paga
+- contas individuais
+- histórico local separado por conta
+- Radar, Sentinel, Forecast, Profit Engine, Copilot e Autopilot liberados
+- MarketAI não fabrica dados de mercado quando faltam evidências reais
