@@ -1,5 +1,13 @@
-MARKETAI 1.0 — SUPER FINAL
+MARKETAI 1.0.1 — SUPER FINAL
 
+Correções desta versão:
+- Copilot agora usa o mesmo padrão visual dark/green dos demais campos do MarketAI
+- textarea alinhado à identidade visual do sistema
+- foco, borda, placeholder e tipografia padronizados
+- botão PERGUNTAR com espaçamento e responsividade corrigidos
+- área de resposta do Copilot alinhada aos cards do Intelligence Core
+
+Base 1.0 preservada:
 - Intelligence Core comercial
 - Market Score 0–100
 - Data Quality Score A–E
@@ -16,4 +24,4 @@ MARKETAI 1.0 — SUPER FINAL
 - Desktop + Cloud + Admin Console
 - MarketAI nunca fabrica mediana, tendência, venda ou estoque quando faltam dados reais
 
-O instalador comercial mantém o nome MarketAI-Setup-v0.0.exe conforme o nome de distribuição solicitado, mas o produto interno é MarketAI 1.0 SUPER FINAL.
+O instalador comercial mantém o nome MarketAI-Setup-v0.0.exe conforme o nome de distribuição solicitado, mas o produto interno é MarketAI 1.0.1 SUPER FINAL.
