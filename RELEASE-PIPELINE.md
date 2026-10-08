@@ -6,16 +6,12 @@ Este documento descreve o pipeline comercial de build e release do MarketAI.
 
 - Push e Pull Request para `main`: executam testes Cloud/Desktop, compilação Python e validação do JavaScript.
 - Execução manual de **Windows Build & Release**: gera o instalador Windows usando a URL HTTPS informada.
-- Push de uma tag `v*` (por exemplo `v1.0.0`): gera o instalador, SHA-256, provenance attestation e GitHub Release.
+- Alteração em `.release/windows.json`: gera o instalador, SHA-256, provenance attestation e GitHub Release.
 - Depois de um release, o workflow tenta atualizar `cloud/releases/windows-stable.json` para alimentar o atualizador do Desktop.
 
-## Configuração obrigatória para releases por tag
+## Configuração do release automático
 
-Crie a variável do repositório:
-
-```text
-MARKETAI_CLOUD_URL=https://api.seudominio.com
-```
+Edite `.release/windows.json` com uma URL HTTPS real, a nova tag e `create_release: true`.
 
 O pipeline bloqueia builds comerciais que usem HTTP ou localhost.
 
@@ -36,11 +32,11 @@ No GitHub, abra **Actions → Windows Build & Release → Run workflow**. Inform
 
 - `cloud_url`: URL HTTPS real do MarketAI Cloud;
 - `create_release`: `false` para apenas gerar um artifact ou `true` para criar release;
-- `release_tag`: por exemplo `v1.0.0`.
+- `release_tag`: por exemplo `v1.0.1`.
 
-## Release por tag
+## Release automático pelo repositório
 
-Quando a variável `MARKETAI_CLOUD_URL` estiver configurada, criar/pushar uma tag `v1.0.0` dispara o release completo.
+Atualize `.release/windows.json` (por exemplo, de `v1.0.0` para `v1.0.1`) e faça push no `main`. O workflow gera o instalador e cria a tag/release correspondente.
 
 ## Artefatos
 
