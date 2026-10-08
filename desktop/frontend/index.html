@@ -14,9 +14,9 @@
         <div class="brand-mark auth-logo">M</div>
         <div>
           <p class="eyebrow">MARKETAI COMMUNITY</p>
-          <h1>Inteligência comercial gratuita para todo mundo.</h1>
-          <p>Crie sua conta e mantenha suas análises, monitoramentos e histórico separados com segurança.</p>
-          <div class="auth-badges"><span>100% GRATUITO</span><span>OPEN SOURCE</span><span>SEM PAYWALL</span></div>
+          <h1>Inteligência de mercado. Sem ruído.</h1>
+          <p>Preço, margem, concorrência e monitoramento em uma interface direta para quem trabalha com mercado todos os dias.</p>
+          <div class="auth-badges"><span>100% GRATUITO</span><span>OPEN SOURCE</span><span>DADOS REAIS</span></div>
         </div>
       </div>
       <div class="auth-panel">
@@ -25,6 +25,7 @@
           <label>E-mail<input id="cloudEmail" type="email" autocomplete="email" placeholder="voce@empresa.com"></label>
           <label>Senha<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="••••••••"></label>
           <div class="settings-actions"><button id="cloudLogin" class="primary" type="button"><span>ENTRAR</span><b>→</b></button><button id="showRegister" class="ghost" type="button">Criar conta grátis</button></div>
+          <p id="loginFeedback" class="auth-feedback" hidden></p>
           <p class="micro cloud-note">Gratuito, open source e sem assinatura.</p>
         </div>
         <div class="card settings-card auth-card" id="registerCard" hidden>
@@ -33,6 +34,7 @@
           <label>E-mail<input id="regEmail" type="email" autocomplete="email" placeholder="voce@empresa.com"></label>
           <label>Senha<input id="regPassword" type="password" autocomplete="new-password" placeholder="mínimo 8 caracteres"></label>
           <div class="settings-actions"><button id="cloudRegister" class="primary" type="button"><span>CRIAR CONTA</span><b>→</b></button><button id="showLogin" class="ghost" type="button">Já tenho conta</button></div>
+          <p id="registerFeedback" class="auth-feedback" hidden></p>
           <p class="micro cloud-note">Ao criar a conta, seus dados ficam vinculados somente ao seu usuário.</p>
         </div>
       </div>
@@ -58,7 +60,7 @@
 
       <div class="sidebar-foot">
         <div class="status-dot-wrap"><i class="status-dot"></i><span id="apiStatus">verificando API…</span></div>
-        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.0.2</small>
+        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.0.3</small>
       </div>
     </aside>
 
@@ -316,8 +318,8 @@
 
       <section id="view-about" class="view">
         <div class="about-grid">
-          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">EDIÇÃO COMERCIAL</p><h2>MarketAI <span id="aboutVersion">v0.0</span></h2><p class="muted">Inteligência comercial para analisar preço, margem e qualidade de mercado antes de comprar estoque.</p></div></div>
-          <div class="card"><h3>Compromissos da versão comercial</h3><ul class="clean-list"><li>Não fabrica preços de mercado quando as fontes não respondem.</li><li>Bloqueia recomendação com amostra insuficiente ou variante ambígua.</li><li>Mostra os anúncios usados e descartados para auditoria.</li><li>Não envia telemetria própria do MarketAI nesta edição.</li><li>Tokens de sessão são protegidos no Windows e as chaves dos marketplaces ficam apenas no MarketAI Cloud.</li></ul></div>
+          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.0.3</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
+          <div class="card"><h3>Compromissos do MarketAI</h3><ul class="clean-list"><li>Não fabrica preços de mercado quando as fontes não respondem.</li><li>Bloqueia recomendação com amostra insuficiente ou variante ambígua.</li><li>Mostra os anúncios usados e descartados para auditoria.</li><li>Não coloca os recursos principais atrás de paywall.</li><li>Tokens de sessão são protegidos no Windows e as chaves dos marketplaces ficam apenas no MarketAI Cloud.</li></ul></div>
           <div class="card"><h3>Limites importantes</h3><p class="muted">Preços mudam, APIs podem limitar resultados e compatibilidade textual não comprova autenticidade física de um item. NCM, impostos, desembaraço e decisões contábeis devem ser validados com profissionais responsáveis.</p></div>
           <div class="card"><h3>Documentos</h3><p class="muted">Os Termos de Uso, Política de Privacidade e Avisos de Terceiros acompanham o instalador e a pasta do aplicativo.</p><div class="legal-links"><span>Termos de Uso</span><span>Privacidade</span><span>Terceiros</span></div></div>
         </div>
@@ -325,14 +327,14 @@
     </main>
   </div>
 
-  <div id="onboarding" class="onboarding" hidden>
-    <div class="onboarding-card">
-      <div class="onboarding-mark">M</div>
-      <p class="eyebrow">BEM-VINDO AO MARKETAI</p>
-      <h2>Prepare sua análise de mercado.</h2>
-      <p class="muted">A versão comercial por assinatura não usa preços simulados. Entre ou crie sua conta para acessar o MarketAI Cloud e as fontes reais de mercado.</p>
-      <div class="onboarding-grid"><div><strong>Conta</strong><span>7 dias de teste</span></div><div><strong>Cloud</strong><span>APIs protegidas no servidor</span></div><div><strong>Licença</strong><span>por assinatura ou chave</span></div></div>
-      <div class="onboarding-actions"><button id="onboardingConfigure" class="primary"><span>ENTRAR / CRIAR CONTA</span><b>→</b></button><button id="onboardingLater" class="ghost">Ver o aplicativo</button></div>
+  <div id="appModal" class="app-modal" hidden aria-hidden="true">
+    <div class="app-modal-backdrop" data-modal-close></div>
+    <div class="app-modal-card" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+      <div class="modal-symbol" id="appModalSymbol">✓</div>
+      <p class="eyebrow" id="appModalEyebrow">MARKETAI</p>
+      <h2 id="appModalTitle">Tudo certo.</h2>
+      <p id="appModalMessage" class="muted">Operação concluída.</p>
+      <button id="appModalAction" class="primary modal-action" type="button"><span>CONTINUAR</span><b>→</b></button>
     </div>
   </div>
 
