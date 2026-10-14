@@ -35,8 +35,10 @@ def test_local_history_is_scoped_by_account():
 def test_versioned_installer_configuration():
     version = (ROOT / "backend" / "version.py").read_text(encoding="utf-8")
     iss = (ROOT / "installer" / "MarketAI.iss").read_text(encoding="utf-8")
-    assert 'APP_VERSION = "1.0.5"' in version
-    assert '#define MyAppVersion "1.0.5"' in iss
+    import ast
+    app_version = next(ast.literal_eval(node.value) for node in ast.parse(version).body
+                       if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == 'APP_VERSION' for target in node.targets))
+    assert f'#define MyAppVersion "{app_version}"' in iss
     assert 'OutputBaseFilename=MarketAI-Setup-v{#MyAppVersion}' in iss
 
 

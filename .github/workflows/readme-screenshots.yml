@@ -68,7 +68,7 @@ jobs:
             echo "Screenshots already current."
             exit 0
           fi
-          git commit -m "docs: refresh MarketAI v1.0.5 English screenshots"
+          git commit -m "docs: refresh MarketAI English screenshots"
           for attempt in 1 2 3 4 5; do
             git pull --rebase origin main
             if git push; then

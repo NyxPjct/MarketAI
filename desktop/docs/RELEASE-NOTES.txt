@@ -1,23 +1,35 @@
-MARKETAI 1.0.5 — MULTILINGUAL COMMUNITY RELEASE
+MARKETAI 1.1.0 — ACCOUNT SYNC AND EVIDENCE RELEASE
 
-Main changes:
-- English is the default interface language
-- full in-app language switching
-- supported languages: English, Português (Brasil), Deutsch, Español and Français
-- language selector on the login screen and inside Settings
-- selected language is persisted on the device
-- navigation, forms, account screens, Intelligence Core and dynamic market messages follow the selected language
-- date and currency formatting follow the selected locale
-- authentication errors and account-created confirmation are localized
-- market quality, listing counts, rejection reasons and reliability messages are localized
-- README fully written in English
-- README screenshots generated with the app in English
-- screenshot automation validates all five supported languages before publishing images
+What changed:
+- Forecast projects 7, 30 and 60 days using the actual collection timestamps.
+- Missing/invalid observations are excluded without changing their date alignment.
+- Limited history is labeled preliminary; projections are not guaranteed prices.
+- Recommendation evidence highlights collection dates, listing counts, cost floors,
+  margin assumptions, incompatible listings and missing market evidence.
+- A guided flow connects product analysis, margin comparison and monitoring.
+- Analyses are saved in account-scoped Cloud history and can be reopened across devices.
+- Legacy local history is imported once as labeled summaries, not verified evidence.
+- Monitored products use the Cloud Sentinel list, with manual refresh, local caches
+  and explicit feedback when saving or synchronization fails.
+- Copilot addresses margin, costs, alerts and forecasts using saved account context.
+- Users can select a monitored product for Copilot and Forecast.
+- Deterministic Copilot fallback works without an AI provider in all five languages.
+- Signing out clears the analysis and account-specific content displayed by the UI.
+- README, development instructions and privacy notice describe the new workflow.
 
-Community foundation preserved:
-- 100% free and open source
-- no paid plans or monthly MarketAI quota
-- account-isolated data
-- monochrome black-and-white market theme
-- Radar, Sentinel, Forecast, Profit Engine, Copilot and Autopilot
-- MarketAI does not fabricate market prices, stock, sales or trends when real evidence is insufficient
+Validation:
+- 33 Cloud tests and 17 Desktop tests passed.
+- Browser regression checks two devices, five languages, migration, evidence,
+  Forecast, Copilot, offline cache behavior, deletion and logout isolation.
+- Browser market data is synthetic test data, not a live marketplace validation.
+
+Deployment:
+- Update Cloud and Desktop together to version 1.1.0.
+- Cloud startup creates the additional analysis_history table.
+- Sentinel collection requires its worker to remain running.
+- External providers still require the operator's own credentials and quotas.
+
+Community foundation:
+- Free and open source; no paid plans or monthly MarketAI quota.
+- English, Português (Brasil), Deutsch, Español and Français.
+- MarketAI never fabricates market prices when evidence is insufficient.

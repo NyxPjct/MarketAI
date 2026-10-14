@@ -106,21 +106,7 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
-## Screenshots — MarketAI v1.0.5
-
-The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
-
-Demo values are used only to present the UI. They are not presented as real market evidence.
-
-### Login / account creation
-
-![MarketAI v1.0.5 — Login](docs/screenshots/01-login-community-v1.0.5.png)
-
-### Dashboard / New analysis
-
-![MarketAI v1.0.5 — Dashboard](docs/screenshots/02-dashboard-v1.0.5.png)
-
-### Development improvements (unreleased)
+## What is new in v1.1.0
 
 - Guided analysis flow: analyze the product, review evidence, compare margin, then monitor.
 - Recommendation evidence highlights collection dates, listing counts, cost floors and blocked recommendations.
@@ -129,25 +115,40 @@ Demo values are used only to present the UI. They are not presented as real mark
 - Monitored products use the Sentinel list on the Cloud, with device-local caches and explicit sync errors. Manual refresh retrieves changes from other devices. Clearing history or stopping monitoring applies to the account across devices.
 - Copilot can focus on a monitored product or a saved analysis. Without an AI provider, it answers specific questions about margin, costs, alerts and forecasts using saved account data. Unsupported questions receive an explicit explanation.
 
-The new `analysis_history` table is created by the Cloud's existing startup initialization. Existing tables and data are preserved. Deploy the Cloud and Desktop changes together; older Clouds do not expose the new history endpoints. Windows installer and live third-party integrations require separate release validation.
+The new `analysis_history` table is created by the Cloud's existing startup initialization. Existing tables and data are preserved. Deploy the Cloud and Desktop changes together; older Clouds do not expose the new history endpoints. Live third-party integrations require the operator’s credentials and independent validation.
 
-## Intelligence Core
 
-![MarketAI v1.0.5 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.0.5.png)
+## Screenshots — MarketAI v1.1.0
+
+The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
+
+Demo values are used only to present the UI. They are not presented as real market evidence.
+
+### Login / account creation
+
+![MarketAI v1.1.0 — Login](docs/screenshots/01-login-community-v1.1.0.png)
+
+### Dashboard / New analysis
+
+![MarketAI v1.1.0 — Dashboard](docs/screenshots/02-dashboard-v1.1.0.png)
+
+### Intelligence Core
+
+![MarketAI v1.1.0 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.1.0.png)
 
 ### My account
 
-![MarketAI v1.0.5 — My account](docs/screenshots/04-my-account-v1.0.5.png)
+![MarketAI v1.1.0 — My account](docs/screenshots/04-my-account-v1.1.0.png)
 
 ### Settings
 
 The Settings screen includes the interface language selector.
 
-![MarketAI v1.0.5 — Settings](docs/screenshots/05-settings-v1.0.5.png)
+![MarketAI v1.1.0 — Settings](docs/screenshots/05-settings-v1.1.0.png)
 
 ### Account-created confirmation
 
-![MarketAI v1.0.5 — Account created](docs/screenshots/06-account-created-modal-v1.0.5.png)
+![MarketAI v1.1.0 — Account created](docs/screenshots/06-account-created-modal-v1.1.0.png)
 
 ## Intelligence Core
 
