@@ -1,5 +1,5 @@
 const $ = (sel) => document.querySelector(sel);
-const $ = (sel) => [...document.querySelectorAll(sel)];
+const $$ = (sel) => [...document.querySelectorAll(sel)];
 const appLocale = () => window.MarketI18n?.locale?.() || 'en-US';
 const tr = (value) => window.MarketI18n?.t?.(value) || value;
 const fmtBRL = (n) => n == null || Number.isNaN(Number(n)) ? '—' : new Intl.NumberFormat(appLocale(),{style:'currency',currency:'BRL'}).format(Number(n));
