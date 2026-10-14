@@ -5,7 +5,7 @@ BASE_URL = "http://127.0.0.1:8000"
 OUT = Path("docs/screenshots")
 OUT.mkdir(parents=True, exist_ok=True)
 
-VERSION = "v1.0.4"
+VERSION = "v1.0.5"
 
 
 def set_demo_account(page):
@@ -26,7 +26,7 @@ def set_demo_account(page):
         accountQuota: 'UNLIMITED',
         accountStatus: 'ACTIVE',
         apiStatus: 'Community · ONLINE',
-        appVersion: 'MarketAI v1.0.4'
+        appVersion: 'MarketAI v1.0.5'
       };
       for (const [id, value] of Object.entries(values)) {
         const el = document.getElementById(id);
@@ -130,7 +130,7 @@ with sync_playwright() as p:
     page.locator("#cloudEmail").fill("user@example.com")
     page.locator("#cloudPassword").fill("MarketAI123")
     page.wait_for_timeout(180)
-    shot(page, "01-login-community-v1.0.4.png")
+    shot(page, "01-login-community-v1.0.5.png")
     page.close()
 
     # Dashboard / New analysis
@@ -138,7 +138,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "analyze")
-    shot(page, "02-dashboard-v1.0.4.png")
+    shot(page, "02-dashboard-v1.0.5.png")
     page.close()
 
     # Intelligence Core
@@ -146,7 +146,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "intelligence")
-    shot(page, "03-intelligence-core-v1.0.4.png")
+    shot(page, "03-intelligence-core-v1.0.5.png")
     page.close()
 
     # My account
@@ -156,7 +156,7 @@ with sync_playwright() as p:
     open_view(page, "account")
     set_demo_account(page)
     page.wait_for_timeout(150)
-    shot(page, "04-my-account-v1.0.4.png")
+    shot(page, "04-my-account-v1.0.5.png")
     page.close()
 
     # Settings
@@ -164,7 +164,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "settings")
-    shot(page, "05-settings-v1.0.4.png")
+    shot(page, "05-settings-v1.0.5.png")
     page.close()
 
     # Account-created modal
@@ -185,12 +185,12 @@ with sync_playwright() as p:
     }
     """)
     page.wait_for_timeout(180)
-    shot(page, "06-account-created-modal-v1.0.4.png")
+    shot(page, "06-account-created-modal-v1.0.5.png")
     page.close()
 
     context.close()
     browser.close()
 
-shots = sorted(OUT.glob("*v1.0.4.png"))
-assert len(shots) == 6, f"Expected 6 v1.0.4 screenshots, got {len(shots)}"
+shots = sorted(OUT.glob("*v1.0.5.png"))
+assert len(shots) == 6, f"Expected 6 v1.0.5 screenshots, got {len(shots)}"
 print("English README screenshots generated:", len(shots))
