@@ -14,7 +14,7 @@ import uvicorn
 import webview
 
 APP_NAME = "MarketAI"
-APP_VERSION = "1.0.4"
+APP_VERSION = "1.0.5"
 MUTEX_NAME = "Local\\MarketAI.Desktop.v1.0"
 
 
