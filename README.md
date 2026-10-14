@@ -3,201 +3,283 @@
 ![MarketAI CI](https://github.com/NyxPjct/MarketAI/actions/workflows/ci.yml/badge.svg)
 ![Windows Build & Release](https://github.com/NyxPjct/MarketAI/actions/workflows/windows-release.yml/badge.svg)
 
-> **Inteligência comercial gratuita e open source para quem compra, vende, pesquisa e trabalha com produtos.**
+> **Free and open-source market intelligence for pricing, margins, competition, monitoring and better product decisions.**
 
-O **MarketAI Community** é um projeto gratuito e de código aberto para análise de mercado, pricing, margem, monitoramento e apoio à decisão. Cada pessoa usa sua própria conta, com dados, histórico e produtos monitorados separados.
+**MarketAI Community** is a free and open-source market intelligence platform designed for sellers, buyers, small businesses, analysts, students and teams that need better product decisions without a paywall.
 
-**Não existem planos pagos, assinatura, trial, cota mensal de análises ou recursos Premium.** Todos os módulos do MarketAI são liberados para contas Community.
+Each person uses an individual account, with separate analyses, monitored products, history, snapshots and alerts.
 
-> **Regra de ouro:** MarketAI não fabrica preço, estoque, vendas ou tendências. Radar, Forecast e Copilot usam os dados realmente coletados pela conta. Quando a evidência não é suficiente, o sistema informa isso em vez de inventar uma resposta.
+**No paid plans. No trial limits. No monthly analysis quota. No Premium tier.**
 
-## Download para Windows
+> **Core rule:** MarketAI does not fabricate market prices, stock, sales or trends. If the available evidence is not strong enough, the app says so instead of inventing an answer.
 
-A versão atual é **v1.0.3** e os instaladores seguem o número da versão:
+## Download for Windows
 
-```text
-MarketAI-Setup-v1.0.3.exe
-```
-
-Download direto da versão atual:
-
-- [MarketAI-Setup-v1.0.3.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.3/MarketAI-Setup-v1.0.3.exe)
-- [SHA-256](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.3/MarketAI-Setup-v1.0.3.sha256)
-- Release: [v1.0.3](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.3)
-
-SHA-256:
+Current version: **v1.0.4**
 
 ```text
-e76e9ad5167c1f6c2b803b7d86592ea98e570ee8b8e876fc97911691a835d3d7
+MarketAI-Setup-v1.0.4.exe
 ```
 
-Todas as versões ficam em:
+Release downloads are available at:
 
 https://github.com/NyxPjct/MarketAI/releases
 
-## Login primeiro
+## Languages
 
-Ao abrir o MarketAI, a primeira tela é **Entrar / Criar conta**.
+**English is the default language.**
 
-A conta serve para separar análises, histórico, produtos monitorados, snapshots, alertas, configurações e o contexto usado pelo Intelligence Core.
+The entire Desktop interface can be switched instantly between:
 
-Depois do login, o usuário entra no painel principal.
+- English
+- Português (Brasil)
+- Deutsch
+- Español
+- Français
 
-## 100% gratuito
+The selected language is saved on the device and reused the next time MarketAI starts.
 
-A edição Community libera análise sem cota mensal paga, MarketAI Intelligence Core, Market Score, Data Quality Score, Profit Engine, Sentinel, Radar, Forecast, Autopilot, Copilot, alertas, histórico e múltiplos dispositivos da mesma conta.
+The language switch is available on the login screen and inside **Settings**.
 
-Não existe checkout ativo na edição Community. As rotas históricas de cobrança/licença permanecem apenas por compatibilidade de código e ficam desabilitadas na experiência Community.
+Language changes also update interface labels, forms, account screens, Intelligence Core messages, dynamic UI states, date formatting and currency formatting.
 
-## Open Source
+## Login first
 
-O MarketAI é distribuído sob a **Apache License 2.0**.
+MarketAI starts on the **Sign in / Create account** screen.
 
-Isso permite estudar, usar, modificar e distribuir o software, inclusive em ambientes profissionais, respeitando os termos da licença.
+Accounts are used to keep each user's data separated, including:
 
-Arquivos importantes:
+- analyses;
+- history;
+- monitored products;
+- snapshots;
+- alerts;
+- devices;
+- Intelligence Core context.
+
+After authentication, the user enters the main workspace.
+
+## 100% free
+
+MarketAI Community unlocks:
+
+- unlimited product analyses inside MarketAI;
+- MarketAI Intelligence Core;
+- Market Score 0–100;
+- Data Quality Score A–E;
+- Profit Engine;
+- Sentinel;
+- Radar;
+- Forecast;
+- Autopilot;
+- Copilot;
+- alerts;
+- local history;
+- multiple devices per account.
+
+There is no active checkout in the Community edition.
+
+Some legacy billing code remains in the repository for historical compatibility, but it does not control access to Community features.
+
+## Open source
+
+MarketAI is distributed under the **Apache License 2.0**.
+
+You can study, use, modify and redistribute the software according to the license terms.
+
+Important files:
 
 - [LICENSE](LICENSE)
 - [NOTICE](NOTICE)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
-## Screenshots — MarketAI v1.0.3
+## Screenshots — MarketAI v1.0.4
 
-As capturas abaixo são geradas automaticamente a partir da interface atual do Desktop em **1600×900**, usando dados de demonstração apenas para preencher a apresentação visual — nenhum preço de mercado fictício é tratado como dado real.
+The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
 
-### Login / criação de conta
+Demo values are used only to present the UI. They are not presented as real market evidence.
 
-A autenticação é a primeira tela do aplicativo. O visual atual usa a identidade monocromática do MarketAI Community.
+### Login / account creation
 
-![MarketAI v1.0.3 — Login Community](docs/screenshots/01-login-community-v1.0.3.png)
+![MarketAI v1.0.4 — Login](docs/screenshots/01-login-community-v1.0.4.png)
 
-### Dashboard / Nova análise
+### Dashboard / New analysis
 
-Tela principal para identificação do produto, variante, país, custos e início da análise de mercado.
-
-![MarketAI v1.0.3 — Dashboard](docs/screenshots/02-dashboard-v1.0.3.png)
+![MarketAI v1.0.4 — Dashboard](docs/screenshots/02-dashboard-v1.0.4.png)
 
 ### Intelligence Core
 
-Radar, Sentinel, Copilot e Profit Engine reunidos no centro de comando comercial.
+![MarketAI v1.0.4 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.0.4.png)
 
-![MarketAI v1.0.3 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.0.3.png)
+### My account
 
-### Minha conta
+![MarketAI v1.0.4 — My account](docs/screenshots/04-my-account-v1.0.4.png)
 
-Acesso Community gratuito, dados por usuário e gerenciamento de dispositivos vinculados.
+### Settings
 
-![MarketAI v1.0.3 — Minha conta](docs/screenshots/04-minha-conta-v1.0.3.png)
+The Settings screen includes the interface language selector.
 
-### Configurações
+![MarketAI v1.0.4 — Settings](docs/screenshots/05-settings-v1.0.4.png)
 
-Preferências locais, backup, privacidade e status da conexão com o MarketAI Cloud.
+### Account-created confirmation
 
-![MarketAI v1.0.3 — Configurações](docs/screenshots/05-configuracoes-v1.0.3.png)
-
-### Confirmação de conta criada
-
-O cadastro usa um modal nativo do próprio design system do MarketAI, sem alertas padrão do navegador/Windows.
-
-![MarketAI v1.0.3 — Conta criada](docs/screenshots/06-conta-criada-modal-v1.0.3.png)
+![MarketAI v1.0.4 — Account created](docs/screenshots/06-account-created-modal-v1.0.4.png)
 
 ## Intelligence Core
 
-**Market Score 0–100** considera qualidade da amostra, margem, folga de preço e contexto de mercado.
+### Market Score
 
-**Data Quality Score A–E** mostra o quanto a análise está sustentada por dados compatíveis.
+A 0–100 score that combines data quality, expected margin, price headroom and market depth.
 
-**Profit Engine** calcula lucro líquido, margem líquida, ROI e break-even.
+### Data Quality Score
 
-**Sentinel** mantém produtos monitorados por usuário e registra snapshots reais mesmo com o Desktop fechado quando o worker está ativo.
+An A–E quality grade that shows how strongly the analysis is supported by compatible market evidence.
 
-**Radar** ordena oportunidades a partir dos dados reais armazenados pelo Sentinel.
+### Profit Engine
 
-**Forecast** projeta comportamento com base no histórico coletado. Sem histórico suficiente, não gera tendência fictícia.
+Calculates:
 
-**Autopilot** calcula preços sugeridos respeitando estratégia e piso de margem.
+```text
+Selling price
+- unit cost
+- fixed cost per unit
+- marketplace fee
+- taxes
+- advertising
+- payment fee
+- estimated losses
+= net profit
+```
 
-**Copilot** responde usando o contexto real da conta. Quando IA externa não está configurada, pode operar em modo determinístico sem inventar fatos.
+It also reports net margin, ROI and break-even price.
 
-## Análise de produto e mercado
+### Sentinel
 
-- identificação por nome, variante e imagem;
-- GTIN/EAN/UPC opcional;
-- comparação por marca, modelo e atributos;
-- concentração, volume, capacidade e potência;
-- rejeição de kits, amostras, decants, testers, réplicas e variantes incompatíveis quando aplicável;
+Tracks monitored products and stores real market snapshots.
+
+When the worker is running, monitoring can continue even while the Desktop app is closed.
+
+### Radar
+
+Ranks opportunities from real snapshots collected by Sentinel.
+
+### Forecast
+
+Builds projections from historical snapshots.
+
+If there is not enough history, MarketAI does not create a fake trend.
+
+### Autopilot
+
+Suggests prices while respecting strategy and minimum margin constraints.
+
+### Copilot
+
+Answers questions using the real context available to the user's account.
+
+When an external AI provider is not configured, MarketAI can fall back to deterministic logic instead of inventing facts.
+
+## Product and market analysis
+
+MarketAI supports:
+
+- product name and variant matching;
+- image-assisted identification;
+- optional GTIN / EAN / UPC;
+- brand and model comparison;
+- perfume concentration and volume;
+- storage capacity;
+- power / wattage;
+- kit, sample, decant, tester and replica rejection;
 - Match Score;
-- separação de compatíveis, descartados e outliers;
-- bloqueio de recomendação quando a amostra é insuficiente ou ambígua;
-- conversão cambial;
-- custo real;
-- estratégias de preço;
-- simulador de margem;
-- histórico e exportações.
+- compatible vs discarded listing separation;
+- outlier handling;
+- ambiguous-variant blocking;
+- insufficient-sample blocking;
+- currency conversion;
+- landed unit cost;
+- pricing strategies;
+- margin simulation;
+- local history;
+- CSV and PDF-oriented exports.
 
-## Fontes externas
+## External data sources
 
-A base possui suporte para integrações como Mercado Livre/Mercado Libre, eBay, Google Shopping/SerpApi e recursos de IA.
+The project contains support for integrations such as:
 
-O **MarketAI é gratuito**, mas serviços externos podem possuir suas próprias regras, credenciais, cotas ou custos. O projeto não transforma APIs pagas de terceiros em serviços gratuitos.
+- Mercado Livre / Mercado Libre;
+- eBay;
+- Google Shopping through SerpApi;
+- AI-assisted product identification and Copilot features.
 
-Credenciais sensíveis ficam no Cloud ou na instalação local configurada pelo próprio operador e não devem ser publicadas no repositório.
+**MarketAI itself is free**, but external services can have their own credentials, quotas, pricing or terms.
 
-## Arquitetura
+Open-source software cannot make a paid third-party API free.
+
+Sensitive credentials should remain on the Cloud or in a self-hosted environment and must never be committed to the repository.
+
+## Architecture
 
 ```text
 ┌──────────────────────────────┐
 │     MarketAI Desktop         │
-│ Windows · Login obrigatório  │
+│ Windows · Account login      │
+│ EN / PT-BR / DE / ES / FR    │
 └──────────────┬───────────────┘
                │ HTTPS / JWT
                ▼
 ┌──────────────────────────────┐
 │       MarketAI Cloud         │
-│ FastAPI + autenticação       │
+│ FastAPI + authentication     │
 ├──────────────────────────────┤
 │ Market Engine                │
 │ Intelligence Core            │
 │ Sentinel Worker              │
-│ Contas / dispositivos        │
-│ Admin / auditoria            │
+│ Accounts / devices           │
+│ Admin / audit                │
 └──────────────┬───────────────┘
                │
         ┌──────┴──────┐
         ▼             ▼
-   PostgreSQL     APIs externas
+   PostgreSQL     External APIs
 ```
 
-## Segurança e contas
+## Security and account isolation
 
-- senhas com Argon2;
-- JWT de curta duração;
-- refresh tokens rotacionados e armazenados como hash;
-- sessão local protegida por Windows DPAPI;
-- UUID local por instalação, sem fingerprint invasivo;
-- dados do Intelligence Core filtrados pelo usuário autenticado;
-- secrets fora do repositório;
-- .env, bancos locais, caches e tokens ignorados pelo Git;
-- HTTPS obrigatório no build oficial.
+- Argon2 password hashing;
+- short-lived JWT access tokens;
+- rotated refresh tokens stored as hashes;
+- Windows DPAPI protection for local session data;
+- random installation UUID instead of invasive hardware fingerprinting;
+- Intelligence Core data scoped by authenticated user;
+- local history and watchlist scoped by account;
+- secrets excluded from the repository;
+- HTTPS required for official release builds.
 
-## Produção Community
+## Community Cloud
 
-Instância atual do Cloud:
+Current hosted Cloud instance:
 
 ```text
 https://marketai-cloud-production.up.railway.app
 ```
 
-Health check:
+Health endpoint:
 
 ```text
 https://marketai-cloud-production.up.railway.app/health
 ```
 
-A infraestrutura usa MarketAI Cloud + PostgreSQL + Sentinel Worker. O projeto também pode ser auto-hospedado.
+The hosted environment uses:
 
-## Desenvolvimento local
+- MarketAI Cloud;
+- PostgreSQL;
+- MarketAI Sentinel Worker.
+
+The project can also be self-hosted.
+
+## Local development
 
 ### Cloud
 
@@ -226,17 +308,17 @@ set MARKETAI_CLOUD_URL=http://127.0.0.1:9000
 run_desktop_dev.bat
 ```
 
-## Build Windows
+## Windows builds
 
-O nome do instalador acompanha automaticamente a versão definida no projeto.
+Installer filenames follow the application version automatically.
 
 ```text
-v1.0.2 -> MarketAI-Setup-v1.0.3.exe
-v1.0.3 -> MarketAI-Setup-v1.0.3.exe
+v1.0.4 -> MarketAI-Setup-v1.0.4.exe
+v1.1.0 -> MarketAI-Setup-v1.1.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
 
-Build local:
+Local build:
 
 ```bat
 cd desktop
@@ -245,9 +327,14 @@ build_installer.bat
 
 ## CI/CD
 
-Em pushes e Pull Requests, o GitHub Actions executa testes Cloud/Desktop, compilação Python e validação do JavaScript.
+Pushes and Pull Requests run:
 
-A alteração de .release/windows.json dispara o build Windows e pode publicar:
+- Cloud tests;
+- Desktop tests;
+- Python compilation checks;
+- JavaScript syntax validation.
+
+Updating `.release/windows.json` can trigger the Windows release pipeline and publish:
 
 ```text
 MarketAI-Setup-vX.Y.Z.exe
@@ -255,11 +342,19 @@ MarketAI-Setup-vX.Y.Z.sha256
 RELEASE-NOTES.txt
 ```
 
-O pipeline também suporta SHA-256, build provenance attestation, Code Signing opcional, GitHub Release automática e manifesto para auto-update.
+The pipeline also supports:
 
-Veja [RELEASE-PIPELINE.md](RELEASE-PIPELINE.md).
+- SHA-256 verification;
+- build provenance attestation;
+- optional Windows Code Signing;
+- automatic GitHub Releases;
+- auto-update manifest publishing.
 
-## Estrutura
+The screenshot workflow opens the current MarketAI Desktop UI with Playwright, forces **English**, validates all five supported languages, captures the current interface and commits the resulting images to `docs/screenshots/`.
+
+See [RELEASE-PIPELINE.md](RELEASE-PIPELINE.md).
+
+## Project structure
 
 ```text
 MarketAI/
@@ -271,26 +366,31 @@ MarketAI/
 ├── desktop/
 │   ├── backend/
 │   ├── frontend/
+│   │   ├── app.js
+│   │   ├── i18n.js
+│   │   ├── index.html
+│   │   └── style.css
 │   ├── installer/
 │   ├── tests/
 │   └── docs/
-├── docs/images/
+├── docs/screenshots/
+├── tools/
 ├── LICENSE
 ├── NOTICE
 ├── CONTRIBUTING.md
 └── SECURITY.md
 ```
 
-## Filosofia do projeto
+## Project philosophy
 
-O objetivo é simples:
+The goal is straightforward:
 
-> criar uma ferramenta de inteligência comercial útil para estudantes, vendedores, pequenos negócios, profissionais e equipes sem colocar os recursos principais atrás de um paywall.
+> build useful market intelligence software for people who work with products, without locking the core experience behind a paywall.
 
-Contribuições são bem-vindas.
+Contributions are welcome.
 
 ---
 
 ### MarketAI Community
 
-**Encontrar. Entender. Precificar. Monitorar. Decidir.**
+**Find. Understand. Price. Monitor. Decide.**
