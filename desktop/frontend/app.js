@@ -39,14 +39,14 @@ async function health(){
   try{
     const r = await fetch('/api/health'); const d = await r.json();
     const labels=[];
-    if(d.integrations?.mercadolivre_token) labels.push('ML autenticado');
-    else labels.push('ML público');
+    if(d.integrations?.mercadolivre_token) labels.push(tr('Authenticated ML'));
+    else labels.push(tr('Public ML'));
     if(d.integrations?.ebay) labels.push('eBay');
     if(d.integrations?.google_shopping) labels.push('Shopping');
-    if(d.integrations?.vision) labels.push('visão IA');
+    if(d.integrations?.vision) labels.push(tr('AI vision'));
     $('#apiStatus').textContent = `${labels.join(' · ')} · v${d.version}`;
     $('.status-dot').classList.add('live');
-  }catch{ $('#apiStatus').textContent = 'API offline'; }
+  }catch{ $('#apiStatus').textContent = tr('API offline'); }
 }
 health();
 
@@ -68,11 +68,11 @@ function switchView(name){
 $$('.nav-item').forEach(btn => btn.addEventListener('click', () => { switchView(btn.dataset.view); if(btn.dataset.view==='intelligence') loadIntelligence(); }));
 
 const loadingSteps = [
-  'Identificando produto, variante e atributos.',
-  'Consultando apenas fontes reais disponíveis.',
-  'Rejeitando kit, tester, decant e variantes incompatíveis.',
-  'Validando volume, capacidade, potência e outliers.',
-  'Calculando preço somente se a amostra for confiável.'
+  'Identifying product, variant and attributes.',
+  'Querying only available real sources.',
+  'Rejecting kits, testers, decants and incompatible variants.',
+  'Validating volume, capacity, power and outliers.',
+  'Calculating price only if the sample is reliable.'
 ];
 
 function snapshotForm(){
@@ -81,12 +81,12 @@ function snapshotForm(){
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault(); result.hidden = true; form.style.display = 'none'; loading.hidden = false; currentFormSnapshot=snapshotForm();
-  let i=0; const timer=setInterval(()=>{$('#loadingText').textContent=loadingSteps[(++i)%loadingSteps.length]},1100);
+  let i=0; const timer=setInterval(()=>{$('#loadingText').textContent=tr(loadingSteps[(++i)%loadingSteps.length])},1100);
   try{
     const data=new FormData(form); const r=await fetch('/api/analyze',{method:'POST',body:data});
-    if(!r.ok){let d={};try{d=await r.json()}catch{};const code=d.detail||'';if(r.status===401){setAuthScreen(false);throw new Error('Entre na sua conta MarketAI para analisar produtos.')}if(r.status===403&&code==='device_not_authorized'){switchView('account');throw new Error('Este computador ainda não está vinculado à sua conta. Saia e entre novamente para reativá-lo.')}if(r.status===429)throw new Error('O servidor está temporariamente limitando requisições. Tente novamente em instantes.');throw new Error(d.message||d.detail||'Não foi possível concluir a análise.')}
+    if(!r.ok){let d={};try{d=await r.json()}catch{};const code=d.detail||'';if(r.status===401){setAuthScreen(false);throw new Error(tr('Sign in to your MarketAI account to analyze products.'))}if(r.status===403&&code==='device_not_authorized'){switchView('account');throw new Error(tr('This computer is not linked to your account yet. Sign out and sign in again to reactivate it.'))}if(r.status===429)throw new Error(tr('The server is temporarily rate-limiting requests. Try again in a moment.'));throw new Error(tr(d.message||d.detail||'Could not complete the analysis.'))}
     const analysis=await r.json(); currentAnalysis=analysis; renderAnalysis(analysis); saveHistory(analysis); result.hidden=false; result.scrollIntoView({behavior:'smooth',block:'start'});loadCloudStatus();
-  }catch(err){ alert('Não consegui concluir a análise.\n\n'+err.message); form.style.display='grid'; }
+  }catch(err){ alert(tr('I could not complete the analysis.')+'\n\n'+tr(err.message)); form.style.display='grid'; }
   finally{ clearInterval(timer); loading.hidden=true; }
 });
 
@@ -99,8 +99,8 @@ function featureSummary(f={}){
   if(f.capacity_gb!=null) parts.push(`${Number(f.capacity_gb)} GB`);
   if(f.power_w!=null) parts.push(`${Number(f.power_w)} W`);
   if(f.kit) parts.push('kit'); if(f.tester) parts.push('tester'); if(f.decant) parts.push('decant');
-  if(f.refill) parts.push('refil'); if(f.sample) parts.push('amostra');
-  return parts.join(' · ') || 'não identificada no título';
+  if(f.refill) parts.push('refill'); if(f.sample) parts.push('sample');
+  return parts.join(' · ') || tr('not identified in title');
 }
 
 function qualityClass(state){
@@ -113,60 +113,60 @@ function renderQuality(d){
   const q=d.market.quality;
   $('#qualityTitle').textContent=q.label;
   $('#qualityMessage').textContent=q.message;
-  const badge=$('#qualityBadge'); badge.textContent=q.state==='reliable'?'APROVADO PARA CÁLCULO':q.state==='ambiguous'?'VARIANTE AMBÍGUA':q.state==='insufficient'?'AMOSTRA PEQUENA':'SEM PREÇO CONFIÁVEL';
+  const badge=$('#qualityBadge'); badge.textContent=tr(q.state==='reliable'?'APPROVED FOR PRICING':q.state==='ambiguous'?'AMBIGUOUS VARIANT':q.state==='insufficient'?'SMALL SAMPLE':'NO RELIABLE PRICE');
   badge.className=`quality-badge ${qualityClass(q.state)}`;
   $('#dataQualityCard').className=`card data-quality-card ${qualityClass(q.state)}`;
-  $('#qualityCounts').textContent=`${d.market.raw_count} encontrados · ${d.market.matched_count} compatíveis · ${d.market.pricing_count} usados no preço`;
+  $('#qualityCounts').textContent=tr(`${d.market.raw_count} encontrados · ${d.market.matched_count} compatíveis · ${d.market.pricing_count} usados no preço`);
   $('#qualityBlockers').innerHTML=(q.blockers||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
   $('#sourceStatus').innerHTML=(d.market.sources||[]).length
     ? d.market.sources.map(x=>{
         const cls=x.status==='ok'?'source-ok':(x.status==='not_configured'?'source-off':'source-warn');
-        const status=x.status==='ok'?`${x.returned||0} resultado(s)`:sourceStatusLabel(x.status);
+        const status=x.status==='ok'?`${x.returned||0} ${tr('result(s)')}`:sourceStatusLabel(x.status);
         const err=x.error?`<small>${escapeHtml(x.error)}</small>`:'';
         return `<span class="${cls}"><b>${escapeHtml(x.source)}</b>: ${escapeHtml(status)}${x.latency_ms?` · ${x.latency_ms} ms`:''}${err}</span>`;
       }).join('')
-    : '<span>Nenhuma fonte de mercado disponível para este país.</span>';
+    : `<span>${escapeHtml(tr('No market source available for this country.'))}</span>`;
 }
 
 function sourceStatusLabel(status){
-  return ({not_configured:'não configurado',auth_required:'autenticação necessária',rate_limited:'limite de requisições',network_error:'erro de rede',upstream_error:'fonte indisponível',http_error:'erro HTTP',configured:'configurado',fallback:'contingência'})[status]||status||'indisponível';
+  return tr(({not_configured:'not configured',auth_required:'authentication required',rate_limited:'request limit',network_error:'network error',upstream_error:'source unavailable',http_error:'HTTP error',configured:'configured',fallback:'fallback'})[status]||status||'unavailable');
 }
 
 function renderAnalysis(d){
   const p=d.product, pr=d.pricing, rec=pr.strategies.recommended, reliable=d.market.reliable;
   $('#productTitle').textContent=p.product_name||d.request.typed_name;
-  $('#productMeta').textContent=[p.brand,p.model,p.variant_summary||p.variant,p.category].filter(x=>x && String(x).toLowerCase()!=='a confirmar').join(' · ') || 'Identificação básica';
-  $('#productCodes').textContent=[d.request.gtin?`GTIN: ${d.request.gtin}`:'',d.request.ncm?`NCM: ${d.request.ncm}`:'',d.request.supplier_name?`Fornecedor: ${d.request.supplier_name}`:''].filter(Boolean).join(' · ')||'Sem códigos adicionais informados';
+  $('#productMeta').textContent=[p.brand,p.model,p.variant_summary||p.variant,p.category].filter(x=>x && String(x).toLowerCase()!=='a confirmar').join(' · ') || tr('Basic identification');
+  $('#productCodes').textContent=[d.request.gtin?`GTIN: ${d.request.gtin}`:'',d.request.ncm?`NCM: ${d.request.ncm}`:'',d.request.supplier_name?`${tr('Supplier')}: ${d.request.supplier_name}`:''].filter(Boolean).join(' · ')||tr('No additional codes provided');
   $('#confidenceValue').textContent=`${p.confidence??0}%`; $('#confidenceBar').style.width=`${Math.max(0,Math.min(100,p.confidence||0))}%`;
-  $('#resultThumb').innerHTML=currentPreviewURL?`<img src="${currentPreviewURL}" alt="produto">`:'AI';
+  $('#resultThumb').innerHTML=currentPreviewURL?`<img src="${currentPreviewURL}" alt="${escapeAttr(tr('product'))}">`:'AI';
 
   renderQuality(d);
 
   $('#scoreValue').textContent=reliable ? pr.opportunity.score : '—';
-  $('#scoreLabel').textContent=reliable ? pr.opportunity.label : 'Score bloqueado até existir mercado confiável';
+  $('#scoreLabel').textContent=reliable ? tr(pr.opportunity.label) : tr('Score blocked until reliable market data exists');
   $('#scoreLabel').style.color=reliable?(pr.opportunity.signal==='red'?'var(--red)':pr.opportunity.signal==='yellow'?'var(--yellow)':'var(--green)'):'var(--muted)';
 
-  $('#marketMedian').textContent=reliable?fmtBRL(pr.market.median):'Sem mediana';
-  $('#marketMedianCaption').textContent=reliable?`${pr.market.count} anúncio(s) usados no cálculo`:'nenhum preço fictício será usado';
-  $('#recommendedPrice').textContent=rec?fmtBRL(rec.price):'BLOQUEADO';
-  $('#recommendedCaption').textContent=rec?'equilíbrio entre margem e mercado compatível':`piso pelos seus custos: ${fmtBRL(pr.costs.minimum_for_target_margin)}`;
+  $('#marketMedian').textContent=reliable?fmtBRL(pr.market.median):tr('No median');
+  $('#marketMedianCaption').textContent=reliable?tr(`${pr.market.count} anúncio(s) usados no cálculo`):tr('no fictitious price will be used');
+  $('#recommendedPrice').textContent=rec?fmtBRL(rec.price):tr('BLOCKED');
+  $('#recommendedCaption').textContent=rec?tr('balance between margin and compatible market'):`${tr('minimum based on your costs')}: ${fmtBRL(pr.costs.minimum_for_target_margin)}`;
   $('#recommendedProfit').textContent=rec?fmtBRL(rec.net_profit):'—';
-  $('#recommendedMargin').textContent=rec?`margem ${rec.net_margin_percent}% · ROI ${rec.roi_percent}%`:'sem lucro estimado de mercado';
-  $('#unitCost').textContent=fmtBRL(pr.costs.unit_cost); $('#breakEven').textContent=`equilíbrio: ${fmtBRL(pr.costs.break_even)}`;
+  $('#recommendedMargin').textContent=rec?`${tr('Margin')} ${rec.net_margin_percent}% · ROI ${rec.roi_percent}%`:tr('no estimated market profit');
+  $('#unitCost').textContent=fmtBRL(pr.costs.unit_cost); $('#breakEven').textContent=`${tr('Break-even')}: ${fmtBRL(pr.costs.break_even)}`;
 
   $('#verdictTitle').textContent=d.advice.verdict; $('#verdictSummary').textContent=d.advice.summary;
-  $('#verdictReasons').innerHTML=(d.advice.reasons.length?d.advice.reasons:['Nenhum ponto positivo adicional identificado.']).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
-  $('#verdictRisks').innerHTML=(d.advice.risks.length?d.advice.risks:['Nenhum alerta relevante nas premissas informadas.']).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
+  $('#verdictReasons').innerHTML=(d.advice.reasons.length?d.advice.reasons:[tr('No additional positive point identified.')]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
+  $('#verdictRisks').innerHTML=(d.advice.risks.length?d.advice.risks:[tr('No relevant alerts for the assumptions provided.')]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
 
-  const strategyNames={fast_sale:['Venda rápida','entrada agressiva'],recommended:['Recomendado','melhor equilíbrio'],margin:['Mais margem','lucro ampliado'],premium:['Premium','posicionamento alto']};
+  const strategyNames={fast_sale:['Quick sale','aggressive entry'],recommended:['Recommended','best balance'],margin:['More margin','higher profit'],premium:['Premium','high positioning']};
   if(rec){
-    $('#strategies').innerHTML=Object.entries(pr.strategies).map(([key,x])=>{if(!x)return ''; const [name,desc]=strategyNames[key];return `<div class="strategy ${key==='recommended'?'recommended':''}"><span>${name}</span><strong>${fmtBRL(x.price)}</strong><small>${desc}</small><small>Lucro: ${fmtBRL(x.net_profit)} · ${x.net_margin_percent}% · ROI ${x.roi_percent}%</small>${key==='recommended'?'<em>RECOMENDADO PELA IA</em>':''}</div>`}).join('');
+    $('#strategies').innerHTML=Object.entries(pr.strategies).map(([key,x])=>{if(!x)return ''; const [name,desc]=strategyNames[key];return `<div class="strategy ${key==='recommended'?'recommended':''}"><span>${escapeHtml(tr(name))}</span><strong>${fmtBRL(x.price)}</strong><small>${escapeHtml(tr(desc))}</small><small>${escapeHtml(tr('Profit'))}: ${fmtBRL(x.net_profit)} · ${x.net_margin_percent}% · ROI ${x.roi_percent}%</small>${key==='recommended'?'<em>${escapeHtml(tr('RECOMMENDED BY AI'))}</em>':''}</div>`}).join('');
   }else{
     const floor=pr.cost_floor;
-    $('#strategies').innerHTML=`<div class="strategy cost-only"><span>Piso pelos seus custos</span><strong>${fmtBRL(floor.price)}</strong><small>Preço mínimo para atingir sua margem informada.</small><small>Lucro calculado: ${fmtBRL(floor.net_profit)} · ${floor.net_margin_percent}%</small><em>NÃO É PREÇO DE MERCADO</em></div><div class="empty compact strategy-empty">As quatro estratégias serão liberadas quando houver dados reais suficientes e uma variante sem ambiguidade.</div>`;
+    $('#strategies').innerHTML=`<div class="strategy cost-only"><span>${escapeHtml(tr('Minimum based on your costs'))}</span><strong>${fmtBRL(floor.price)}</strong><small>${escapeHtml(tr('Minimum price to reach your desired margin.'))}</small><small>${escapeHtml(tr('Calculated profit'))}: ${fmtBRL(floor.net_profit)} · ${floor.net_margin_percent}%</small><em>${escapeHtml(tr('NOT A MARKET PRICE'))}</em></div><div class="empty compact strategy-empty">${escapeHtml(tr('The four strategies will be unlocked when there is enough real data and an unambiguous variant.'))}</div>`;
   }
 
-  $('#fxCurrency').textContent=d.request.purchase_currency; $('#fxRate').textContent=Number(d.fx.rate).toLocaleString(appLocale(),{minimumFractionDigits:2,maximumFractionDigits:6}); $('#fxSource').textContent=d.fx.source; $('#fxDate').textContent=`Referência: ${d.fx.date||'—'}`; $('#fxLive').textContent=d.fx.live?'fonte ao vivo':'taxa de contingência';
+  $('#fxCurrency').textContent=d.request.purchase_currency; $('#fxRate').textContent=Number(d.fx.rate).toLocaleString(appLocale(),{minimumFractionDigits:2,maximumFractionDigits:6}); $('#fxSource').textContent=d.fx.source; $('#fxDate').textContent=`${tr('Reference')}: ${d.fx.date||'—'}`; $('#fxLive').textContent=d.fx.live?tr('live source'):tr('fallback rate');
 
   setupSimulator(d);
   renderComparison(d.comparison);
@@ -640,26 +640,26 @@ $('#updateAvailable')?.addEventListener('click',()=>startUpdate(false));setTimeo
 
 // ===================== MARKETAI INTELLIGENCE CORE =====================
 function intelMoney(v){return v==null?'—':fmtBRL(Number(v))}
-async function intelJson(url,opts={}){const r=await fetch(url,opts);let d={};try{d=await r.json()}catch{};if(!r.ok)throw new Error(d.message||d.detail||'Falha no Intelligence Core');return d}
+async function intelJson(url,opts={}){const r=await fetch(url,opts);let d={};try{d=await r.json()}catch{};if(!r.ok)throw new Error(d.message||d.detail||tr('Intelligence Core request failed'));return d}
 async function loadIntelligence(){
   const radar=$('#intelRadar'), alerts=$('#intelAlerts');
-  if(radar)radar.innerHTML='<div class="empty">Carregando Radar…</div>'; if(alerts)alerts.innerHTML='<div class="empty">Carregando Sentinel…</div>';
+  if(radar)radar.innerHTML=`<div class="empty">${escapeHtml(tr('Loading Radar…'))}</div>`; if(alerts)alerts.innerHTML=`<div class="empty">${escapeHtml(tr('Loading Sentinel…'))}</div>`;
   try{
     const [r,a]=await Promise.all([intelJson('/api/intelligence/radar'),intelJson('/api/intelligence/alerts')]);
-    radar.innerHTML=(r.items||[]).length?(r.items||[]).slice(0,8).map((x,i)=>`<div class="intel-row"><b>#${i+1} ${escapeHtml(x.product_name)}</b><span>${x.score}/100</span><small>${intelMoney(x.median)} · tendência ${Number(x.price_trend_percent||0).toFixed(1)}%</small></div>`).join(''):'<div class="empty">Ainda não há snapshots. Adicione produtos ao Sentinel e faça verificações.</div>';
-    const open=(a.items||[]).filter(x=>!x.acknowledged); alerts.innerHTML=open.length?open.slice(0,8).map(x=>`<div class="intel-row alert-${escapeAttr(x.severity)}"><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.message)}</small></div>`).join(''):'<div class="empty">Nenhum alerta pendente.</div>';
-  }catch(e){radar.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`;alerts.innerHTML='<div class="empty">Entre na sua conta para acessar o Intelligence Core.</div>'}
+    radar.innerHTML=(r.items||[]).length?(r.items||[]).slice(0,8).map((x,i)=>`<div class="intel-row"><b>#${i+1} ${escapeHtml(x.product_name)}</b><span>${x.score}/100</span><small>${intelMoney(x.median)} · ${escapeHtml(tr('trend'))} ${Number(x.price_trend_percent||0).toFixed(1)}%</small></div>`).join(''):`<div class="empty">${escapeHtml(tr('There are no snapshots yet. Add products to Sentinel and run checks.'))}</div>`;
+    const open=(a.items||[]).filter(x=>!x.acknowledged); alerts.innerHTML=open.length?open.slice(0,8).map(x=>`<div class="intel-row alert-${escapeAttr(x.severity)}"><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.message)}</small></div>`).join(''):`<div class="empty">${escapeHtml(tr('No pending alerts.'))}</div>`;
+  }catch(e){radar.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`;alerts.innerHTML=`<div class="empty">${escapeHtml(tr('Sign in to your account to access Intelligence Core.'))}</div>`}
 }
 $('#intelRefresh')?.addEventListener('click',loadIntelligence);
-$('#askCopilot')?.addEventListener('click',async()=>{const out=$('#copilotAnswer');out.textContent='Pensando com seus dados…';try{const d=await intelJson('/api/intelligence/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:$('#copilotQuestion').value})});out.textContent=d.answer||'Sem resposta.'}catch(e){out.textContent=e.message}});
-$('#calcProfit')?.addEventListener('click',async()=>{const out=$('#profitOutput');out.textContent='Calculando…';try{const d=await intelJson('/api/intelligence/profit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sale_price:num($('#profitPrice').value),unit_cost:num($('#profitCost').value),marketplace_fee_percent:num($('#profitFee').value),taxes_percent:num($('#profitTax').value),ads_percent:num($('#profitAds').value),payment_fee_percent:num($('#profitPayment').value),minimum_margin_percent:15})});out.innerHTML=`<strong>${intelMoney(d.net_profit)}</strong> lucro líquido · ${Number(d.net_margin_percent).toFixed(1)}% margem · ROI ${Number(d.roi_percent).toFixed(1)}% · break-even ${intelMoney(d.break_even_price)}`;}catch(e){out.textContent=e.message}});
+$('#askCopilot')?.addEventListener('click',async()=>{const out=$('#copilotAnswer');out.textContent=tr('Thinking with your data…');try{const d=await intelJson('/api/intelligence/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:$('#copilotQuestion').value,language:window.MarketI18n?.language?.()||'en'})});out.textContent=d.answer||tr('No answer.')}catch(e){out.textContent=e.message}});
+$('#calcProfit')?.addEventListener('click',async()=>{const out=$('#profitOutput');out.textContent=tr('Calculating…');try{const d=await intelJson('/api/intelligence/profit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sale_price:num($('#profitPrice').value),unit_cost:num($('#profitCost').value),marketplace_fee_percent:num($('#profitFee').value),taxes_percent:num($('#profitTax').value),ads_percent:num($('#profitAds').value),payment_fee_percent:num($('#profitPayment').value),minimum_margin_percent:15})});out.innerHTML=`<strong>${intelMoney(d.net_profit)}</strong> ${escapeHtml(tr('net profit'))} · ${Number(d.net_margin_percent).toFixed(1)}% ${escapeHtml(tr('margin'))} · ROI ${Number(d.roi_percent).toFixed(1)}% · ${escapeHtml(tr('break-even'))} ${intelMoney(d.break_even_price)}`;}catch(e){out.textContent=e.message}});
 
 $('#saveWatch')?.addEventListener('click',async()=>{
   if(!currentAnalysis||!currentFormSnapshot)return;
   try{
     const payload={...currentFormSnapshot,product_name:currentAnalysis.request?.product_name||currentAnalysis.product?.product_name||currentFormSnapshot.product_name,variant_text:currentAnalysis.request?.variant_text||currentFormSnapshot.variant_text||'',destination_country:currentFormSnapshot.destination_country||'BR',autopilot_enabled:false};
     const d=await intelJson('/api/intelligence/watches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    $('#saveWatch').textContent='✓ Sentinel ativo'; setTimeout(()=>$('#saveWatch').textContent='★ Monitorar',1800);
+    $('#saveWatch').textContent=`✓ ${tr('Sentinel active')}`; setTimeout(()=>$('#saveWatch').textContent=`★ ${tr('Monitor')}`,1800);
   }catch(e){console.warn('Sentinel cloud',e)}
 });
 
