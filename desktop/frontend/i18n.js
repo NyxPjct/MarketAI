@@ -357,7 +357,20 @@
     'replica': ['réplica','Replik','réplica','réplique'],
     'power': ['potência','Leistung','potencia','puissance'],
     'concentration matches': ['concentração confere','Konzentration stimmt überein','la concentración coincide','la concentration correspond'],
-    'MarketAI Community does not create fictitious market prices. If there are fewer than 3 compatible real listings, or variants are mixed, it only shows the minimum price calculated from your costs and blocks the market recommendation. Listing compatibility does not prove physical authenticity. NCM and taxation must be validated with an accountant/customs professional.': ['O MarketAI v1.0.4 Community não cria preços de mercado fictícios. Se não houver pelo menos 3 anúncios reais compatíveis, ou se as variantes estiverem misturadas, ele mostra apenas o preço mínimo calculado pelos seus custos e bloqueia a recomendação de mercado. Compatibilidade de anúncio não comprova autenticidade física do produto. NCM e tributação devem ser validados com contador/despachante.','MarketAI Community erstellt keine fiktiven Marktpreise. Gibt es weniger als 3 kompatible reale Angebote oder werden Varianten gemischt, wird nur der aus deinen Kosten berechnete Mindestpreis angezeigt und die Marktempfehlung gesperrt. Angebotskompatibilität beweist keine physische Echtheit. NCM und Steuern müssen mit Fachleuten geprüft werden.','MarketAI Community no crea precios de mercado ficticios. Si hay menos de 3 anuncios reales compatibles o se mezclan variantes, solo muestra el precio mínimo calculado a partir de tus costes y bloquea la recomendación de mercado. La compatibilidad del anuncio no demuestra la autenticidad física. El NCM y la tributación deben validarse con profesionales.','MarketAI Community ne crée pas de prix de marché fictifs. S’il y a moins de 3 annonces réelles compatibles ou si des variantes sont mélangées, seul le prix minimum calculé à partir de vos coûts est affiché et la recommandation de marché est bloquée. La compatibilité d’une annonce ne prouve pas l’authenticité physique. Le NCM et la fiscalité doivent être validés par des professionnels.']
+    'MarketAI Community does not create fictitious market prices. If there are fewer than 3 compatible real listings, or variants are mixed, it only shows the minimum price calculated from your costs and blocks the market recommendation. Listing compatibility does not prove physical authenticity. NCM and taxation must be validated with an accountant/customs professional.': ['O MarketAI v1.0.4 Community não cria preços de mercado fictícios. Se não houver pelo menos 3 anúncios reais compatíveis, ou se as variantes estiverem misturadas, ele mostra apenas o preço mínimo calculado pelos seus custos e bloqueia a recomendação de mercado. Compatibilidade de anúncio não comprova autenticidade física do produto. NCM e tributação devem ser validados com contador/despachante.','MarketAI Community erstellt keine fiktiven Marktpreise. Gibt es weniger als 3 kompatible reale Angebote oder werden Varianten gemischt, wird nur der aus deinen Kosten berechnete Mindestpreis angezeigt und die Marktempfehlung gesperrt. Angebotskompatibilität beweist keine physische Echtheit. NCM und Steuern müssen mit Fachleuten geprüft werden.','MarketAI Community no crea precios de mercado ficticios. Si hay menos de 3 anuncios reales compatibles o se mezclan variantes, solo muestra el precio mínimo calculado a partir de tus costes y bloquea la recomendación de mercado. La compatibilidad del anuncio no demuestra la autenticidad física. El NCM y la tributación deben validarse con profesionales.','MarketAI Community ne crée pas de prix de marché fictifs. S’il y a moins de 3 annonces réelles compatibles ou si des variantes sont mélangées, seul le prix minimum calculé à partir de vos coûts est affiché et la recommandation de marché est bloquée. La compatibilité d’une annonce ne prouve pas l’authenticité physique. Le NCM et la fiscalité doivent être validés par des professionnels.'],
+    'Mercado Livre Brazil': ['Mercado Livre Brasil','Mercado Livre Brasilien','Mercado Livre Brasil','Mercado Livre Brésil'],
+    'Mercado Libre Mexico': ['Mercado Libre México','Mercado Libre Mexiko','Mercado Libre México','Mercado Libre Mexique'],
+    'Mercado Libre Argentina': ['Mercado Libre Argentina','Mercado Libre Argentinien','Mercado Libre Argentina','Mercado Libre Argentine'],
+    'eBay France': ['eBay França','eBay Frankreich','eBay Francia','eBay France'],
+    'Decision based only on compatible listings for the specified variant.': ['Decisão baseada somente em anúncios compatíveis da variante informada.','Entscheidung basiert nur auf kompatiblen Angeboten der angegebenen Variante.','Decisión basada únicamente en anuncios compatibles con la variante indicada.','Décision basée uniquement sur les annonces compatibles avec la variante indiquée.'],
+    'Combines sample reliability, listing compatibility, quantity used and source diversity.': ['Combina confiabilidade da amostra, compatibilidade dos anúncios, quantidade usada e diversidade de fontes.','Kombiniert Stichprobenzuverlässigkeit, Angebotskompatibilität, verwendete Menge und Quellenvielfalt.','Combina fiabilidad de la muestra, compatibilidad de anuncios, cantidad utilizada y diversidad de fuentes.','Combine la fiabilité de l’échantillon, la compatibilité des annonces, la quantité utilisée et la diversité des sources.'],
+    'Without a reliable sample, Market Score is not released.': ['Sem amostra confiável, o Market Score não é liberado.','Ohne zuverlässige Stichprobe wird der Market Score nicht freigegeben.','Sin una muestra fiable, el Market Score no se habilita.','Sans échantillon fiable, le Market Score n’est pas publié.'],
+    'MarketAI proprietary score based on margin, price headroom, data quality and sample depth.': ['Score proprietário MarketAI baseado em margem, folga de preço, qualidade dos dados e profundidade da amostra.','Proprietärer MarketAI-Score basierend auf Marge, Preisspielraum, Datenqualität und Stichprobentiefe.','Score propietario de MarketAI basado en margen, margen de precio, calidad de datos y profundidad de la muestra.','Score propriétaire MarketAI basé sur la marge, la marge de prix, la qualité des données et la profondeur de l’échantillon.'],
+    'simple linear regression over real snapshots': ['regressão linear simples sobre snapshots reais','einfache lineare Regression auf realen Snapshots','regresión lineal simple sobre snapshots reales','régression linéaire simple sur des snapshots réels'],
+    'not used as a recommendation': ['não usado como recomendação','nicht als Empfehlung verwendet','no usado como recomendación','non utilisé comme recommandation'],
+    'no recommendation': ['sem recomendação','keine Empfehlung','sin recomendación','aucune recommandation'],
+    'no price': ['sem preço','kein Preis','sin precio','aucun prix'],
+    'used': ['usado','verwendet','usado','utilisé']
   };
 
   const LANG_INDEX = { 'pt-BR': 0, de: 1, es: 2, fr: 3 };
@@ -439,6 +452,94 @@
         de: m => `Dein Konto ${m[1]} wurde erfolgreich erstellt. Alle Community-Funktionen sind kostenlos freigeschaltet.`,
         es: m => `Tu cuenta ${m[1]} se creó correctamente. Todas las funciones Community están desbloqueadas gratis.`,
         fr: m => `Votre compte ${m[1]} a été créé avec succès. Toutes les fonctionnalités Community sont débloquées gratuitement.`
+      },
+      {
+        re: /^(\d+) encontrados · (\d+) compatíveis · (\d+) usados no preço$/,
+        en: m => `${m[1]} found · ${m[2]} compatible · ${m[3]} used for pricing`,
+        'pt-BR': m => `${m[1]} encontrados · ${m[2]} compatíveis · ${m[3]} usados no preço`,
+        de: m => `${m[1]} gefunden · ${m[2]} kompatibel · ${m[3]} für die Preisberechnung verwendet`,
+        es: m => `${m[1]} encontrados · ${m[2]} compatibles · ${m[3]} usados para el precio`,
+        fr: m => `${m[1]} trouvés · ${m[2]} compatibles · ${m[3]} utilisés pour le prix`
+      },
+      {
+        re: /^(\d+) anúncio\(s\) usados no cálculo$/,
+        en: m => `${m[1]} listing(s) used for pricing`,
+        'pt-BR': m => `${m[1]} anúncio(s) usados no cálculo`,
+        de: m => `${m[1]} Angebot(e) für die Berechnung verwendet`,
+        es: m => `${m[1]} anuncio(s) usados en el cálculo`,
+        fr: m => `${m[1]} annonce(s) utilisées dans le calcul`
+      },
+      {
+        re: /^Referência:\s*(.+)$/,
+        en: m => `Reference: ${m[1]}`,
+        'pt-BR': m => `Referência: ${m[1]}`,
+        de: m => `Referenz: ${m[1]}`,
+        es: m => `Referencia: ${m[1]}`,
+        fr: m => `Référence : ${m[1]}`
+      },
+      {
+        re: /^diferença de (.+) \(([-+\d.,]+)%\)$/,
+        en: m => `difference of ${m[1]} (${m[2]}%)`,
+        'pt-BR': m => `diferença de ${m[1]} (${m[2]}%)`,
+        de: m => `Differenz von ${m[1]} (${m[2]}%)`,
+        es: m => `diferencia de ${m[1]} (${m[2]}%)`,
+        fr: m => `différence de ${m[1]} (${m[2]}%)`
+      },
+      {
+        re: /^(\d+) anúncios compatíveis passaram pelos filtros\. Confiança: (.+)\.$/,
+        en: m => `${m[1]} compatible listings passed the filters. Confidence: ${m[2]}.`,
+        'pt-BR': m => `${m[1]} anúncios compatíveis passaram pelos filtros. Confiança: ${m[2]}.`,
+        de: m => `${m[1]} kompatible Angebote haben die Filter bestanden. Konfidenz: ${m[2]}.`,
+        es: m => `${m[1]} anuncios compatibles pasaron los filtros. Confianza: ${m[2]}.`,
+        fr: m => `${m[1]} annonces compatibles ont passé les filtres. Confiance : ${m[2]}.`
+      },
+      {
+        re: /^Há menos de (\d+) anúncios compatíveis\.$/,
+        en: m => `There are fewer than ${m[1]} compatible listings.`,
+        'pt-BR': m => `Há menos de ${m[1]} anúncios compatíveis.`,
+        de: m => `Es gibt weniger als ${m[1]} kompatible Angebote.`,
+        es: m => `Hay menos de ${m[1]} anuncios compatibles.`,
+        fr: m => `Il y a moins de ${m[1]} annonces compatibles.`
+      },
+      {
+        re: /^Foram encontrados (\d+) anúncios, mas nenhum passou pelo filtro\.$/,
+        en: m => `${m[1]} listings were found, but none passed the filter.`,
+        'pt-BR': m => `Foram encontrados ${m[1]} anúncios, mas nenhum passou pelo filtro.`,
+        de: m => `${m[1]} Angebote wurden gefunden, aber keines bestand den Filter.`,
+        es: m => `Se encontraron ${m[1]} anuncios, pero ninguno pasó el filtro.`,
+        fr: m => `${m[1]} annonces ont été trouvées, mais aucune n’a passé le filtre.`
+      },
+      {
+        re: /^Preço mínimo pelos custos:\s*(.+)\.$/,
+        en: m => `Minimum price based on costs: ${m[1]}.`,
+        'pt-BR': m => `Preço mínimo pelos custos: ${m[1]}.`,
+        de: m => `Mindestpreis auf Kostenbasis: ${m[1]}.`,
+        es: m => `Precio mínimo según costes: ${m[1]}.`,
+        fr: m => `Prix minimum basé sur les coûts : ${m[1]}.`
+      },
+      {
+        re: /^variante incompatível:\s*(.+)$/,
+        en: m => `incompatible variant: ${m[1]}`,
+        'pt-BR': m => `variante incompatível: ${m[1]}`,
+        de: m => `inkompatible Variante: ${m[1]}`,
+        es: m => `variante incompatible: ${m[1]}`,
+        fr: m => `variante incompatible : ${m[1]}`
+      },
+      {
+        re: /^concentração diferente \((.+) ≠ (.+)\)$/,
+        en: m => `different concentration (${m[1]} ≠ ${m[2]})`,
+        'pt-BR': m => `concentração diferente (${m[1]} ≠ ${m[2]})`,
+        de: m => `andere Konzentration (${m[1]} ≠ ${m[2]})`,
+        es: m => `concentración diferente (${m[1]} ≠ ${m[2]})`,
+        fr: m => `concentration différente (${m[1]} ≠ ${m[2]})`
+      },
+      {
+        re: /^preço fora da faixa estatística \((.+)–(.+)\)$/,
+        en: m => `price outside the statistical range (${m[1]}–${m[2]})`,
+        'pt-BR': m => `preço fora da faixa estatística (${m[1]}–${m[2]})`,
+        de: m => `Preis außerhalb des statistischen Bereichs (${m[1]}–${m[2]})`,
+        es: m => `precio fuera del rango estadístico (${m[1]}–${m[2]})`,
+        fr: m => `prix hors de la plage statistique (${m[1]}–${m[2]})`
       },
       {
         re: /^Pasta de dados:\s*(.+)$/,
