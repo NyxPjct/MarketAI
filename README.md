@@ -21,7 +21,19 @@ Current version: **v1.0.4**
 MarketAI-Setup-v1.0.4.exe
 ```
 
-Release downloads are available at:
+Direct download:
+
+- [MarketAI-Setup-v1.0.4.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.4/MarketAI-Setup-v1.0.4.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.4/MarketAI-Setup-v1.0.4.sha256)
+- [GitHub Release v1.0.4](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.4)
+
+SHA-256:
+
+```text
+15b8ef66a21a87ee7044c056eca3f0f910611a12fab97d8541694d20bcd6b6ee
+```
+
+All releases:
 
 https://github.com/NyxPjct/MarketAI/releases
 
