@@ -75,16 +75,50 @@ with sync_playwright() as p:
     check.goto(BASE_URL, wait_until="networkidle")
     wait_english(check)
     expected = {
-        "en": "Market intelligence. No noise.",
-        "pt-BR": "Inteligência de mercado. Sem ruído.",
-        "de": "Marktintelligenz. Ohne Rauschen.",
-        "es": "Inteligencia de mercado. Sin ruido.",
-        "fr": "Intelligence de marché. Sans bruit.",
+        "en": {
+            "hero": "Market intelligence. No noise.",
+            "nav": "New analysis",
+            "main": "Know whether it is worth selling before you buy.",
+            "product": "Product",
+            "intel": "Your commercial command center.",
+        },
+        "pt-BR": {
+            "hero": "Inteligência de mercado. Sem ruído.",
+            "nav": "Nova análise",
+            "main": "Descubra se vale a pena vender antes de comprar.",
+            "product": "Produto",
+            "intel": "Seu centro de comando comercial.",
+        },
+        "de": {
+            "hero": "Marktintelligenz. Ohne Rauschen.",
+            "nav": "Neue Analyse",
+            "main": "Erkenne vor dem Einkauf, ob sich der Verkauf lohnt.",
+            "product": "Produkt",
+            "intel": "Deine kommerzielle Kommandozentrale.",
+        },
+        "es": {
+            "hero": "Inteligencia de mercado. Sin ruido.",
+            "nav": "Nuevo análisis",
+            "main": "Descubre si vale la pena vender antes de comprar.",
+            "product": "Producto",
+            "intel": "Tu centro de mando comercial.",
+        },
+        "fr": {
+            "hero": "Intelligence de marché. Sans bruit.",
+            "nav": "Nouvelle analyse",
+            "main": "Découvrez si la vente vaut le coup avant d’acheter.",
+            "product": "Produit",
+            "intel": "Votre centre de commande commercial.",
+        },
     }
-    for code, phrase in expected.items():
+    for code, phrases in expected.items():
         check.evaluate("(code) => window.MarketI18n.setLanguage(code)", code)
-        check.wait_for_function("(phrase) => document.body.innerText.includes(phrase)", arg=phrase)
+        check.wait_for_function("(phrase) => document.body.innerText.includes(phrase)", arg=phrases["hero"])
         assert check.locator("[data-language-select]").first.input_value() == code
+        assert check.locator('[data-view="analyze"] span').text_content().strip() == phrases["nav"]
+        assert check.locator("main > .topbar h1").text_content().strip() == phrases["main"]
+        assert check.locator("#view-analyze .form-card h2").first.text_content().strip() == phrases["product"]
+        assert check.locator("#view-intelligence .intel-hero h2").text_content().strip() == phrases["intel"]
     check.evaluate("() => window.MarketI18n.setLanguage('en')")
     wait_english(check)
     check.close()
