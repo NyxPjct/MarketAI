@@ -30,7 +30,7 @@ Direct download:
 SHA-256:
 
 ```text
-PENDING_V1_0_5_SHA256
+c8ab94d1da4a2c1a7704f5abf099913b0a5e7bfed3f892ba93de784d7b252599
 ```
 
 All releases:
