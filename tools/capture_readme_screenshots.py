@@ -81,6 +81,9 @@ with sync_playwright() as p:
             "main": "Know whether it is worth selling before you buy.",
             "product": "Product",
             "intel": "Your commercial command center.",
+            "account": "YOUR ACCOUNT",
+            "settings": "Interface language",
+            "modal": "Welcome to MarketAI.",
         },
         "pt-BR": {
             "hero": "Inteligência de mercado. Sem ruído.",
@@ -88,6 +91,9 @@ with sync_playwright() as p:
             "main": "Descubra se vale a pena vender antes de comprar.",
             "product": "Produto",
             "intel": "Seu centro de comando comercial.",
+            "account": "SUA CONTA",
+            "settings": "Idioma da interface",
+            "modal": "Bem-vindo ao MarketAI.",
         },
         "de": {
             "hero": "Marktintelligenz. Ohne Rauschen.",
@@ -95,6 +101,9 @@ with sync_playwright() as p:
             "main": "Erkenne vor dem Einkauf, ob sich der Verkauf lohnt.",
             "product": "Produkt",
             "intel": "Deine kommerzielle Kommandozentrale.",
+            "account": "DEIN KONTO",
+            "settings": "Sprache der Oberfläche",
+            "modal": "Willkommen bei MarketAI.",
         },
         "es": {
             "hero": "Inteligencia de mercado. Sin ruido.",
@@ -102,6 +111,9 @@ with sync_playwright() as p:
             "main": "Descubre si vale la pena vender antes de comprar.",
             "product": "Producto",
             "intel": "Tu centro de mando comercial.",
+            "account": "TU CUENTA",
+            "settings": "Idioma de la interfaz",
+            "modal": "Bienvenido a MarketAI.",
         },
         "fr": {
             "hero": "Intelligence de marché. Sans bruit.",
@@ -109,6 +121,9 @@ with sync_playwright() as p:
             "main": "Découvrez si la vente vaut le coup avant d’acheter.",
             "product": "Produit",
             "intel": "Votre centre de commande commercial.",
+            "account": "VOTRE COMPTE",
+            "settings": "Langue de l’interface",
+            "modal": "Bienvenue sur MarketAI.",
         },
     }
     for code, phrases in expected.items():
@@ -119,6 +134,18 @@ with sync_playwright() as p:
         assert check.locator("main > .topbar h1").text_content().strip() == phrases["main"]
         assert check.locator("#view-analyze .form-card h2").first.text_content().strip() == phrases["product"]
         assert check.locator("#view-intelligence .intel-hero h2").text_content().strip() == phrases["intel"]
+        assert check.locator("#view-account .eyebrow").first.text_content().strip() == phrases["account"]
+        assert check.locator("#view-settings #settingsLanguage").count() == 1
+        assert check.locator("#view-settings .language-settings-card h2").text_content().strip() == phrases["settings"]
+        check.evaluate("""() => window.openAppModal({
+          eyebrow:'ACCOUNT CREATED',
+          title:'Welcome to MarketAI.',
+          message:'Your account user@example.com was created successfully. All Community features are unlocked for free.',
+          symbol:'✓',
+          button:'ENTER MARKETAI'
+        })""")
+        assert check.locator("#appModalTitle").text_content().strip() == phrases["modal"]
+        check.evaluate("() => window.closeAppModal()")
     check.evaluate("() => window.MarketI18n.setLanguage('en')")
     wait_english(check)
     check.close()
