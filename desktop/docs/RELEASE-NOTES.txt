@@ -1,22 +1,17 @@
-MARKETAI 1.0.4 — MULTILINGUAL COMMUNITY RELEASE
+MARKETAI 1.0.5 — MULTILINGUAL COMMUNITY RELEASE
 
 Main changes:
-- English is now the default interface language
-- added full in-app language switching
-- supported languages:
-  - English
-  - Português (Brasil)
-  - Deutsch
-  - Español
-  - Français
-- language selector available on the login screen and in Settings
+- English is the default interface language
+- full in-app language switching
+- supported languages: English, Português (Brasil), Deutsch, Español and Français
+- language selector on the login screen and inside Settings
 - selected language is persisted on the device
-- navigation, forms, account screens, Intelligence Core, modal messages and dynamic UI states follow the selected language
+- navigation, forms, account screens, Intelligence Core and dynamic market messages follow the selected language
 - date and currency formatting follow the selected locale
 - authentication errors and account-created confirmation are localized
-- common market quality/status messages are localized
-- README fully rewritten in English
-- README screenshots are generated in English
+- market quality, listing counts, rejection reasons and reliability messages are localized
+- README fully written in English
+- README screenshots generated with the app in English
 - screenshot automation validates all five supported languages before publishing images
 
 Community foundation preserved:
