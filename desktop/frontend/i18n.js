@@ -555,6 +555,11 @@
       for (const m of mutations) {
         if (m.type === 'characterData') {
           const raw = m.target.nodeValue || '';
+          const existing = textSources.get(m.target);
+          if (existing) {
+            const expected = preserveWhitespace(raw, dynamic(existing, current));
+            if (raw === expected) continue;
+          }
           if (raw.trim()) textSources.set(m.target, raw.trim());
           translateTextNode(m.target);
         } else if (m.type === 'childList') {
@@ -563,6 +568,10 @@
             else if (node instanceof Element) translateTree(node);
           });
         } else if (m.type === 'attributes' && m.target instanceof Element) {
+          const cache = attrSources.get(m.target) || {};
+          const attr = m.attributeName;
+          const raw = attr ? (m.target.getAttribute(attr) || '') : '';
+          if (attr && cache[attr] != null && raw === dynamic(cache[attr], current)) continue;
           translateAttrs(m.target, true);
         }
       }
