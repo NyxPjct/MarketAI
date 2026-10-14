@@ -69,5 +69,13 @@ jobs:
             exit 0
           fi
           git commit -m "docs: refresh MarketAI v1.0.5 English screenshots"
-          git pull --rebase origin main
-          git push
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main
+            if git push; then
+              exit 0
+            fi
+            echo "Push raced with another commit; retrying ($attempt/5)..."
+            sleep $((attempt * 2))
+          done
+          echo "Could not publish screenshots after retries."
+          exit 1
