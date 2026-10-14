@@ -123,21 +123,92 @@ def forecast(watch_id:str,user:User=Depends(current_user),db:Session=Depends(get
 
 @router.post("/copilot")
 async def copilot(payload:dict=Body(...),user:User=Depends(current_user),db:Session=Depends(get_db)):
-    require(db,user,"copilot"); question=str(payload.get("question") or "").strip()
+    require(db,user,"copilot")
+    question=str(payload.get("question") or "").strip()
     if not question: raise HTTPException(400,"question_required")
-    radar_data=radar(user,db); alerts_data=alerts(user,db); context={"radar":radar_data["items"][:10],"alerts":alerts_data["items"][:10],"question":question}
-    key=os.getenv("OPENAI_API_KEY","").strip(); model=os.getenv("OPENAI_COPILOT_MODEL","").strip()
+
+    language=str(payload.get("language") or "en").strip()
+    if language not in {"en","pt-BR","de","es","fr"}: language="en"
+    language_names={
+        "en":"English",
+        "pt-BR":"Brazilian Portuguese",
+        "de":"German",
+        "es":"Spanish",
+        "fr":"French",
+    }
+
+    radar_data=radar(user,db)
+    alerts_data=alerts(user,db)
+    context={
+        "radar":radar_data["items"][:10],
+        "alerts":alerts_data["items"][:10],
+        "question":question,
+        "language":language,
+    }
+
+    key=os.getenv("OPENAI_API_KEY","").strip()
+    model=os.getenv("OPENAI_COPILOT_MODEL","").strip()
     if key and model:
-        prompt="Você é o MarketAI Copilot. Responda em português, usando SOMENTE os dados JSON fornecidos. Se faltar dado, diga que falta. Não invente preço, venda ou estoque.\n"+json.dumps(context,ensure_ascii=False)
+        prompt=(
+            f"You are MarketAI Copilot. Answer in {language_names[language]}. "
+            "Use ONLY the supplied JSON data. If required data is missing, say that it is missing. "
+            "Never invent prices, sales, inventory, market evidence or trends.\n"
+            + json.dumps(context,ensure_ascii=False)
+        )
         try:
-            async with httpx.AsyncClient(timeout=35) as c:
-                r=await c.post("https://api.openai.com/v1/responses",headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},json={"model":model,"input":prompt})
+            async with httpx.AsyncClient(timeout=35) as client:
+                r=await client.post(
+                    "https://api.openai.com/v1/responses",
+                    headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
+                    json={"model":model,"input":prompt},
+                )
                 if r.is_success:
-                    d=r.json(); text="".join(x.get("text","") for o in d.get("output",[]) for x in o.get("content",[]) if x.get("type")=="output_text")
-                    if text: return {"answer":text,"mode":"ai","context":context}
-        except Exception: pass
-    top=radar_data["items"][0] if radar_data["items"] else None; critical=[x for x in alerts_data["items"] if not x["acknowledged"] and x["severity"]=="critical"]
-    if top: answer=f"Hoje, o produto mais forte no Radar é {top['product_name']} com score {top['score']}/100. A mediana mais recente é {('R$ %.2f' % top['median']) if top['median'] else 'indisponível'}."
-    else: answer="Ainda não há snapshots suficientes no Radar. Adicione produtos ao Sentinel e execute verificações reais."
-    if critical: answer+=f" Existem {len(critical)} alerta(s) crítico(s) não reconhecido(s); vale revisar margem e preço antes de aumentar estoque."
-    return {"answer":answer,"mode":"deterministic","context":context}
+                    d=r.json()
+                    answer_text="".join(
+                        x.get("text","")
+                        for o in d.get("output",[])
+                        for x in o.get("content",[])
+                        if x.get("type")=="output_text"
+                    )
+                    if answer_text:
+                        return {"answer":answer_text,"mode":"ai","context":context,"language":language}
+        except Exception:
+            pass
+
+    top=radar_data["items"][0] if radar_data["items"] else None
+    critical=[x for x in alerts_data["items"] if not x["acknowledged"] and x["severity"]=="critical"]
+
+    unavailable={
+        "en":"unavailable","pt-BR":"indisponível","de":"nicht verfügbar",
+        "es":"no disponible","fr":"indisponible",
+    }[language]
+    if top:
+        median=(f"BRL {float(top['median']):.2f}" if top.get("median") else unavailable)
+        templates={
+            "en":f"Today, the strongest product in Radar is {top['product_name']} with a score of {top['score']}/100. The latest median is {median}.",
+            "pt-BR":f"Hoje, o produto mais forte no Radar é {top['product_name']} com score {top['score']}/100. A mediana mais recente é {median}.",
+            "de":f"Heute ist {top['product_name']} mit einem Score von {top['score']}/100 das stärkste Produkt im Radar. Der aktuelle Median beträgt {median}.",
+            "es":f"Hoy, el producto más fuerte en Radar es {top['product_name']} con una puntuación de {top['score']}/100. La mediana más reciente es {median}.",
+            "fr":f"Aujourd’hui, le produit le plus fort dans Radar est {top['product_name']} avec un score de {top['score']}/100. La médiane la plus récente est de {median}.",
+        }
+        answer=templates[language]
+    else:
+        answer={
+            "en":"There are not enough snapshots in Radar yet. Add products to Sentinel and run real checks.",
+            "pt-BR":"Ainda não há snapshots suficientes no Radar. Adicione produtos ao Sentinel e execute verificações reais.",
+            "de":"Im Radar gibt es noch nicht genügend Snapshots. Füge Produkte zu Sentinel hinzu und führe reale Prüfungen aus.",
+            "es":"Todavía no hay suficientes snapshots en Radar. Añade productos a Sentinel y ejecuta verificaciones reales.",
+            "fr":"Il n’y a pas encore assez de snapshots dans Radar. Ajoutez des produits à Sentinel et lancez des vérifications réelles.",
+        }[language]
+
+    if critical:
+        suffix={
+            "en":f" There are {len(critical)} unacknowledged critical alert(s); review margin and price before increasing inventory.",
+            "pt-BR":f" Existem {len(critical)} alerta(s) crítico(s) não reconhecido(s); vale revisar margem e preço antes de aumentar estoque.",
+            "de":f" Es gibt {len(critical)} nicht bestätigte kritische Warnung(en); prüfe Marge und Preis, bevor du den Bestand erhöhst.",
+            "es":f" Hay {len(critical)} alerta(s) crítica(s) sin reconocer; revisa margen y precio antes de aumentar el inventario.",
+            "fr":f" Il y a {len(critical)} alerte(s) critique(s) non acquittée(s) ; vérifiez la marge et le prix avant d’augmenter le stock.",
+        }[language]
+        answer+=suffix
+
+    return {"answer":answer,"mode":"deterministic","context":context,"language":language}
