@@ -68,5 +68,5 @@ jobs:
             echo "Screenshots already current."
             exit 0
           fi
-          git commit -m "docs: refresh MarketAI v1.0.3 screenshots"
+          git commit -m "docs: refresh MarketAI v1.0.4 English screenshots"
           git push
