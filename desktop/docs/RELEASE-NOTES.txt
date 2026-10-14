@@ -1,27 +1,28 @@
-MARKETAI 1.0.3 — LOGIN FIX + MONOCHROME MARKET THEME
+MARKETAI 1.0.4 — MULTILINGUAL COMMUNITY RELEASE
 
-Correções:
-- login corrigido: autenticação bem-sucedida agora fecha a tela de login de forma determinística
-- corrigido conflito entre display:grid e atributo hidden na tela de autenticação
-- botão Entrar agora mostra estado "ENTRANDO…" e bloqueia cliques duplicados
-- mensagens de erro de login/cadastro aparecem dentro da interface, sem alert nativo
+Main changes:
+- English is now the default interface language
+- added full in-app language switching
+- supported languages:
+  - English
+  - Português (Brasil)
+  - Deutsch
+  - Español
+  - Français
+- language selector available on the login screen and in Settings
+- selected language is persisted on the device
+- navigation, forms, account screens, Intelligence Core, modal messages and dynamic UI states follow the selected language
+- date and currency formatting follow the selected locale
+- authentication errors and account-created confirmation are localized
+- common market quality/status messages are localized
+- README fully rewritten in English
+- README screenshots are generated in English
+- screenshot automation validates all five supported languages before publishing images
 
-Criação de conta:
-- confirmação agora aparece em modal próprio do MarketAI
-- modal informa que a conta foi criada e que os recursos Community estão liberados
-- botão "ENTRAR NO MARKETAI" leva ao painel após o cadastro
-
-Novo visual:
-- tema verde removido
-- nova identidade preto, branco e tons de cinza
-- estilo inspirado em terminal/painel de mercado
-- cards, inputs, tabelas, sidebar, badges, Intelligence Core e tela de login redesenhados
-- tela de login com grid discreto e contraste monocromático
-
-Base Community preservada:
-- 100% gratuito e open source
-- sem paywall, assinatura ou cota mensal paga
-- contas individuais
-- histórico local separado por conta
-- Radar, Sentinel, Forecast, Profit Engine, Copilot e Autopilot liberados
-- MarketAI não fabrica dados de mercado quando faltam evidências reais
+Community foundation preserved:
+- 100% free and open source
+- no paid plans or monthly MarketAI quota
+- account-isolated data
+- monochrome black-and-white market theme
+- Radar, Sentinel, Forecast, Profit Engine, Copilot and Autopilot
+- MarketAI does not fabricate market prices, stock, sales or trends when real evidence is insufficient
