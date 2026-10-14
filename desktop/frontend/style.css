@@ -338,3 +338,60 @@ td:last-child{color:#fff}
 @media print{
   .app-modal,.auth-gate{display:none!important}
 }
+
+
+/* MarketAI v1.0.4 — language selector */
+.auth-language-picker{
+  position:absolute;
+  top:22px;
+  right:24px;
+  z-index:3;
+}
+.auth-language-picker label{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#8f8f8f;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.auth-language-picker select,
+.language-settings-card select{
+  min-width:180px;
+  background:#090909!important;
+  color:#f5f5f5!important;
+  border:1px solid #303030!important;
+  border-radius:10px;
+  padding:9px 34px 9px 11px;
+}
+.auth-language-picker select:focus,
+.language-settings-card select:focus{
+  border-color:#858585!important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.055)!important;
+}
+.language-settings-card{
+  margin-bottom:16px;
+}
+@media(max-width:860px){
+  .auth-language-picker{
+    position:relative;
+    top:auto;
+    right:auto;
+    width:min(620px,100%);
+    margin:0 auto 16px;
+  }
+  .auth-language-picker label{
+    justify-content:flex-end;
+  }
+}
+@media(max-width:520px){
+  .auth-language-picker label{
+    display:grid;
+    justify-content:stretch;
+  }
+  .auth-language-picker select{
+    width:100%;
+  }
+}
