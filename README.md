@@ -15,22 +15,22 @@ Each person uses an individual account, with separate analyses, monitored produc
 
 ## Download for Windows
 
-Current version: **v1.0.4**
+Current version: **v1.0.5**
 
 ```text
-MarketAI-Setup-v1.0.4.exe
+MarketAI-Setup-v1.0.5.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.0.4.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.4/MarketAI-Setup-v1.0.4.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.4/MarketAI-Setup-v1.0.4.sha256)
-- [GitHub Release v1.0.4](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.4)
+- [MarketAI-Setup-v1.0.5.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.5/MarketAI-Setup-v1.0.5.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.5/MarketAI-Setup-v1.0.5.sha256)
+- [GitHub Release v1.0.5](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.5)
 
 SHA-256:
 
 ```text
-15b8ef66a21a87ee7044c056eca3f0f910611a12fab97d8541694d20bcd6b6ee
+PENDING_V1_0_5_SHA256
 ```
 
 All releases:
@@ -106,7 +106,7 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
-## Screenshots — MarketAI v1.0.4
+## Screenshots — MarketAI v1.0.5
 
 The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
 
@@ -114,29 +114,29 @@ Demo values are used only to present the UI. They are not presented as real mark
 
 ### Login / account creation
 
-![MarketAI v1.0.4 — Login](docs/screenshots/01-login-community-v1.0.4.png)
+![MarketAI v1.0.5 — Login](docs/screenshots/01-login-community-v1.0.5.png)
 
 ### Dashboard / New analysis
 
-![MarketAI v1.0.4 — Dashboard](docs/screenshots/02-dashboard-v1.0.4.png)
+![MarketAI v1.0.5 — Dashboard](docs/screenshots/02-dashboard-v1.0.5.png)
 
 ### Intelligence Core
 
-![MarketAI v1.0.4 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.0.4.png)
+![MarketAI v1.0.5 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.0.5.png)
 
 ### My account
 
-![MarketAI v1.0.4 — My account](docs/screenshots/04-my-account-v1.0.4.png)
+![MarketAI v1.0.5 — My account](docs/screenshots/04-my-account-v1.0.5.png)
 
 ### Settings
 
 The Settings screen includes the interface language selector.
 
-![MarketAI v1.0.4 — Settings](docs/screenshots/05-settings-v1.0.4.png)
+![MarketAI v1.0.5 — Settings](docs/screenshots/05-settings-v1.0.5.png)
 
 ### Account-created confirmation
 
-![MarketAI v1.0.4 — Account created](docs/screenshots/06-account-created-modal-v1.0.4.png)
+![MarketAI v1.0.5 — Account created](docs/screenshots/06-account-created-modal-v1.0.5.png)
 
 ## Intelligence Core
 
@@ -325,7 +325,7 @@ run_desktop_dev.bat
 Installer filenames follow the application version automatically.
 
 ```text
-v1.0.4 -> MarketAI-Setup-v1.0.4.exe
+v1.0.5 -> MarketAI-Setup-v1.0.5.exe
 v1.1.0 -> MarketAI-Setup-v1.1.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
