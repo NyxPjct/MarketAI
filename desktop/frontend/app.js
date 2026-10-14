@@ -1,7 +1,9 @@
 const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => [...document.querySelectorAll(sel)];
-const fmtBRL = (n) => n == null || Number.isNaN(Number(n)) ? '—' : new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n));
-const fmtMoney = (n,c='BRL') => { try { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:c}).format(Number(n||0)); } catch { return `${Number(n||0).toFixed(2)} ${c}`; } };
+const $ = (sel) => [...document.querySelectorAll(sel)];
+const appLocale = () => window.MarketI18n?.locale?.() || 'en-US';
+const tr = (value) => window.MarketI18n?.t?.(value) || value;
+const fmtBRL = (n) => n == null || Number.isNaN(Number(n)) ? '—' : new Intl.NumberFormat(appLocale(),{style:'currency',currency:'BRL'}).format(Number(n));
+const fmtMoney = (n,c='BRL') => { try { return new Intl.NumberFormat(appLocale(),{style:'currency',currency:c}).format(Number(n||0)); } catch { return `${Number(n||0).toFixed(2)} ${c}`; } };
 const num = (v) => Number(v || 0);
 
 const form = $('#analysisForm');
@@ -93,7 +95,7 @@ $('#newAnalysis').addEventListener('click',()=>{result.hidden=true;form.style.di
 function featureSummary(f={}){
   const parts=[];
   if(f.concentration) parts.push(String(f.concentration).toUpperCase());
-  if(f.volume_ml!=null) parts.push(`${Number(f.volume_ml).toLocaleString('pt-BR',{maximumFractionDigits:1})} ml`);
+  if(f.volume_ml!=null) parts.push(`${Number(f.volume_ml).toLocaleString(appLocale(),{maximumFractionDigits:1})} ml`);
   if(f.capacity_gb!=null) parts.push(`${Number(f.capacity_gb)} GB`);
   if(f.power_w!=null) parts.push(`${Number(f.power_w)} W`);
   if(f.kit) parts.push('kit'); if(f.tester) parts.push('tester'); if(f.decant) parts.push('decant');
@@ -164,7 +166,7 @@ function renderAnalysis(d){
     $('#strategies').innerHTML=`<div class="strategy cost-only"><span>Piso pelos seus custos</span><strong>${fmtBRL(floor.price)}</strong><small>Preço mínimo para atingir sua margem informada.</small><small>Lucro calculado: ${fmtBRL(floor.net_profit)} · ${floor.net_margin_percent}%</small><em>NÃO É PREÇO DE MERCADO</em></div><div class="empty compact strategy-empty">As quatro estratégias serão liberadas quando houver dados reais suficientes e uma variante sem ambiguidade.</div>`;
   }
 
-  $('#fxCurrency').textContent=d.request.purchase_currency; $('#fxRate').textContent=Number(d.fx.rate).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:6}); $('#fxSource').textContent=d.fx.source; $('#fxDate').textContent=`Referência: ${d.fx.date||'—'}`; $('#fxLive').textContent=d.fx.live?'fonte ao vivo':'taxa de contingência';
+  $('#fxCurrency').textContent=d.request.purchase_currency; $('#fxRate').textContent=Number(d.fx.rate).toLocaleString(appLocale(),{minimumFractionDigits:2,maximumFractionDigits:6}); $('#fxSource').textContent=d.fx.source; $('#fxDate').textContent=`Referência: ${d.fx.date||'—'}`; $('#fxLive').textContent=d.fx.live?'fonte ao vivo':'taxa de contingência';
 
   setupSimulator(d);
   renderComparison(d.comparison);
@@ -204,7 +206,7 @@ function renderCostBreakdown(c){
 function renderMarketTables(d){
   const q=d.market.quality;
   $('#marketMode').textContent=`Busca: ${d.market.query || d.request.typed_name} · ${q.label}`;
-  $('#marketCheckedAt').textContent=d.market.checked_at?`Coleta: ${new Date(d.market.checked_at).toLocaleString('pt-BR')} · ${d.market.live_source_count||0} fonte(s) respondendo · ${d.market.merchant_count||0} loja(s)/vendedor(es)`:'—';
+  $('#marketCheckedAt').textContent=d.market.checked_at?`Coleta: ${new Date(d.market.checked_at).toLocaleString(appLocale())} · ${d.market.live_source_count||0} fonte(s) respondendo · ${d.market.merchant_count||0} loja(s)/vendedor(es)`:'—';
   $('#tableStats').textContent=`${d.market.matched_count} compatíveis · ${d.market.pricing_count} usados no cálculo`;
   $('#marketRows').innerHTML=d.market.listings.length?d.market.listings.map(x=>`<tr>
     <td><span class="match-pill ${x.match_score>=85?'high':x.match_score>=70?'mid':'low'}">${x.match_score??0}%</span>${x.used_for_pricing?'<small class="used-tag">usado</small>':''}</td>
@@ -242,7 +244,7 @@ function saveHistory(d){
 
 function renderHistory(){
   const items=readAccountItems('marketai-history');
-  $('#historyList').innerHTML=items.length?items.map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${new Date(x.date).toLocaleString('pt-BR')} · ${historyModeLabel(x.mode)}</small></div><div><small>MarketAI</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem recomendação':fmtBRL(x.recommended)}</div></div>`).join(''):'<div class="empty">Nenhuma análise salva ainda.</div>';
+  $('#historyList').innerHTML=items.length?items.map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${new Date(x.date).toLocaleString(appLocale())} · ${historyModeLabel(x.mode)}</small></div><div><small>MarketAI</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem recomendação':fmtBRL(x.recommended)}</div></div>`).join(''):'<div class="empty">Nenhuma análise salva ainda.</div>';
   renderHistoryChart(items);
 }
 function historyModeLabel(mode){return ({reliable:'mercado confiável',ambiguous:'variante ambígua',insufficient:'amostra insuficiente',no_match:'sem match',unavailable:'sem fonte'})[mode]||mode||'—'}
@@ -255,7 +257,7 @@ function renderHistoryChart(items){
   const vals=data.flatMap(x=>[num(x.recommended),num(x.marketMedian)]), min=Math.min(...vals)*.95, max=Math.max(...vals)*1.05, w=720,h=260,pad=34;
   const pt=(v,i)=>{const x=pad+(w-pad*2)*(i/(data.length-1));const y=h-pad-(h-pad*2)*((v-min)/(max-min||1));return [x,y]};
   const line=(key)=>data.map((x,i)=>pt(num(x[key]),i).join(',')).join(' ');
-  el.innerHTML=`<div class="chart-title">${escapeHtml(latest)}</div><svg viewBox="0 0 ${w} ${h}" role="img"><line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" class="axis"/><polyline points="${line('marketMedian')}" class="line median-line"/><polyline points="${line('recommended')}" class="line rec-line"/>${data.map((x,i)=>{const [cx,cy]=pt(num(x.recommended),i);return `<circle cx="${cx}" cy="${cy}" r="4" class="dot"><title>${fmtBRL(x.recommended)} — ${new Date(x.date).toLocaleDateString('pt-BR')}</title></circle>`}).join('')}</svg><div class="legend"><span><i class="rec-key"></i>Preço recomendado</span><span><i class="med-key"></i>Mediana</span></div>`;
+  el.innerHTML=`<div class="chart-title">${escapeHtml(latest)}</div><svg viewBox="0 0 ${w} ${h}" role="img"><line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" class="axis"/><polyline points="${line('marketMedian')}" class="line median-line"/><polyline points="${line('recommended')}" class="line rec-line"/>${data.map((x,i)=>{const [cx,cy]=pt(num(x.recommended),i);return `<circle cx="${cx}" cy="${cy}" r="4" class="dot"><title>${fmtBRL(x.recommended)} — ${new Date(x.date).toLocaleDateString(appLocale())}</title></circle>`}).join('')}</svg><div class="legend"><span><i class="rec-key"></i>Preço recomendado</span><span><i class="med-key"></i>Mediana</span></div>`;
 }
 $('#clearHistory').addEventListener('click',()=>{localStorage.removeItem(accountStorageKey('marketai-history'));renderHistory()});
 
@@ -266,7 +268,7 @@ $('#saveWatch').addEventListener('click',()=>{
 });
 function renderWatchlist(){
   const items=readAccountItems('marketai-watch');
-  $('#watchList').innerHTML=items.length?items.map((x,i)=>`<div class="history-item watch-item"><div><strong>${escapeHtml(x.name)}</strong><small>Salvo ${new Date(x.date).toLocaleString('pt-BR')} · ${historyModeLabel(x.status)}</small></div><div><small>Score</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem preço':fmtBRL(x.recommended)}</div><button class="ghost reanalyze" data-i="${i}">Reanalisar</button></div>`).join(''):'<div class="empty">Nenhum produto monitorado.</div>';
+  $('#watchList').innerHTML=items.length?items.map((x,i)=>`<div class="history-item watch-item"><div><strong>${escapeHtml(x.name)}</strong><small>Salvo ${new Date(x.date).toLocaleString(appLocale())} · ${historyModeLabel(x.status)}</small></div><div><small>Score</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem preço':fmtBRL(x.recommended)}</div><button class="ghost reanalyze" data-i="${i}">Reanalisar</button></div>`).join(''):'<div class="empty">Nenhum produto monitorado.</div>';
   $$('.reanalyze').forEach(btn=>btn.addEventListener('click',()=>loadWatch(items[num(btn.dataset.i)])));
 }
 function loadWatch(item){ Object.entries(item.form||{}).forEach(([k,v])=>{const el=form.elements[k];if(el)el.value=v;}); switchView('analyze'); result.hidden=true; form.style.display='grid'; window.scrollTo({top:0,behavior:'smooth'}); }
@@ -275,7 +277,7 @@ $('#clearWatchlist').addEventListener('click',()=>{localStorage.removeItem(accou
 $('#printReport').addEventListener('click',()=>window.print());
 $('#exportCsv').addEventListener('click',()=>{
   if(!currentAnalysis)return; const d=currentAnalysis, rec=d.pricing.strategies.recommended;
-  const rows=[['MarketAI v1.0.3 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
+  const rows=[['MarketAI v1.0.4 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
   const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`marketai-${slugify(d.request.typed_name)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 });
 
@@ -350,7 +352,7 @@ $('#savePreferences')?.addEventListener('click',async()=>{
 function downloadJson(filename,data){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.0.3',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
+$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.0.4',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
 $('#importBackupBtn')?.addEventListener('click',()=>$('#importBackupFile').click());
 $('#importBackupFile')?.addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
@@ -659,4 +661,15 @@ $('#saveWatch')?.addEventListener('click',async()=>{
     const d=await intelJson('/api/intelligence/watches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     $('#saveWatch').textContent='✓ Sentinel ativo'; setTimeout(()=>$('#saveWatch').textContent='★ Monitorar',1800);
   }catch(e){console.warn('Sentinel cloud',e)}
+});
+
+
+document.addEventListener('marketai:languagechange',()=>{
+  try{
+    health();
+    if(currentAnalysis && !result.hidden) renderAnalysis(currentAnalysis);
+    renderHistory();
+    renderWatchlist();
+    if(cloudAccount?.authenticated) loadCloudStatus();
+  }catch{}
 });
