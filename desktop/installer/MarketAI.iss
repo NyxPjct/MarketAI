@@ -30,7 +30,7 @@ UsePreviousGroup=yes
 UsePreviousTasks=yes
 VersionInfoVersion=1.0.5.0
 VersionInfoCompany={#MyAppPublisher}
-VersionInfoDescription=MarketAI Community - Inteligência Comercial
+VersionInfoDescription=MarketAI Community - Market Intelligence
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 MinVersion=10.0.17763
@@ -41,10 +41,14 @@ AppMutex=Local\MarketAI.Desktop.v1.0
 UninstallDisplayName=MarketAI v1.0.5 Community
 
 [Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "german"; MessagesFile: "compiler:Languages\German.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "Criar atalho na Área de Trabalho"; GroupDescription: "Atalhos adicionais:"; Flags: unchecked
+Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
 
 [Files]
 Source: "..\dist\MarketAI.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -57,14 +61,14 @@ Source: "..\docs\CHECKLIST-COMERCIAL.txt"; DestDir: "{app}\docs"; Flags: ignorev
 
 [Icons]
 Name: "{group}\MarketAI"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{group}\Licença Open Source"; Filename: "{app}\docs\LICENSE.txt"
-Name: "{group}\Política de Privacidade"; Filename: "{app}\docs\PRIVACIDADE.txt"
-Name: "{group}\Notas da versão"; Filename: "{app}\docs\RELEASE-NOTES.txt"
-Name: "{group}\Desinstalar MarketAI"; Filename: "{uninstallexe}"
+Name: "{group}\Open Source License"; Filename: "{app}\docs\LICENSE.txt"
+Name: "{group}\Privacy Notice"; Filename: "{app}\docs\PRIVACIDADE.txt"
+Name: "{group}\Release Notes"; Filename: "{app}\docs\RELEASE-NOTES.txt"
+Name: "{group}\Uninstall MarketAI"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\MarketAI"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Abrir MarketAI"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch MarketAI"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
