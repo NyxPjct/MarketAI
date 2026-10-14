@@ -1,14 +1,26 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MarketAI — Inteligência de preço</title>
+  <title>MarketAI — Market Intelligence</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <section id="authGate" class="auth-gate">
     <div class="auth-backdrop"></div>
+    <div class="auth-language-picker">
+      <label>
+        <span>Language</span>
+        <select data-language-select aria-label="Interface language">
+          <option value="en">English</option>
+          <option value="pt-BR">Português (Brasil)</option>
+          <option value="de">Deutsch</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+        </select>
+      </label>
+    </div>
     <div class="auth-shell">
       <div class="auth-brand">
         <div class="brand-mark auth-logo">M</div>
@@ -60,7 +72,7 @@
 
       <div class="sidebar-foot">
         <div class="status-dot-wrap"><i class="status-dot"></i><span id="apiStatus">verificando API…</span></div>
-        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.0.3</small>
+        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.0.4</small>
       </div>
     </aside>
 
@@ -295,6 +307,21 @@
       </section>
 
       <section id="view-settings" class="view">
+        <div class="card settings-card wide-settings language-settings-card">
+          <div class="card-head">
+            <div><p class="eyebrow">LANGUAGE</p><h2>Interface language</h2><p class="muted">Choose the language used across the entire app.</p></div>
+          </div>
+          <label>Language
+            <select id="settingsLanguage" data-language-select aria-label="Interface language">
+              <option value="en">English</option>
+              <option value="pt-BR">Português (Brasil)</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+            </select>
+            <span class="field-help">English is the default language. Your choice is saved on this device.</span>
+          </label>
+        </div>
         <div class="settings-grid">
           <div class="card settings-card">
             <div class="card-head"><div><p class="eyebrow">CLOUD</p><h2>Serviços centralizados</h2><p class="muted">Na edição Community, as integrações centralizadas podem ficar no MarketAI Cloud. Você não precisa expor chaves sensíveis no aplicativo.</p></div><span class="secure-chip">SERVER</span></div>
@@ -318,7 +345,7 @@
 
       <section id="view-about" class="view">
         <div class="about-grid">
-          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.0.3</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
+          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.0.4</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
           <div class="card"><h3>Compromissos do MarketAI</h3><ul class="clean-list"><li>Não fabrica preços de mercado quando as fontes não respondem.</li><li>Bloqueia recomendação com amostra insuficiente ou variante ambígua.</li><li>Mostra os anúncios usados e descartados para auditoria.</li><li>Não coloca os recursos principais atrás de paywall.</li><li>Tokens de sessão são protegidos no Windows e as chaves dos marketplaces ficam apenas no MarketAI Cloud.</li></ul></div>
           <div class="card"><h3>Limites importantes</h3><p class="muted">Preços mudam, APIs podem limitar resultados e compatibilidade textual não comprova autenticidade física de um item. NCM, impostos, desembaraço e decisões contábeis devem ser validados com profissionais responsáveis.</p></div>
           <div class="card"><h3>Documentos</h3><p class="muted">Os Termos de Uso, Política de Privacidade e Avisos de Terceiros acompanham o instalador e a pasta do aplicativo.</p><div class="legal-links"><span>Termos de Uso</span><span>Privacidade</span><span>Terceiros</span></div></div>
@@ -338,6 +365,7 @@
     </div>
   </div>
 
+  <script src="/static/i18n.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>
