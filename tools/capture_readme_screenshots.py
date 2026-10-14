@@ -83,7 +83,7 @@ with sync_playwright() as p:
     }
     for code, phrase in expected.items():
         check.evaluate("(code) => window.MarketI18n.setLanguage(code)", code)
-        check.wait_for_function("(phrase) => document.body.innerText.includes(phrase)", phrase)
+        check.wait_for_function("(phrase) => document.body.innerText.includes(phrase)", arg=phrase)
         assert check.locator("[data-language-select]").first.input_value() == code
     check.evaluate("() => window.MarketI18n.setLanguage('en')")
     wait_english(check)
