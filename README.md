@@ -15,22 +15,24 @@ Each person uses an individual account, with separate analyses, monitored produc
 
 ## Download for Windows
 
-Current version: **v1.0.5**
+Current version: **v1.1.0**
+
+One multilingual installer for **Windows 10/11 x64**, with English, Português (Brasil), Deutsch, Español and Français.
 
 ```text
-MarketAI-Setup-v1.0.5.exe
+MarketAI-Setup-v1.1.0.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.0.5.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.5/MarketAI-Setup-v1.0.5.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.0.5/MarketAI-Setup-v1.0.5.sha256)
-- [GitHub Release v1.0.5](https://github.com/NyxPjct/MarketAI/releases/tag/v1.0.5)
+- [MarketAI-Setup-v1.1.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.1.0/MarketAI-Setup-v1.1.0.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.1.0/MarketAI-Setup-v1.1.0.sha256)
+- [GitHub Release v1.1.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.1.0)
 
 SHA-256:
 
 ```text
-5a731338f2418146d022ae3bf2664f0dcb6d94b9e14b321459f774f837c149ac
+2de675419ba98011d18a26afaa82287d07d5f21800f52e12e9636249d6931d67
 ```
 
 All releases:
@@ -337,7 +339,7 @@ run_desktop_dev.bat
 Installer filenames follow the application version automatically.
 
 ```text
-v1.0.5 -> MarketAI-Setup-v1.0.5.exe
+v1.1.0 -> MarketAI-Setup-v1.1.0.exe
 v1.1.0 -> MarketAI-Setup-v1.1.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
