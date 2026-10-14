@@ -90,8 +90,8 @@ def configure_paths() -> None:
     data_root = user_data_directory()
     os.environ["MARKETAI_DATA_DIR"] = str(data_root)
 
-    # Compatibilidade: um .env legado ainda pode ser importado, mas a edição Community
-    # grava novas credenciais criptografadas pelo Windows DPAPI.
+    # Compatibility: a legacy .env can still be imported, while the Community edition
+    # stores new credentials protected by Windows DPAPI.
     legacy_env = data_root / ".env"
     portable_env = install_directory() / ".env"
     env_file = portable_env if portable_env.exists() else legacy_env
@@ -122,7 +122,7 @@ def write_startup_error(exc: BaseException) -> Path:
 def main() -> int:
     mutex = acquire_single_instance()
     if mutex is False:
-        show_message(APP_NAME, "O MarketAI já está aberto.")
+        show_message(APP_NAME, "MarketAI is already running.")
         return 0
 
     server = None
@@ -145,13 +145,13 @@ def main() -> int:
         thread.start()
 
         if not wait_until_ready(port):
-            raise RuntimeError("O serviço interno do MarketAI não iniciou dentro do tempo esperado.")
+            raise RuntimeError("The internal MarketAI service did not start within the expected time.")
 
         storage_dir = user_data_directory() / "webview"
         storage_dir.mkdir(parents=True, exist_ok=True)
 
         webview.create_window(
-            f"MarketAI v{APP_VERSION} — Inteligência Comercial · Community",
+            f"MarketAI v{APP_VERSION} — Market Intelligence · Community",
             f"http://127.0.0.1:{port}",
             width=1440,
             height=900,
@@ -164,8 +164,8 @@ def main() -> int:
     except Exception as exc:
         log_path = write_startup_error(exc)
         show_message(
-            "MarketAI — erro de inicialização",
-            f"Não foi possível iniciar o MarketAI.\n\nUm relatório foi salvo em:\n{log_path}",
+            "MarketAI — startup error",
+            f"MarketAI could not start.\n\nA diagnostic report was saved to:\n{log_path}",
             error=True,
         )
         return 2
