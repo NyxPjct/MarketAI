@@ -487,6 +487,7 @@
 
   function translateTextNode(node, forceSource=false) {
     if (!node || node.nodeType !== Node.TEXT_NODE) return;
+    if (node.parentElement?.closest?.('[data-no-i18n]')) return;
     const raw = node.nodeValue || '';
     if (!raw.trim()) return;
     if (forceSource || !textSources.has(node)) textSources.set(node, raw.trim());
@@ -498,6 +499,7 @@
 
   function translateAttrs(el, forceSource=false) {
     if (!(el instanceof Element)) return;
+    if (el.closest?.('[data-no-i18n]')) return;
     const attrs = ['placeholder','title','alt','aria-label'];
     let cache = attrSources.get(el);
     if (!cache) { cache = {}; attrSources.set(el, cache); }
