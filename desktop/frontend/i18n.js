@@ -324,7 +324,40 @@
     'Compatible market found and filtered by variant.': ['Mercado compatível encontrado e filtrado por variante.','Kompatibler Markt gefunden und nach Variante gefiltert.','Mercado compatible encontrado y filtrado por variante.','Marché compatible trouvé et filtré par variante.'],
     'Analysis executed by MarketAI Cloud with credentials kept exclusively on the server.': ['Análise executada pelo MarketAI Cloud com credenciais mantidas exclusivamente no servidor.','Analyse durch MarketAI Cloud mit ausschließlich serverseitig gespeicherten Zugangsdaten.','Análisis ejecutado por MarketAI Cloud con credenciales almacenadas exclusivamente en el servidor.','Analyse exécutée par MarketAI Cloud avec des identifiants conservés exclusivement sur le serveur.'],
     'Stable': ['estável','stabil','estable','stable'],
-    'At least 2 real snapshots are required.': ['São necessários pelo menos 2 snapshots reais.','Mindestens 2 reale Snapshots sind erforderlich.','Se requieren al menos 2 snapshots reales.','Au moins 2 snapshots réels sont nécessaires.']
+    'At least 2 real snapshots are required.': ['São necessários pelo menos 2 snapshots reais.','Mindestens 2 reale Snapshots sind erforderlich.','Se requieren al menos 2 snapshots reales.','Au moins 2 snapshots réels sont nécessaires.'],
+    'Preview': ['Prévia','Vorschau','Vista previa','Aperçu'],
+    'E.g.:': ['Ex.:','Z. B.:','Ej.:','Ex. :'],
+    'Brazilian real': ['Real','Brasilianischer Real','Real brasileño','Réal brésilien'],
+    'Authenticated ML': ['ML autenticado','Authentifiziertes ML','ML autenticado','ML authentifié'],
+    'Incorrect email or password.': ['E-mail ou senha incorretos.','E-Mail oder Passwort falsch.','Correo o contraseña incorrectos.','E-mail ou mot de passe incorrect.'],
+    'This email already has an account.': ['Este e-mail já possui uma conta.','Für diese E-Mail existiert bereits ein Konto.','Este correo ya tiene una cuenta.','Cet e-mail possède déjà un compte.'],
+    'Enter a valid email and a password with at least 8 characters.': ['Informe um e-mail válido e uma senha com pelo menos 8 caracteres.','Gib eine gültige E-Mail und ein Passwort mit mindestens 8 Zeichen ein.','Introduce un correo válido y una contraseña de al menos 8 caracteres.','Saisissez un e-mail valide et un mot de passe d’au moins 8 caractères.'],
+    'You must accept the terms to create the account.': ['É necessário aceitar os termos para criar a conta.','Du musst die Bedingungen akzeptieren, um das Konto zu erstellen.','Debes aceptar los términos para crear la cuenta.','Vous devez accepter les conditions pour créer le compte.'],
+    'This account is disabled.': ['Esta conta está desativada.','Dieses Konto ist deaktiviert.','Esta cuenta está desactivada.','Ce compte est désactivé.'],
+    'MarketAI Cloud is currently unavailable. Try again in a moment.': ['O MarketAI Cloud está indisponível no momento. Tente novamente em instantes.','MarketAI Cloud ist derzeit nicht verfügbar. Versuche es gleich erneut.','MarketAI Cloud no está disponible en este momento. Inténtalo de nuevo en unos instantes.','MarketAI Cloud est actuellement indisponible. Réessayez dans un instant.'],
+    'MarketAI account': ['Conta MarketAI','MarketAI-Konto','Cuenta MarketAI','Compte MarketAI'],
+    'Saved': ['Salvo','Gespeichert','Guardado','Enregistré'],
+    'Monitored ✓': ['✓ Monitorado','✓ Beobachtet','✓ Monitoreado','✓ Surveillé'],
+    'USED FOR PRICING': ['USADO NO CÁLCULO','FÜR PREISBERECHNUNG VERWENDET','USADO EN EL CÁLCULO','UTILISÉ DANS LE CALCUL'],
+    'COMPATIBLE': ['COMPATÍVEL','KOMPATIBEL','COMPATIBLE','COMPATIBLE'],
+    'DISCARDED': ['DESCARTADO','VERWORFEN','DESCARTADO','ÉCARTÉ'],
+    'Variant': ['Variante','Variante','Variante','Variante'],
+    'Quality': ['Qualidade','Qualität','Calidad','Qualité'],
+    'Score': ['Score','Score','Score','Score'],
+    'Verdict': ['Veredito','Urteil','Veredicto','Verdict'],
+    'Minimum price for target margin': ['Piso pela margem','Mindestpreis für Zielmarge','Precio mínimo por margen objetivo','Prix minimum pour la marge cible'],
+    'Original price': ['Preço original','Originalpreis','Precio original','Prix d’origine'],
+    'BRL price': ['Preço BRL','BRL-Preis','Precio BRL','Prix BRL'],
+    'Reason': ['Motivo','Grund','Motivo','Motif'],
+    'condition is not new': ['condição diferente de novo','Zustand ist nicht neu','condición distinta de nuevo','état différent de neuf'],
+    'brand does not match title': ['marca não confere no título','Marke stimmt nicht mit dem Titel überein','la marca no coincide con el título','la marque ne correspond pas au titre'],
+    'model does not match': ['modelo não confere','Modell stimmt nicht überein','el modelo no coincide','le modèle ne correspond pas'],
+    'highly compatible name': ['nome altamente compatível','Name sehr kompatibel','nombre altamente compatible','nom très compatible'],
+    'low name compatibility': ['nome pouco compatível','geringe Namenskompatibilität','baja compatibilidad del nombre','faible compatibilité du nom'],
+    'replica': ['réplica','Replik','réplica','réplique'],
+    'power': ['potência','Leistung','potencia','puissance'],
+    'concentration matches': ['concentração confere','Konzentration stimmt überein','la concentración coincide','la concentration correspond'],
+    'MarketAI Community does not create fictitious market prices. If there are fewer than 3 compatible real listings, or variants are mixed, it only shows the minimum price calculated from your costs and blocks the market recommendation. Listing compatibility does not prove physical authenticity. NCM and taxation must be validated with an accountant/customs professional.': ['O MarketAI v1.0.4 Community não cria preços de mercado fictícios. Se não houver pelo menos 3 anúncios reais compatíveis, ou se as variantes estiverem misturadas, ele mostra apenas o preço mínimo calculado pelos seus custos e bloqueia a recomendação de mercado. Compatibilidade de anúncio não comprova autenticidade física do produto. NCM e tributação devem ser validados com contador/despachante.','MarketAI Community erstellt keine fiktiven Marktpreise. Gibt es weniger als 3 kompatible reale Angebote oder werden Varianten gemischt, wird nur der aus deinen Kosten berechnete Mindestpreis angezeigt und die Marktempfehlung gesperrt. Angebotskompatibilität beweist keine physische Echtheit. NCM und Steuern müssen mit Fachleuten geprüft werden.','MarketAI Community no crea precios de mercado ficticios. Si hay menos de 3 anuncios reales compatibles o se mezclan variantes, solo muestra el precio mínimo calculado a partir de tus costes y bloquea la recomendación de mercado. La compatibilidad del anuncio no demuestra la autenticidad física. El NCM y la tributación deben validarse con profesionales.','MarketAI Community ne crée pas de prix de marché fictifs. S’il y a moins de 3 annonces réelles compatibles ou si des variantes sont mélangées, seul le prix minimum calculé à partir de vos coûts est affiché et la recommandation de marché est bloquée. La compatibilité d’une annonce ne prouve pas l’authenticité physique. Le NCM et la fiscalité doivent être validés par des professionnels.']
   };
 
   const LANG_INDEX = { 'pt-BR': 0, de: 1, es: 2, fr: 3 };
@@ -429,7 +462,21 @@
       const m = trimmed.match(p.re);
       if (m) return (p[lang] || p.en)(m);
     }
-    return trimmed;
+
+    // Translate known Portuguese fragments inside labels such as country/currency
+    // options ("🇧🇷 Brasil", "BRL — Real") and example placeholders.
+    let partial = trimmed;
+    const aliases = [...PT_TO_EN.entries()]
+      .filter(([pt]) => pt.length >= 3)
+      .sort((a,b) => b[0].length - a[0].length);
+    for (const [pt, enKey] of aliases) {
+      if (!partial.includes(pt)) continue;
+      const replacement = lang === 'en'
+        ? enKey
+        : (C[enKey]?.[LANG_INDEX[lang]] || enKey);
+      partial = partial.split(pt).join(replacement);
+    }
+    return partial;
   }
 
   function preserveWhitespace(original, translated) {
