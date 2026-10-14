@@ -12,9 +12,9 @@ VSVersionInfo(
   kids=[
     StringFileInfo([
       StringTable(
-        u'041604E4',
+        u'040904E4',
         [StringStruct(u'CompanyName', u'MarketAI'),
-         StringStruct(u'FileDescription', u'MarketAI Community - Inteligência Comercial'),
+         StringStruct(u'FileDescription', u'MarketAI Community - Market Intelligence'),
          StringStruct(u'FileVersion', u'1.0.5.0'),
          StringStruct(u'InternalName', u'MarketAI'),
          StringStruct(u'OriginalFilename', u'MarketAI.exe'),
@@ -22,6 +22,6 @@ VSVersionInfo(
          StringStruct(u'ProductVersion', u'1.0.5')]
       )
     ]),
-    VarFileInfo([VarStruct(u'Translation', [1046, 1252])])
+    VarFileInfo([VarStruct(u'Translation', [1033, 1252])])
   ]
 )
