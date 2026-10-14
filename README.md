@@ -340,7 +340,7 @@ Installer filenames follow the application version automatically.
 
 ```text
 v1.1.0 -> MarketAI-Setup-v1.1.0.exe
-v1.1.0 -> MarketAI-Setup-v1.1.0.exe
+v1.2.0 -> MarketAI-Setup-v1.2.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
 
