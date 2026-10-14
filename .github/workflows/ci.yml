@@ -57,4 +57,6 @@ jobs:
         run: python -m compileall -q cloud/app desktop/backend
 
       - name: Frontend JavaScript syntax
-        run: node --check desktop/frontend/app.js
+        run: |
+          node --check desktop/frontend/i18n.js
+          node --check desktop/frontend/app.js
