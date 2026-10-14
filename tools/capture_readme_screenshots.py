@@ -5,34 +5,47 @@ BASE_URL = "http://127.0.0.1:8000"
 OUT = Path("docs/screenshots")
 OUT.mkdir(parents=True, exist_ok=True)
 
+VERSION = "v1.0.4"
+
+
 def set_demo_account(page):
     page.evaluate("""
     () => {
+      localStorage.setItem('marketai-language', 'en');
+      if (window.MarketI18n) window.MarketI18n.setLanguage('en');
       const gate = document.querySelector('#authGate');
       const shell = document.querySelector('#appShell');
       if (gate) gate.hidden = true;
       if (shell) shell.hidden = false;
       document.body.classList.add('is-authenticated');
       const values = {
-        accountName: 'Usuário MarketAI',
-        accountEmail: 'usuario@exemplo.com',
+        accountName: 'MarketAI User',
+        accountEmail: 'user@example.com',
         accountPlan: 'COMMUNITY',
-        accountRemaining: 'GRÁTIS',
-        accountQuota: 'ILIMITADAS',
-        accountStatus: 'ATIVO',
+        accountRemaining: 'FREE',
+        accountQuota: 'UNLIMITED',
+        accountStatus: 'ACTIVE',
         apiStatus: 'Community · ONLINE',
-        appVersion: 'MarketAI v1.0.3'
+        appVersion: 'MarketAI v1.0.4'
       };
       for (const [id, value] of Object.entries(values)) {
         const el = document.getElementById(id);
         if (el) el.textContent = value;
       }
-      const onboarding = document.querySelector('#onboarding');
-      if (onboarding) onboarding.hidden = true;
       const modal = document.querySelector('#appModal');
       if (modal) modal.hidden = true;
+      if (window.MarketI18n) window.MarketI18n.refresh();
     }
     """)
+
+
+def wait_english(page):
+    page.wait_for_function("""
+    () => document.documentElement.lang === 'en'
+      && document.body.innerText.includes('Market intelligence. No noise.')
+      && !document.body.innerText.includes('Inteligência de mercado. Sem ruído.')
+    """)
+
 
 def open_view(page, view):
     set_demo_account(page)
@@ -40,83 +53,110 @@ def open_view(page, view):
     if button.count():
         button.first.click()
     page.wait_for_timeout(250)
+    if page.locator('[data-language-select]').count():
+        assert page.locator('[data-language-select]').first.input_value() == 'en'
+
 
 def shot(page, name):
     page.screenshot(path=str(OUT / name), full_page=False)
 
+
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
+    context = browser.new_context(
+        viewport={"width": 1600, "height": 900},
+        device_scale_factor=1,
+        locale="en-US",
+    )
+    context.add_init_script("localStorage.setItem('marketai-language','en')")
+
+    # Validate all supported languages before capturing the English README set.
+    check = context.new_page()
+    check.goto(BASE_URL, wait_until="networkidle")
+    wait_english(check)
+    expected = {
+        "en": "Market intelligence. No noise.",
+        "pt-BR": "Inteligência de mercado. Sem ruído.",
+        "de": "Marktintelligenz. Ohne Rauschen.",
+        "es": "Inteligencia de mercado. Sin ruido.",
+        "fr": "Intelligence de marché. Sans bruit.",
+    }
+    for code, phrase in expected.items():
+        check.evaluate("(code) => window.MarketI18n.setLanguage(code)", code)
+        check.wait_for_function("(phrase) => document.body.innerText.includes(phrase)", phrase)
+        assert check.locator("[data-language-select]").first.input_value() == code
+    check.evaluate("() => window.MarketI18n.setLanguage('en')")
+    wait_english(check)
+    check.close()
 
     # Login
-    page = browser.new_page(viewport={"width": 1600, "height": 900}, device_scale_factor=1)
+    page = context.new_page()
     page.goto(BASE_URL, wait_until="networkidle")
-    page.locator("#cloudEmail").fill("usuario@exemplo.com")
+    wait_english(page)
+    page.locator("#cloudEmail").fill("user@example.com")
     page.locator("#cloudPassword").fill("MarketAI123")
-    page.wait_for_timeout(200)
-    shot(page, "01-login-community-v1.0.3.png")
+    page.wait_for_timeout(180)
+    shot(page, "01-login-community-v1.0.4.png")
     page.close()
 
-    # Dashboard / Nova análise
-    page = browser.new_page(viewport={"width": 1600, "height": 900}, device_scale_factor=1)
+    # Dashboard / New analysis
+    page = context.new_page()
     page.goto(BASE_URL, wait_until="networkidle")
+    wait_english(page)
     open_view(page, "analyze")
-    shot(page, "02-dashboard-v1.0.3.png")
+    shot(page, "02-dashboard-v1.0.4.png")
     page.close()
 
     # Intelligence Core
-    page = browser.new_page(viewport={"width": 1600, "height": 900}, device_scale_factor=1)
+    page = context.new_page()
     page.goto(BASE_URL, wait_until="networkidle")
+    wait_english(page)
     open_view(page, "intelligence")
-    shot(page, "03-intelligence-core-v1.0.3.png")
+    shot(page, "03-intelligence-core-v1.0.4.png")
     page.close()
 
-    # Minha conta
-    page = browser.new_page(viewport={"width": 1600, "height": 900}, device_scale_factor=1)
+    # My account
+    page = context.new_page()
     page.goto(BASE_URL, wait_until="networkidle")
+    wait_english(page)
     open_view(page, "account")
     set_demo_account(page)
     page.wait_for_timeout(150)
-    shot(page, "04-minha-conta-v1.0.3.png")
+    shot(page, "04-my-account-v1.0.4.png")
     page.close()
 
-    # Configurações
-    page = browser.new_page(viewport={"width": 1600, "height": 900}, device_scale_factor=1)
+    # Settings
+    page = context.new_page()
     page.goto(BASE_URL, wait_until="networkidle")
+    wait_english(page)
     open_view(page, "settings")
-    shot(page, "05-configuracoes-v1.0.3.png")
+    shot(page, "05-settings-v1.0.4.png")
     page.close()
 
-    # Modal de conta criada
-    page = browser.new_page(viewport={"width": 1600, "height": 900}, device_scale_factor=1)
+    # Account-created modal
+    page = context.new_page()
     page.goto(BASE_URL, wait_until="networkidle")
+    wait_english(page)
     open_view(page, "analyze")
     page.evaluate("""
     () => {
-      if (typeof window.openAppModal === 'function') {
-        window.openAppModal({
-          eyebrow: 'CONTA CRIADA',
-          title: 'Bem-vindo ao MarketAI.',
-          message: 'Sua conta foi criada com sucesso. Todos os recursos Community estão liberados gratuitamente.',
-          symbol: '✓',
-          button: 'ENTRAR NO MARKETAI'
-        });
-      } else {
-        const modal = document.querySelector('#appModal');
-        if (modal) {
-          modal.hidden = false;
-          modal.setAttribute('aria-hidden', 'false');
-          const title = document.querySelector('#appModalTitle');
-          const msg = document.querySelector('#appModalMessage');
-          if (title) title.textContent = 'Bem-vindo ao MarketAI.';
-          if (msg) msg.textContent = 'Sua conta foi criada com sucesso. Todos os recursos Community estão liberados gratuitamente.';
-        }
-      }
+      window.openAppModal({
+        eyebrow: 'ACCOUNT CREATED',
+        title: 'Welcome to MarketAI.',
+        message: 'Your account user@example.com was created successfully. All Community features are unlocked for free.',
+        symbol: '✓',
+        button: 'ENTER MARKETAI'
+      });
+      if (window.MarketI18n) window.MarketI18n.refresh();
     }
     """)
     page.wait_for_timeout(180)
-    shot(page, "06-conta-criada-modal-v1.0.3.png")
+    shot(page, "06-account-created-modal-v1.0.4.png")
     page.close()
 
+    context.close()
     browser.close()
 
-print("README screenshots generated:", len(list(OUT.glob("*.png"))))
+shots = sorted(OUT.glob("*v1.0.4.png"))
+assert len(shots) == 6, f"Expected 6 v1.0.4 screenshots, got {len(shots)}"
+print("English README screenshots generated:", len(shots))
