@@ -83,10 +83,13 @@
           <h1>Descubra se vale a pena vender antes de comprar.</h1>
           <p class="subtitle">Identifique o produto, compare marketplaces, converta moedas, simule preços e veja sua margem real.</p>
         </div>
-        <div class="pill live-pill"><i></i> LIVE MARKET · Brasil + Internacional</div>
+        <div class="pill live-pill"><i></i> Market evidence</div>
       </header>
 
       <section id="view-analyze" class="view active">
+        <ol id="workflowSteps" class="workflow-steps no-print" aria-label="Analysis workflow">
+          <li data-step="analyze" aria-current="step">1. Analyze product</li><li data-step="compare">2. Compare margin</li><li data-step="monitor">3. Monitor changes</li>
+        </ol>
         <form id="analysisForm" class="analysis-grid">
           <div class="card form-card">
             <div class="card-head"><div><span class="step">01</span><h2>Produto</h2></div><span class="muted">nome + imagem</span></div>
@@ -195,9 +198,11 @@
             <div class="score-card card"><p class="eyebrow">ÍNDICE DE OPORTUNIDADE</p><div class="score-wrap"><strong id="scoreValue">—</strong><span>/100</span></div><p id="scoreLabel">—</p></div>
           </div>
 
+          <div class="card next-action no-print"><div><h2 id="nextActionTitle">Next step</h2><p id="nextActionMessage" class="muted"></p></div><div class="action-row"><button class="ghost" id="refineAnalysis">Refine product</button><button class="ghost" id="compareMargin">Compare margin</button><button class="ghost" id="inspectEvidence">Review evidence</button></div><p id="monitorFeedback" role="status" aria-live="polite"></p></div>
           <div id="dataQualityCard" class="card data-quality-card">
             <div><p class="eyebrow">QUALIDADE DOS DADOS</p><h2 id="qualityTitle">—</h2><p id="qualityMessage" class="muted">—</p></div>
             <div class="quality-side"><span id="qualityBadge" class="quality-badge">—</span><small id="qualityCounts">—</small><div id="sourceStatus" class="source-status"></div></div>
+            <div id="evidenceSummary" class="evidence-summary" aria-live="polite"></div>
             <ul id="qualityBlockers" class="quality-blockers"></ul>
           </div>
 
@@ -241,7 +246,7 @@
             <div id="costBreakdown" class="cost-breakdown"></div>
           </div>
 
-          <div class="card market-table-card">
+          <div id="compatibleEvidence" class="card market-table-card">
             <div class="card-head"><div><h2>Anúncios compatíveis</h2><p id="marketMode" class="muted">—</p><p id="marketCheckedAt" class="micro live-checked">—</p></div><div class="table-stats" id="tableStats">—</div></div>
             <div class="table-wrap"><table><thead><tr><th>Match</th><th>Fonte</th><th>Loja / vendedor</th><th>Anúncio</th><th>Variante detectada</th><th>Preço</th></tr></thead><tbody id="marketRows"></tbody></table></div>
           </div>
@@ -264,18 +269,19 @@
         <div class="intel-grid">
           <div class="card intel-card"><p class="eyebrow">RADAR</p><h3>Oportunidades</h3><div id="intelRadar" class="intel-list"><div class="empty">Atualize para carregar.</div></div></div>
           <div class="card intel-card"><p class="eyebrow">SENTINEL</p><h3>Alertas críticos</h3><div id="intelAlerts" class="intel-list"><div class="empty">Atualize para carregar.</div></div></div>
-          <div class="card intel-card"><p class="eyebrow">COPILOT</p><h3>Pergunte aos seus dados</h3><div class="copilot-form"><textarea id="copilotQuestion" class="field-textarea" rows="4" placeholder="Ex.: Qual produto merece mais atenção agora?"></textarea><button class="ghost intel-action" id="askCopilot">PERGUNTAR</button></div><div id="copilotAnswer" class="copilot-answer muted">O Copilot não inventa dados. Se não houver snapshots, ele avisa.</div></div>
+          <div class="card intel-card"><p class="eyebrow">COPILOT</p><h3>Pergunte aos seus dados</h3><div class="copilot-form"><label>Context<select id="copilotTarget"><option value="">Latest analysis / account</option></select></label><textarea id="copilotQuestion" class="field-textarea" rows="4" placeholder="Ex.: Qual produto merece mais atenção agora?"></textarea><button class="ghost intel-action" id="askCopilot">PERGUNTAR</button></div><p id="copilotMode" class="micro" role="status"></p><div id="copilotAnswer" class="copilot-answer muted">O Copilot não inventa dados. Se não houver snapshots, ele avisa.</div></div>
+          <div class="card intel-card"><p class="eyebrow">FORECAST</p><h3>Price projection</h3><label>Monitored product<select id="forecastTarget"><option value="">Select a product</option></select></label><button class="ghost" id="loadForecast">View forecast</button><div id="forecastOutput" class="copilot-answer" aria-live="polite">Select a monitored product to see projections.</div></div>
           <div class="card intel-card"><p class="eyebrow">PROFIT ENGINE</p><h3>Lucro líquido rápido</h3><div class="split"><label>Preço<input id="profitPrice" type="number" step="0.01" value="200"></label><label>Custo<input id="profitCost" type="number" step="0.01" value="100"></label></div><div class="four-col"><label>Marketplace %<input id="profitFee" type="number" step="0.1" value="16"></label><label>Impostos %<input id="profitTax" type="number" step="0.1" value="6"></label><label>Ads %<input id="profitAds" type="number" step="0.1" value="3"></label><label>Pagamento %<input id="profitPayment" type="number" step="0.1" value="2"></label></div><button class="ghost" id="calcProfit">CALCULAR</button><div id="profitOutput" class="copilot-answer muted">—</div></div>
         </div>
       </section>
 
       <section id="view-watchlist" class="view">
-        <div class="card history-card"><div class="card-head"><div><h2>Produtos monitorados</h2><p class="muted">Salvos localmente neste navegador. Você pode reanalisar quando quiser.</p></div><button class="ghost" id="clearWatchlist">Limpar</button></div><div id="watchList" class="history-list"></div></div>
+        <div class="card history-card"><div class="card-head"><div><h2>Produtos monitorados</h2><p class="muted">Synced with your account. Monitoring continues while Sentinel is running.</p></div><button class="ghost" id="refreshWatchlist">Refresh</button><button class="ghost" id="clearWatchlist">Limpar</button></div><p id="watchSyncStatus" role="status" class="micro"></p><div id="watchList" class="history-list"></div></div>
       </section>
 
       <section id="view-history" class="view">
         <div class="history-layout">
-          <div class="card history-card"><div class="card-head"><div><h2>Histórico local</h2><p class="muted">Análises salvas neste navegador.</p></div><button class="ghost" id="clearHistory">Limpar</button></div><div id="historyList" class="history-list"></div></div>
+          <div class="card history-card"><div class="card-head"><div><h2>Account history</h2><p class="muted">Analyses synced across your devices. Imported records are identified.</p></div><button class="ghost" id="refreshHistory">Refresh</button><button class="ghost" id="clearHistory">Limpar</button></div><p id="historySyncStatus" role="status" class="micro"></p><div id="historyList" class="history-list"></div></div>
           <div class="card trend-card"><div class="card-head"><div><h2>Evolução das análises</h2><p class="muted">Preço recomendado e mediana dos registros recentes.</p></div></div><div id="historyChart" class="history-chart"></div></div>
         </div>
       </section>

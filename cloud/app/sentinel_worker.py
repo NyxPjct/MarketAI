@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from app.db import SessionLocal, Base, engine
 from app.models import ProductWatch, User, MarketSnapshot, IntelligenceAlert
 from app.market_engine import run_analysis
+from app.copilot import analysis_context
 from app.intelligence_engine import data_quality_score, market_score, autopilot_price
 
 INTERVAL=max(15,int(os.getenv("SENTINEL_INTERVAL_MINUTES","60")))
@@ -20,7 +21,7 @@ async def check_one(db,w,user):
         ap=autopilot_price(analysis,str(fields.get("autopilot_strategy") or "balanced"),float(fields.get("undercut_amount") or 1),float(fields.get("minimum_margin_percent") or fields.get("desired_margin_percent") or 15)) if w.autopilot_enabled else {"available":False}
         pm=analysis.get("pricing",{}).get("market",{}); rec=analysis.get("pricing",{}).get("strategies",{}).get("recommended") or {}
         prev=db.query(MarketSnapshot).filter_by(watch_id=w.id,user_id=user.id).order_by(MarketSnapshot.created_at.desc()).first()
-        snap=MarketSnapshot(watch_id=w.id,user_id=user.id,market_median=float(pm.get("median") or 0) or None,market_min=float(pm.get("min") or 0) or None,market_max=float(pm.get("max") or 0) or None,listing_count=int(pm.get("count") or 0),quality_score=dq["score"],market_score=ms.get("score"),net_margin=rec.get("net_margin_percent"),suggested_price=(ap.get("suggested_price") if ap.get("available") else rec.get("price")),payload_json=json.dumps({"quality":dq,"score":ms,"autopilot":ap},ensure_ascii=False))
+        snap=MarketSnapshot(watch_id=w.id,user_id=user.id,market_median=float(pm.get("median") or 0) or None,market_min=float(pm.get("min") or 0) or None,market_max=float(pm.get("max") or 0) or None,listing_count=int(pm.get("count") or 0),quality_score=dq["score"],market_score=ms.get("score"),net_margin=rec.get("net_margin_percent"),suggested_price=(ap.get("suggested_price") if ap.get("available") else rec.get("price")),payload_json=json.dumps({"quality":dq,"score":ms,"autopilot":ap,"analysis":analysis_context(analysis)},ensure_ascii=False))
         db.add(snap)
         if prev and snap.market_median and prev.market_median:
             pct=(snap.market_median-prev.market_median)/prev.market_median*100

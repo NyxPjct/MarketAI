@@ -16,6 +16,8 @@ let currentPreviewURL = '';
 let currentAnalysis = null;
 let currentFormSnapshot = null;
 let activeAccountId = 'guest';
+let accountSync = null;
+let accountEpoch = 0;
 
 function accountStorageKey(base){
   return `${base}:${activeAccountId || 'guest'}`;
@@ -38,13 +40,7 @@ originCountry.addEventListener('change', () => {
 async function health(){
   try{
     const r = await fetch('/api/health'); const d = await r.json();
-    const labels=[];
-    if(d.integrations?.mercadolivre_token) labels.push(tr('Authenticated ML'));
-    else labels.push(tr('Public ML'));
-    if(d.integrations?.ebay) labels.push('eBay');
-    if(d.integrations?.google_shopping) labels.push('Shopping');
-    if(d.integrations?.vision) labels.push(tr('AI vision'));
-    $('#apiStatus').textContent = `${labels.join(' · ')} · v${d.version}`;
+    $('#apiStatus').textContent = `${tr('API online')} · v${d.version}`;
     $('.status-dot').classList.add('live');
   }catch{ $('#apiStatus').textContent = tr('API offline'); }
 }
@@ -60,8 +56,8 @@ function switchView(name){
   $$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===name));
   $$('.view').forEach(x=>x.classList.remove('active'));
   $(`#view-${name}`).classList.add('active');
-  if(name==='history') renderHistory();
-  if(name==='watchlist') renderWatchlist();
+  if(name==='history'){renderHistory();syncAccountData();}
+  if(name==='watchlist'){renderWatchlist();syncAccountData();}
   if(name==='integrations') loadIntegrations();
   if(name==='settings') loadSettings();
 }
@@ -80,17 +76,17 @@ function snapshotForm(){
 }
 
 form.addEventListener('submit', async (e) => {
-  e.preventDefault(); result.hidden = true; form.style.display = 'none'; loading.hidden = false; currentFormSnapshot=snapshotForm();
+  e.preventDefault(); const requestAccount=activeAccountId; result.hidden = true; form.style.display = 'none'; loading.hidden = false; currentFormSnapshot=snapshotForm();
   let i=0; const timer=setInterval(()=>{$('#loadingText').textContent=tr(loadingSteps[(++i)%loadingSteps.length])},1100);
   try{
     const data=new FormData(form); const r=await fetch('/api/analyze',{method:'POST',body:data});
     if(!r.ok){let d={};try{d=await r.json()}catch{};const code=d.detail||'';if(r.status===401){setAuthScreen(false);throw new Error(tr('Sign in to your MarketAI account to analyze products.'))}if(r.status===403&&code==='device_not_authorized'){switchView('account');throw new Error(tr('This computer is not linked to your account yet. Sign out and sign in again to reactivate it.'))}if(r.status===429)throw new Error(tr('The server is temporarily rate-limiting requests. Try again in a moment.'));throw new Error(tr(d.message||d.detail||'Could not complete the analysis.'))}
-    const analysis=await r.json(); currentAnalysis=analysis; renderAnalysis(analysis); saveHistory(analysis); result.hidden=false; result.scrollIntoView({behavior:'smooth',block:'start'});loadCloudStatus();
+    const analysis=await r.json(); if(requestAccount!==activeAccountId)return; currentAnalysis=analysis; renderAnalysis(analysis); saveHistory(analysis); setWorkflowStep('compare'); result.hidden=false; result.scrollIntoView({behavior:'smooth',block:'start'});loadCloudStatus();
   }catch(err){ alert(tr('I could not complete the analysis.')+'\n\n'+tr(err.message)); form.style.display='grid'; }
   finally{ clearInterval(timer); loading.hidden=true; }
 });
 
-$('#newAnalysis').addEventListener('click',()=>{result.hidden=true;form.style.display='grid';window.scrollTo({top:0,behavior:'smooth'})});
+$('#newAnalysis').addEventListener('click',()=>{result.hidden=true;form.style.display='grid';setWorkflowStep('analyze');window.scrollTo({top:0,behavior:'smooth'})});
 
 function featureSummary(f={}){
   const parts=[];
@@ -118,12 +114,14 @@ function renderQuality(d){
   $('#dataQualityCard').className=`card data-quality-card ${qualityClass(q.state)}`;
   $('#qualityCounts').textContent=tr(`${d.market.raw_count} encontrados · ${d.market.matched_count} compatíveis · ${d.market.pricing_count} usados no preço`);
   $('#qualityBlockers').innerHTML=(q.blockers||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
+  renderEvidence(d);
   $('#sourceStatus').innerHTML=(d.market.sources||[]).length
     ? d.market.sources.map(x=>{
         const cls=x.status==='ok'?'source-ok':(x.status==='not_configured'?'source-off':'source-warn');
         const status=x.status==='ok'?`${x.returned||0} ${tr('result(s)')}`:sourceStatusLabel(x.status);
+        const collected=x.checked_at?`<small>${escapeHtml(tr('Collected at'))}: ${escapeHtml(new Date(x.checked_at).toLocaleString(appLocale()))}</small>`:'';
         const err=x.error?`<small>${escapeHtml(x.error)}</small>`:'';
-        return `<span class="${cls}"><b>${escapeHtml(x.source)}</b>: ${escapeHtml(status)}${x.latency_ms?` · ${x.latency_ms} ms`:''}${err}</span>`;
+        return `<span class="${cls}"><b>${escapeHtml(x.source)}</b>: ${escapeHtml(status)}${x.latency_ms?` · ${x.latency_ms} ms`:''}${err}${collected}</span>`;
       }).join('')
     : `<span>${escapeHtml(tr('No market source available for this country.'))}</span>`;
 }
@@ -141,6 +139,7 @@ function renderAnalysis(d){
   $('#resultThumb').innerHTML=currentPreviewURL?`<img src="${currentPreviewURL}" alt="${escapeAttr(tr('product'))}">`:'AI';
 
   renderQuality(d);
+  renderNextAction(d);
 
   $('#scoreValue').textContent=reliable ? pr.opportunity.score : '—';
   $('#scoreLabel').textContent=reliable ? tr(pr.opportunity.label) : tr('Score blocked until reliable market data exists');
@@ -238,14 +237,19 @@ function listingMerchant(x){
 function saveHistory(d){
   const rec=d.pricing.strategies.recommended;
   const items=readAccountItems('marketai-history');
-  items.unshift({date:new Date().toISOString(),name:d.product.product_name||d.request.typed_name,recommended:rec?.price??null,score:d.pricing.opportunity.score??null,marketMedian:d.market.reliable?d.pricing.market.median:null,mode:d.market.quality.state});
+  items.unshift({id:d.history_id||null,date:new Date().toISOString(),name:d.product.product_name||d.request.typed_name,recommended:rec?.price??null,score:d.pricing.opportunity.score??null,marketMedian:d.market.reliable?d.pricing.market.median:null,mode:d.market.quality.state});
   writeAccountItems('marketai-history',items.slice(0,80));
+  syncAccountData(true);
 }
 
 function renderHistory(){
   const items=readAccountItems('marketai-history');
-  $('#historyList').innerHTML=items.length?items.map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${new Date(x.date).toLocaleString(appLocale())} · ${historyModeLabel(x.mode)}</small></div><div><small>MarketAI</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem recomendação':fmtBRL(x.recommended)}</div></div>`).join(''):'<div class="empty">Nenhuma análise salva ainda.</div>';
+  $('#historyList').innerHTML=items.length?items.map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${new Date(x.date).toLocaleString(appLocale())} · ${escapeHtml(historyModeLabel(x.mode))}</small></div><div><small>MarketAI</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem recomendação':fmtBRL(x.recommended)}</div>${x.imported?`<small>${escapeHtml(tr('Imported summary'))}</small>`:x.id?`<button class="ghost reopen-analysis" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Open analysis'))}</button>`:''}</div>`).join(''):'<div class="empty">Nenhuma análise salva ainda.</div>';
   renderHistoryChart(items);
+  $$('.reopen-analysis').forEach(button=>button.addEventListener('click',async()=>{
+    const account=activeAccountId;
+    try{const d=await intelJson('/api/history/'+encodeURIComponent(button.dataset.id));if(account!==activeAccountId)return;if(!d.analysis)throw new Error(tr('Imported summary'));currentAnalysis=d.analysis;currentAnalysis.history_id=d.item.id;currentFormSnapshot=d.analysis.request;if(currentPreviewURL)URL.revokeObjectURL(currentPreviewURL);currentPreviewURL='';imageInput.value='';preview.hidden=true;uploadPrompt.hidden=false;Object.entries(currentFormSnapshot||{}).forEach(([key,value])=>{const input=form.elements[key];if(input)input.value=value??''});switchView('analyze');renderAnalysis(currentAnalysis);form.style.display='none';result.hidden=false;setWorkflowStep('compare');}catch(e){alert(e.message)}
+  }));
 }
 function historyModeLabel(mode){return ({reliable:'mercado confiável',ambiguous:'variante ambígua',insufficient:'amostra insuficiente',no_match:'sem match',unavailable:'sem fonte'})[mode]||mode||'—'}
 
@@ -259,20 +263,34 @@ function renderHistoryChart(items){
   const line=(key)=>data.map((x,i)=>pt(num(x[key]),i).join(',')).join(' ');
   el.innerHTML=`<div class="chart-title">${escapeHtml(latest)}</div><svg viewBox="0 0 ${w} ${h}" role="img"><line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" class="axis"/><polyline points="${line('marketMedian')}" class="line median-line"/><polyline points="${line('recommended')}" class="line rec-line"/>${data.map((x,i)=>{const [cx,cy]=pt(num(x.recommended),i);return `<circle cx="${cx}" cy="${cy}" r="4" class="dot"><title>${fmtBRL(x.recommended)} — ${new Date(x.date).toLocaleDateString(appLocale())}</title></circle>`}).join('')}</svg><div class="legend"><span><i class="rec-key"></i>Preço recomendado</span><span><i class="med-key"></i>Mediana</span></div>`;
 }
-$('#clearHistory').addEventListener('click',()=>{localStorage.removeItem(accountStorageKey('marketai-history'));renderHistory()});
-
-$('#saveWatch').addEventListener('click',()=>{
-  if(!currentAnalysis)return; const items=readAccountItems('marketai-watch'); const rec=currentAnalysis.pricing.strategies.recommended;
-  const item={date:new Date().toISOString(),name:currentAnalysis.product.product_name||currentAnalysis.request.typed_name,score:currentAnalysis.pricing.opportunity.score??null,recommended:rec?.price??null,median:currentAnalysis.market.reliable?currentAnalysis.pricing.market.median:null,status:currentAnalysis.market.quality.state,form:currentFormSnapshot};
-  const filtered=items.filter(x=>x.name!==item.name); filtered.unshift(item); writeAccountItems('marketai-watch',filtered.slice(0,30)); $('#saveWatch').textContent='✓ Monitorado'; setTimeout(()=>$('#saveWatch').textContent='★ Monitorar',1400);
+$('#clearHistory').addEventListener('click',async()=>{
+  if(!confirm(tr('Clear history on all devices?')))return;
+  const account=activeAccountId;
+  try{await intelJson('/api/history',{method:'DELETE'});if(account!==activeAccountId)return;writeAccountItems('marketai-history',[]);renderHistory();await syncAccountData(true);}catch(e){setSyncStatus(tr('Sync failed. Local data was preserved.')+' '+e.message)}
 });
+
 function renderWatchlist(){
   const items=readAccountItems('marketai-watch');
-  $('#watchList').innerHTML=items.length?items.map((x,i)=>`<div class="history-item watch-item"><div><strong>${escapeHtml(x.name)}</strong><small>Salvo ${new Date(x.date).toLocaleString(appLocale())} · ${historyModeLabel(x.status)}</small></div><div><small>Score</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem preço':fmtBRL(x.recommended)}</div><button class="ghost reanalyze" data-i="${i}">Reanalisar</button></div>`).join(''):'<div class="empty">Nenhum produto monitorado.</div>';
+  $('#watchList').innerHTML=items.length?items.map((x,i)=>`<div class="history-item watch-item"><div><strong>${escapeHtml(x.name)}</strong><small>${escapeHtml(x.variant||'')} · ${escapeHtml(x.country||'')} · ${x.date?new Date(x.date).toLocaleString(appLocale()):escapeHtml(tr('No snapshots yet'))}</small></div><div><small>Score</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${intelMoney(x.recommended)}</div><div class="action-row"><button class="ghost reanalyze" data-i="${i}">${escapeHtml(tr('Reanalyze'))}</button>${x.id?`<button class="ghost check-watch" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Check now'))}</button><button class="ghost forecast-watch" data-id="${escapeAttr(x.id)}">Forecast</button><button class="ghost remove-watch" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Remove'))}</button>`:''}</div></div>`).join(''):`<div class="empty">${escapeHtml(tr('No monitored products. Analyze a product and select Monitor.'))}</div>`;
   $$('.reanalyze').forEach(btn=>btn.addEventListener('click',()=>loadWatch(items[num(btn.dataset.i)])));
+  $$('.check-watch').forEach(btn=>btn.addEventListener('click',async()=>{
+    btn.disabled=true; const account=activeAccountId;
+    try{await intelJson(`/api/intelligence/watches/${encodeURIComponent(btn.dataset.id)}/check`,{method:'POST'});if(account!==activeAccountId)return;await syncAccountData(true);}catch(e){setSyncStatus(e.message)}finally{btn.disabled=false}
+  }));
+  $$('.remove-watch').forEach(btn=>btn.addEventListener('click',async()=>{
+    if(!confirm(tr('Stop monitoring this product on all devices?')))return;
+    try{await intelJson(`/api/intelligence/watches/${encodeURIComponent(btn.dataset.id)}`,{method:'DELETE'});await syncAccountData(true);}catch(e){setSyncStatus(e.message)}
+  }));
+  $$('.forecast-watch').forEach(btn=>btn.addEventListener('click',async()=>{switchView('intelligence');await loadIntelligence();$('#forecastTarget').value=btn.dataset.id;showForecast(btn.dataset.id)}));
 }
-function loadWatch(item){ Object.entries(item.form||{}).forEach(([k,v])=>{const el=form.elements[k];if(el)el.value=v;}); switchView('analyze'); result.hidden=true; form.style.display='grid'; window.scrollTo({top:0,behavior:'smooth'}); }
-$('#clearWatchlist').addEventListener('click',()=>{localStorage.removeItem(accountStorageKey('marketai-watch'));renderWatchlist()});
+function loadWatch(item){ Object.entries(item.form||{}).forEach(([k,v])=>{const el=form.elements[k];if(el)el.value=v;}); switchView('analyze'); result.hidden=true; form.style.display='grid';setWorkflowStep('analyze'); window.scrollTo({top:0,behavior:'smooth'}); }
+$('#clearWatchlist').addEventListener('click',async()=>{
+  if(!confirm(tr('Stop monitoring all products on all devices?')))return;
+  const account=activeAccountId;
+  try{await intelJson('/api/intelligence/watches',{method:'DELETE'});if(account!==activeAccountId)return;writeAccountItems('marketai-watch',[]);renderWatchlist();await syncAccountData(true);}catch(e){setSyncStatus(tr('Sync failed. Local data was preserved.')+' '+e.message)}
+});
+$('#refreshHistory').addEventListener('click',()=>syncAccountData(true));
+$('#refreshWatchlist').addEventListener('click',()=>syncAccountData(true));
 
 $('#printReport').addEventListener('click',()=>window.print());
 $('#exportCsv').addEventListener('click',()=>{
@@ -356,7 +374,20 @@ $('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-$
 $('#importBackupBtn')?.addEventListener('click',()=>$('#importBackupFile').click());
 $('#importBackupFile')?.addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
-  try{const d=JSON.parse(await file.text());if(d.format!=='MarketAIBackup')throw new Error('Arquivo não reconhecido.');if(Array.isArray(d.history))writeAccountItems('marketai-history',d.history);if(Array.isArray(d.watchlist))writeAccountItems('marketai-watch',d.watchlist);renderHistory();renderWatchlist();alert('Backup importado.');}catch(err){alert('Não foi possível importar o backup.\n\n'+err.message)}finally{e.target.value=''}
+  const account=activeAccountId;
+  try{
+    const d=JSON.parse(await file.text());
+    if(d.format!=='MarketAIBackup')throw new Error(tr('Unrecognized backup file.'));
+    if(d.account_id && d.account_id!==account)throw new Error(tr('This backup belongs to another account.'));
+    if(accountSync?.account===account)await accountSync.promise;
+    if(account!==activeAccountId)return;
+    if(Array.isArray(d.history)&&d.history.length){await intelJson('/api/history/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:importableHistory(d.history)})});}
+    for(const item of Array.isArray(d.watchlist)?d.watchlist:[]){
+      if(account!==activeAccountId)return;
+      await intelJson('/api/intelligence/watches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...item.form,product_name:item.name,autopilot_enabled:false})});
+    }
+    await syncAccountData(true);alert(tr('Backup merged into your account. History is imported as summaries.'));
+  }catch(err){alert(tr('Could not import the backup.')+'\n\n'+err.message)}finally{e.target.value=''}
 });
 $('#exportDiagnostics')?.addEventListener('click',async()=>{try{const r=await fetch('/api/app/diagnostics');downloadJson(`marketai-diagnostico-${new Date().toISOString().replaceAll(':','-')}.json`,await r.json())}catch(e){alert('Não foi possível gerar o diagnóstico.')}});
 $('#openDataFolder')?.addEventListener('click',async()=>{try{const r=await fetch('/api/app/open-data-folder',{method:'POST'});const d=await r.json();if(!d.ok)alert(`Pasta de dados: ${d.path||'—'}`)}catch(e){alert('Não foi possível abrir a pasta de dados.')}});
@@ -450,7 +481,10 @@ function setAuthScreen(logged){
 function applyAccountData(d={}){
   const u=d.user||{},e=d.entitlement||{};
   cloudAccount={authenticated:true,...d};
-  activeAccountId=String(u.id||u.email||'account');
+  const nextAccount=String(u.id||u.email||'account');
+  if(activeAccountId!==nextAccount){resetAnalysis();accountSync=null;}
+  activeAccountId=nextAccount;
+  renderHistory();renderWatchlist();syncAccountData();
   if($('#accountName'))$('#accountName').textContent=u.full_name||'Conta MarketAI';
   if($('#accountEmail'))$('#accountEmail').textContent=u.email||'—';
   if($('#accountPlan'))$('#accountPlan').textContent='COMMUNITY';
@@ -503,19 +537,23 @@ $('[data-modal-close]')?.addEventListener('click',closeAppModal);
 document.addEventListener('keydown',e=>{if(e.key==='Escape' && !$('#appModal')?.hidden)closeAppModal()});
 
 async function loadCloudStatus(){
+  const epoch=accountEpoch;
   try{
     const r=await fetch('/api/cloud/status');
     const d=await r.json();
+    if(epoch!==accountEpoch)return false;
     if(!r.ok || !d.authenticated){
       cloudAccount={authenticated:false,...d};
-      activeAccountId='guest';
-      setAuthScreen(false);
+      resetAnalysis();accountSync=null;activeAccountId='guest';
+      renderHistory();renderWatchlist();setAuthScreen(false);
       return false;
     }
     applyAccountData(d);
     await loadDevices();
     return true;
   }catch(e){
+    if(epoch!==accountEpoch)return false;
+    resetAnalysis();accountSync=null;
     cloudAccount={authenticated:false,error:e.message};
     activeAccountId='guest';
     setAuthScreen(false);
@@ -524,9 +562,11 @@ async function loadCloudStatus(){
 }
 
 async function doCloudAuth(path,payload){
+  const epoch=++accountEpoch;
   const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   let d={};try{d=await r.json()}catch{}
   if(!r.ok)throw new Error(cloudError(d));
+  if(epoch!==accountEpoch)throw new Error(tr('Authentication changed. Please try again.'));
 
   // Login/register already returns the authenticated account. Apply it immediately
   // instead of depending on a second request before hiding the login screen.
@@ -599,9 +639,12 @@ $('#cloudPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter' && !$('#c
 $('#regPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter' && !$('#cloudRegister')?.disabled)$('#cloudRegister')?.click()});
 
 $('#cloudLogout')?.addEventListener('click',async()=>{
+  ++accountEpoch;
   await fetch('/api/cloud/logout',{method:'POST'});
   cloudAccount=null;
+  resetAnalysis();accountSync=null;
   activeAccountId='guest';
+  renderHistory();renderWatchlist();
   setAuthScreen(false);
   $('#cloudPassword').value='';
   $('#cloudEmail')?.focus();
@@ -609,15 +652,16 @@ $('#cloudLogout')?.addEventListener('click',async()=>{
 $('#refreshAccount')?.addEventListener('click',loadCloudStatus);
 
 async function loadDevices(){
-  const box=$('#deviceList');
+  const box=$('#deviceList'),account=activeAccountId;
   if(!box)return;
   try{
     const r=await fetch('/api/cloud/devices');
     const d=await r.json();
+    if(account!==activeAccountId)return;
     if(!r.ok)throw new Error(cloudError(d));
     box.innerHTML=(d.devices||[]).map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${x.active?'ATIVO':'DESATIVADO'} · ${escapeHtml(x.device_uuid)}</small></div>${x.active?`<button class="ghost device-remove" data-id="${x.id}">Remover</button>`:''}</div>`).join('')||'<div class="empty">Nenhum dispositivo vinculado.</div>';
     $$('.device-remove').forEach(b=>b.addEventListener('click',async()=>{await fetch('/api/cloud/devices/'+encodeURIComponent(b.dataset.id),{method:'DELETE'});await loadDevices()}));
-  }catch(e){box.innerHTML='<div class="empty">Não foi possível carregar dispositivos.</div>'}
+  }catch(e){if(account!==activeAccountId)return;box.innerHTML='<div class="empty">Não foi possível carregar dispositivos.</div>'}
 }
 
 setAuthScreen(false);
@@ -645,24 +689,34 @@ async function loadIntelligence(){
   const radar=$('#intelRadar'), alerts=$('#intelAlerts');
   if(radar)radar.innerHTML=`<div class="empty">${escapeHtml(tr('Loading Radar…'))}</div>`; if(alerts)alerts.innerHTML=`<div class="empty">${escapeHtml(tr('Loading Sentinel…'))}</div>`;
   try{
-    const [r,a]=await Promise.all([intelJson('/api/intelligence/radar'),intelJson('/api/intelligence/alerts')]);
-    radar.innerHTML=(r.items||[]).length?(r.items||[]).slice(0,8).map((x,i)=>`<div class="intel-row"><b>#${i+1} ${escapeHtml(x.product_name)}</b><span>${x.score}/100</span><small>${intelMoney(x.median)} · ${escapeHtml(tr('trend'))} ${Number(x.price_trend_percent||0).toFixed(1)}%</small></div>`).join(''):`<div class="empty">${escapeHtml(tr('There are no snapshots yet. Add products to Sentinel and run checks.'))}</div>`;
+    const account=activeAccountId;
+    const [r,a,w]=await Promise.all([intelJson('/api/intelligence/radar'),intelJson('/api/intelligence/alerts'),intelJson('/api/intelligence/watches')]);
+    if(account!==activeAccountId)return;
+    updateProductSelectors(w.items.filter(x=>x.active));
+    radar.innerHTML=(r.items||[]).length?(r.items||[]).slice(0,8).map((x,i)=>`<div class="intel-row"><b>#${i+1} ${escapeHtml(x.product_name)}</b><span>${x.market_score==null?escapeHtml(tr('Score blocked')):x.score+'/100'}</span><small>${intelMoney(x.median)} · ${escapeHtml(tr('trend'))} ${Number(x.price_trend_percent||0).toFixed(1)}% · ${x.collected_at?escapeHtml(new Date(x.collected_at).toLocaleString(appLocale())):''}</small></div>`).join(''):`<div class="empty">${escapeHtml(tr('There are no snapshots yet. Add products to Sentinel and run checks.'))}</div>`;
     const open=(a.items||[]).filter(x=>!x.acknowledged); alerts.innerHTML=open.length?open.slice(0,8).map(x=>`<div class="intel-row alert-${escapeAttr(x.severity)}"><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.message)}</small></div>`).join(''):`<div class="empty">${escapeHtml(tr('No pending alerts.'))}</div>`;
   }catch(e){radar.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`;alerts.innerHTML=`<div class="empty">${escapeHtml(tr('Sign in to your account to access Intelligence Core.'))}</div>`}
 }
 $('#intelRefresh')?.addEventListener('click',loadIntelligence);
-$('#askCopilot')?.addEventListener('click',async()=>{const out=$('#copilotAnswer');out.textContent=tr('Thinking with your data…');try{const d=await intelJson('/api/intelligence/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:$('#copilotQuestion').value,language:window.MarketI18n?.language?.()||'en'})});out.textContent=d.answer||tr('No answer.')}catch(e){out.textContent=e.message}});
+$('#askCopilot')?.addEventListener('click',async()=>{
+  const out=$('#copilotAnswer'),button=$('#askCopilot'),account=activeAccountId;
+  const question=$('#copilotQuestion').value.trim();if(!question){out.textContent=tr('Enter a question.');return;}
+  button.disabled=true;out.textContent=tr('Thinking with your data…');$('#copilotMode').textContent='';
+  try{const target=$('#copilotTarget').value;const d=await intelJson('/api/intelligence/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,watch_id:target||null,analysis_id:!target?currentAnalysis?.history_id:null,language:window.MarketI18n?.language?.()||'en'})});if(account!==activeAccountId)return;out.textContent=d.answer||tr('No answer.');$('#copilotMode').textContent=tr(d.mode==='ai'?'AI response using saved account data':'Deterministic response using saved account data');}catch(e){if(account===activeAccountId)out.textContent=e.message}finally{button.disabled=false}
+});
 $('#calcProfit')?.addEventListener('click',async()=>{const out=$('#profitOutput');out.textContent=tr('Calculating…');try{const d=await intelJson('/api/intelligence/profit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sale_price:num($('#profitPrice').value),unit_cost:num($('#profitCost').value),marketplace_fee_percent:num($('#profitFee').value),taxes_percent:num($('#profitTax').value),ads_percent:num($('#profitAds').value),payment_fee_percent:num($('#profitPayment').value),minimum_margin_percent:15})});out.innerHTML=`<strong>${intelMoney(d.net_profit)}</strong> ${escapeHtml(tr('net profit'))} · ${Number(d.net_margin_percent).toFixed(1)}% ${escapeHtml(tr('margin'))} · ROI ${Number(d.roi_percent).toFixed(1)}% · ${escapeHtml(tr('break-even'))} ${intelMoney(d.break_even_price)}`;}catch(e){out.textContent=e.message}});
 
 $('#saveWatch')?.addEventListener('click',async()=>{
   if(!currentAnalysis||!currentFormSnapshot)return;
+  const button=$('#saveWatch'),account=activeAccountId;button.disabled=true;
+  $('#monitorFeedback').textContent=tr('Saving to Sentinel…');
   try{
-    const payload={...currentFormSnapshot,product_name:currentAnalysis.request?.product_name||currentAnalysis.product?.product_name||currentFormSnapshot.product_name,variant_text:currentAnalysis.request?.variant_text||currentFormSnapshot.variant_text||'',destination_country:currentFormSnapshot.destination_country||'BR',autopilot_enabled:false};
-    const d=await intelJson('/api/intelligence/watches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    $('#saveWatch').textContent=`✓ ${tr('Sentinel active')}`; setTimeout(()=>$('#saveWatch').textContent=`★ ${tr('Monitor')}`,1800);
-  }catch(e){console.warn('Sentinel cloud',e)}
+    const payload={...currentFormSnapshot,product_name:currentAnalysis.product?.product_name||currentFormSnapshot.product_name,variant_text:currentFormSnapshot.variant_text||'',destination_country:currentFormSnapshot.destination_country||'BR',autopilot_enabled:false};
+    await intelJson('/api/intelligence/watches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(account!==activeAccountId)return;
+    $('#monitorFeedback').textContent=tr('Saved to your account. Sentinel collects while its worker is running.');setWorkflowStep('monitor');await syncAccountData(true);
+  }catch(e){if(account===activeAccountId)$('#monitorFeedback').textContent=tr('Monitoring was not saved. Try again.')+' '+e.message}finally{button.disabled=false}
 });
-
 
 document.addEventListener('marketai:languagechange',()=>{
   try{
@@ -673,3 +727,97 @@ document.addEventListener('marketai:languagechange',()=>{
     if(cloudAccount?.authenticated) loadCloudStatus();
   }catch{}
 });
+
+function setSyncStatus(message){
+  for(const id of ['#historySyncStatus','#watchSyncStatus']) $(id).textContent=message;
+}
+function importableHistory(items){
+  return items.slice(0,80).map(x=>({client_id:x.client_id||x.id||crypto.randomUUID(),date:x.date,name:x.name,
+    recommended:x.recommended??null,score:x.score??null,marketMedian:x.marketMedian??null,mode:x.mode||'unavailable'}));
+}
+async function syncAccountData(force=false){
+  if(activeAccountId==='guest')return;
+  const account=activeAccountId;
+  if(accountSync?.account===account){await accountSync.promise;if(!force||account!==activeAccountId)return;return syncAccountData();}
+  const task={account,promise:null};accountSync=task;
+  task.promise=(async()=>{
+    setSyncStatus(tr('Syncing account data…'));
+    try{
+      const historyKey=`marketai-history-migrated:${account}`,watchKey=`marketai-watch-migrated:${account}`;
+      if(!localStorage.getItem(historyKey)){
+        const existing=readAccountItems('marketai-history');
+        const legacy=existing.filter(x=>!x.id);
+        if(legacy.length){
+          const entries=importableHistory(legacy);
+          legacy.forEach((x,i)=>{x.client_id=entries[i].client_id});
+          writeAccountItems('marketai-history',existing);
+          await intelJson('/api/history/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:entries})});
+        }
+        if(account!==activeAccountId)return;
+        localStorage.setItem(historyKey,'1');
+      }
+      if(!localStorage.getItem(watchKey)){
+        for(const item of readAccountItems('marketai-watch').filter(x=>!x.id)){
+          if(account!==activeAccountId)return;
+          await intelJson('/api/intelligence/watches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...item.form,product_name:item.name,autopilot_enabled:false})});
+        }
+        if(account!==activeAccountId)return;
+        localStorage.setItem(watchKey,'1');
+      }
+      const [history,watches]=await Promise.all([intelJson('/api/history'),intelJson('/api/intelligence/watches')]);
+      if(account!==activeAccountId)return;
+      writeAccountItems('marketai-history',history.items||[]);
+      const active=(watches.items||[]).filter(x=>x.active);
+      writeAccountItems('marketai-watch',active.map(x=>({id:x.id,name:x.product_name,variant:x.variant_text,country:x.country,
+        date:x.latest?.date||null,score:x.latest?.score??null,recommended:x.latest?.recommended??null,median:x.latest?.median??null,
+        form:{...x.settings,product_name:x.product_name,variant_text:x.variant_text,destination_country:x.country}})));
+      renderHistory();renderWatchlist();updateProductSelectors(active);setSyncStatus(tr('Synced with your account.'));
+    }catch(e){if(account===activeAccountId)setSyncStatus(tr('Offline or sync failed. Showing saved data from this device.')+' '+e.message)}
+    finally{if(accountSync===task)accountSync=null;}
+  })();
+  return task.promise;
+}
+function updateProductSelectors(items){
+  for(const [id,label] of [['#forecastTarget','Select a product'],['#copilotTarget','Latest analysis / account']]){
+    const select=$(id),previous=select.value;
+    select.innerHTML=`<option value="">${escapeHtml(tr(label))}</option>`+items.map(x=>`<option value="${escapeAttr(x.id)}">${escapeHtml([x.product_name,x.variant_text,x.country].filter(Boolean).join(' · '))}</option>`).join('');
+    if(items.some(x=>x.id===previous))select.value=previous;
+  }
+}
+async function showForecast(id){
+  const out=$('#forecastOutput'),button=$('#loadForecast'),account=activeAccountId;
+  if(!id){out.textContent=tr('Select a monitored product to see projections.');return;}
+  button.disabled=true;out.textContent=tr('Loading forecast…');
+  try{
+    const d=await intelJson('/api/intelligence/forecast/'+encodeURIComponent(id));if(account!==activeAccountId)return;
+    if(!d.available){out.textContent=tr('At least two valid snapshots collected at different times are required.');return;}
+    out.innerHTML=`<p>${escapeHtml(tr(d.preliminary?'Preliminary estimate: limited history':'Projection based on saved snapshots'))}</p><p>${escapeHtml(tr('Collected at'))}: ${escapeHtml(new Date(d.last_collected_at).toLocaleString(appLocale()))}</p><div class="forecast-values">${Object.entries(d.forecast).map(([days,value])=>`<div><span>${days} ${escapeHtml(tr('days'))} · ${escapeHtml(new Date(d.forecast_dates[days]).toLocaleDateString(appLocale()))}</span><strong>${fmtBRL(value)}</strong></div>`).join('')}</div><p class="micro">${d.points} ${escapeHtml(tr('observations'))} · ${Number(d.history_days).toLocaleString(appLocale())} ${escapeHtml(tr('days of history'))}</p><p class="muted">${escapeHtml(tr('Linear extrapolation by collection date. Future prices are not guaranteed.'))}</p>`;
+  }catch(e){if(account===activeAccountId)out.textContent=e.message}finally{button.disabled=false}
+}
+$('#loadForecast').addEventListener('click',()=>showForecast($('#forecastTarget').value));
+$('#forecastTarget').addEventListener('change',()=>{$('#forecastOutput').textContent=tr('Select a monitored product to see projections.')});
+function setWorkflowStep(step){
+  $$('#workflowSteps li').forEach(el=>{el.classList.toggle('active',el.dataset.step===step);if(el.dataset.step===step)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});
+}
+function resetAnalysis(){
+  currentAnalysis=null;currentFormSnapshot=null;result.hidden=true;form.style.display='grid';
+  if(currentPreviewURL)URL.revokeObjectURL(currentPreviewURL);
+  currentPreviewURL='';imageInput.value='';preview.hidden=true;uploadPrompt.hidden=false;
+  $('#copilotQuestion').value='';$('#profitOutput').textContent='—';$('#copilotAnswer').textContent='';$('#copilotMode').textContent='';$('#forecastOutput').textContent='';$('#monitorFeedback').textContent='';
+  $('#intelRadar').textContent='';$('#intelAlerts').textContent='';updateProductSelectors([]);setSyncStatus('');setWorkflowStep('analyze');
+}
+function renderNextAction(d){
+  const state=d.market.quality.state;
+  $('#nextActionTitle').textContent=tr(state==='reliable'?'Compare margin, then monitor':'Improve the evidence');
+  const messages={reliable:'Compare the price scenarios with your costs, then monitor this product.',ambiguous:'Specify the exact variant: model, capacity, volume or concentration.',insufficient:'Fewer than three compatible listings. Refine the product or retry with more sources.',no_match:'Review the name, brand and variant. The returned listings did not match.',unavailable:'No source returned market data. Retry later or review source access on the Cloud.'};
+  $('#nextActionMessage').textContent=tr(messages[state]||messages.unavailable);
+  $('#monitorFeedback').textContent='';
+}
+function renderEvidence(d){
+  const m=d.market,e=d.evidence||{},costs=d.pricing.costs,rec=d.pricing.strategies.recommended;
+  const date=m.checked_at?new Date(m.checked_at).toLocaleString(appLocale()):'—';
+  $('#evidenceSummary').innerHTML=`<p><strong>${escapeHtml(tr('Recommendation evidence'))}</strong> · ${escapeHtml(tr('Collected at'))}: ${escapeHtml(date)}</p><p>${m.pricing_count||0} / ${m.raw_count||0} ${escapeHtml(tr('listings used'))} · ${m.discarded_count??m.discarded?.length??0} ${escapeHtml(tr('discarded listings'))} · ${m.quality.minimum_required||3} ${escapeHtml(tr('minimum required'))}</p><p>${escapeHtml(tr('Minimum price for target margin'))}: ${fmtBRL(costs.minimum_for_target_margin)} · ${escapeHtml(tr('Target margin'))}: ${Number(costs.desired_margin_percent||0).toLocaleString(appLocale())}%${rec?` · ${escapeHtml(tr('Estimated margin'))}: ${Number(rec.net_margin_percent).toLocaleString(appLocale())}%`:''}</p><p>${escapeHtml(tr('Listing prices are not completed sales. Product matching does not verify authenticity.'))}</p>${(e.currency_fallback||d.fx?.live===false)?`<p>${escapeHtml(tr('Currency conversion used a fallback rate. Review it before deciding.'))}</p>`:''}`;
+}
+$('#refineAnalysis').addEventListener('click',()=>{$('#newAnalysis').click();form.elements.variant_text.focus()});
+$('#compareMargin').addEventListener('click',()=>{$('#simulatorCard').scrollIntoView({behavior:'smooth'});$('#priceSlider').focus();setWorkflowStep('compare')});
+$('#inspectEvidence').addEventListener('click',()=>$('#compatibleEvidence').scrollIntoView({behavior:'smooth'}));

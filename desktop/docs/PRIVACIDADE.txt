@@ -1,5 +1,5 @@
 MARKETAI COMMUNITY — NOTA DE PRIVACIDADE
-Última atualização: 08/10/2026
+Última atualização: 14/10/2026
 
 1. CONTAS
 O MarketAI pode tratar nome, e-mail, identificador aleatório da instalação e
@@ -15,7 +15,11 @@ impedir que uma conta consulte os dados privados de outra.
 Termos de busca, variante, país, custos informados e, quando utilizada, a imagem
 do produto podem ser enviados ao MarketAI Cloud para executar a análise. O
 servidor pode encaminhar os dados estritamente necessários às fontes externas
-configuradas pelo operador da instância.
+configuradas pelo operador da instância. Os resultados da análise, os custos e
+os campos informados são armazenados no histórico da conta no Cloud para consulta
+em outros dispositivos. A imagem enviada não é armazenada nesse histórico.
+Registros locais anteriores são importados como resumos identificados, sem serem
+tratados como evidências verificadas de mercado.
 
 4. SERVIÇOS EXTERNOS
 Marketplaces, agregadores, provedores de IA, câmbio e hospedagem possuem
@@ -29,7 +33,7 @@ no servidor. No modo local/self-host, são responsabilidade do operador.
 
 6. DADOS LOCAIS
 O Desktop pode manter preferências, histórico local, logs técnicos e a sessão da
-conta. No Windows, a sessão pode ser protegida com DPAPI. O identificador da
+conta, além de uma cópia local dos registros sincronizados. No Windows, a sessão pode ser protegida com DPAPI. O identificador da
 instalação é um UUID aleatório; o MarketAI não depende de fingerprint invasivo
 de hardware.
 
@@ -38,6 +42,10 @@ A edição Community não exige pagamento, assinatura ou licença comercial para
 usar os recursos do MarketAI.
 
 8. EXCLUSÃO E RETENÇÃO
+A ação Limpar no Histórico remove o histórico da conta no Cloud; os demais
+dispositivos atualizam suas cópias ao sincronizar. Parar o monitoramento desativa
+as coletas futuras; snapshots e alertas anteriores podem permanecer no Cloud.
+Backups exportados são arquivos locais independentes dessas ações.
 Dados locais podem ser removidos do computador. Quem opera uma instância pública
 do Cloud deve definir procedimentos de retenção, backup, acesso, correção e
 exclusão compatíveis com a legislação aplicável.

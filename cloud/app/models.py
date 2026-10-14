@@ -171,3 +171,14 @@ class IntelligenceAlert(Base):
     message: Mapped[str]=mapped_column(Text,default="")
     acknowledged: Mapped[bool]=mapped_column(Boolean,default=False,index=True)
     created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),default=utcnow,index=True)
+
+
+class AnalysisHistory(Base):
+    __tablename__ = "analysis_history"
+    __table_args__ = (UniqueConstraint("user_id", "client_id", name="uq_history_user_client"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    client_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    summary_json: Mapped[str] = mapped_column(Text, default="{}")
+    payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)

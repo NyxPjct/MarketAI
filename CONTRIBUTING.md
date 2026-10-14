@@ -42,3 +42,20 @@ Só adicione dependências compatíveis com a licença do projeto e registre atr
 ## Licença das contribuições
 
 Ao enviar uma contribuição, você concorda que ela será distribuída sob a Apache License 2.0 do projeto.
+
+## Validação do fluxo no navegador
+
+O teste opcional abaixo inicia um Cloud e dois clientes Desktop isolados, com
+bancos temporários e fontes de mercado sintéticas. Ele verifica análise guiada,
+evidências, migração local, sincronização entre dispositivos, Forecast, Copilot,
+idiomas, falha de conexão, exclusão e saída da conta. Não consulta APIs externas.
+
+Use um Python com `playwright` e `httpx` instalados para o controlador. A opção
+`--python` aponta para o Python com as dependências Cloud/Desktop. Informe o
+Chromium do sistema ou instale o navegador pelo Playwright.
+
+```bash
+python tools/check_workflow.py --python /caminho/do/venv/bin/python --chromium /usr/bin/chromium
+```
+
+Os processos iniciados pelo teste são encerrados e os dados temporários removidos.

@@ -395,3 +395,19 @@ td:last-child{color:#fff}
     width:100%;
   }
 }
+
+/* Guided analysis and account evidence */
+.workflow-steps{display:flex;gap:12px;padding:0;margin:0 0 22px;list-style:none;flex-wrap:wrap}
+.workflow-steps li{padding:12px 18px;border:1px solid var(--line,#333);border-radius:10px;color:var(--muted)}
+.workflow-steps li.active,.workflow-steps li[aria-current=step]{color:var(--text,#fff);border-color:var(--text,#fff)}
+.next-action{padding:24px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.next-action>div:first-child{flex:1;min-width:220px}
+.next-action h2{margin-bottom:8px}
+.action-row{display:flex;gap:8px;flex-wrap:wrap}
+.next-action>p{width:100%;margin:0}
+.evidence-summary{grid-column:1/-1;width:100%;border-top:1px solid var(--line,#333);padding-top:12px}
+.evidence-summary p{margin:8px 0;font-size:13px}
+.forecast-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.forecast-values>div{display:flex;flex-direction:column;gap:8px}
+.copilot-answer{white-space:pre-wrap}
+@media(max-width:640px){.forecast-values{grid-template-columns:1fr}.workflow-steps li{width:100%}.watch-item{flex-wrap:wrap}}

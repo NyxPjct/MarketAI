@@ -774,3 +774,15 @@ async def intelligence_alert_ack(alert_id:str): return await _proxy_intelligence
 async def intelligence_forecast(watch_id:str): return await _proxy_intelligence("GET",f"/v1/intelligence/forecast/{watch_id}")
 @app.post("/api/intelligence/copilot")
 async def intelligence_copilot(payload: Dict[str,Any]=Body(...)): return await _proxy_intelligence("POST","/v1/intelligence/copilot",payload)
+
+
+@app.get("/api/history")
+async def account_history(): return await _proxy_intelligence("GET", "/v1/history")
+@app.post("/api/history/import")
+async def account_history_import(payload: Dict[str, Any] = Body(...)): return await _proxy_intelligence("POST", "/v1/history/import", payload)
+@app.delete("/api/history")
+async def account_history_clear(): return await _proxy_intelligence("DELETE", "/v1/history")
+@app.get("/api/history/{analysis_id}")
+async def account_history_item(analysis_id: str): return await _proxy_intelligence("GET", f"/v1/history/{analysis_id}")
+@app.delete("/api/intelligence/watches")
+async def intelligence_watches_clear(): return await _proxy_intelligence("DELETE", "/v1/intelligence/watches")

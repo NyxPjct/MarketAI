@@ -69,6 +69,8 @@ from app.admin import router as admin_router
 from app.intelligence import router as intelligence_router
 app.include_router(admin_router)
 app.include_router(intelligence_router)
+from app.history import router as history_router, record_analysis
+app.include_router(history_router)
 ADMIN_DIR=Path(__file__).resolve().parent.parent/"admin"
 if settings.admin_panel_enabled and ADMIN_DIR.exists():
     app.mount("/admin/assets", StaticFiles(directory=str(ADMIN_DIR)), name="admin-assets")
@@ -242,6 +244,9 @@ async def analysis(request:Request,user:User=Depends(current_user),db:Session=De
         image_bytes=await image.read(); ctype=getattr(image,"content_type",None)
     try: result=await run_analysis(fields,image_bytes,ctype)
     except ValueError as e: raise HTTPException(400,str(e))
+    from app.evidence import recommendation_evidence
+    result["evidence"] = recommendation_evidence(result)
+    result["history_id"] = record_analysis(db, user, result)
     ent_after=consume_analysis(db,user); result["account"]={"plan":ent_after["plan_name"],"analyses_remaining":None,"analyses_quota":None,"unlimited":True}; return result
 
 @app.get("/v1/updates/latest")

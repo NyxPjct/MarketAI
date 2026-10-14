@@ -96,15 +96,61 @@ def autopilot_price(analysis: dict, strategy="balanced", undercut=1.0, min_margi
     return {"available": True, "strategy": strategy, "suggested_price": round(target,2), "market_median": round(med,2), "hard_floor": round(max(floor,margin_floor),2), "min_margin_percent": float(min_margin)}
 
 
-def forecast_series(values: list[float], horizons=(7,30,60)) -> dict:
-    vals=[float(v) for v in values if v is not None and float(v)>0]
-    if len(vals)<2:
-        return {"available":False,"reason":"São necessários pelo menos 2 snapshots reais."}
-    n=len(vals); xs=list(range(n)); xbar=mean(xs); ybar=mean(vals)
-    den=sum((x-xbar)**2 for x in xs) or 1
-    slope=sum((x-xbar)*(y-ybar) for x,y in zip(xs,vals))/den
-    residuals=[y-(ybar+slope*(x-xbar)) for x,y in zip(xs,vals)]
-    volatility=(math.sqrt(mean([r*r for r in residuals]))/ybar*100) if ybar else 0
-    forecasts={str(h):round(max(0,ybar+slope*((n-1+h)-xbar)),2) for h in horizons}
-    direction="alta" if slope>0.15 else "queda" if slope<-0.15 else "estável"
-    return {"available":True,"points":n,"last":round(vals[-1],2),"trend_per_snapshot":round(slope,3),"direction":direction,"volatility_percent":round(volatility,2),"forecast":forecasts,"method":"regressão linear simples sobre snapshots reais"}
+def forecast_series(values: list[float], horizons=(7, 30, 60), timestamps=None) -> dict:
+    """Fit real observations against elapsed days (or explicit legacy sample units)."""
+    from datetime import datetime, timezone
+
+    if timestamps is not None and len(timestamps) != len(values):
+        return {"available": False, "reason": "invalid_timestamps"}
+    observations = []
+    for index, value in enumerate(values):
+        try:
+            price = float(value)
+            if not math.isfinite(price) or price <= 0:
+                continue
+            if timestamps is None:
+                instant = float(index)
+            else:
+                instant = timestamps[index]
+                if isinstance(instant, str):
+                    instant = datetime.fromisoformat(instant.replace("Z", "+00:00"))
+                if instant.tzinfo is None:
+                    instant = instant.replace(tzinfo=timezone.utc)
+                instant = instant.timestamp() / 86400
+            observations.append((instant, price))
+        except (TypeError, ValueError, AttributeError, OverflowError):
+            continue
+    # Multiple observations at the same instant are one time point, not history.
+    grouped = {}
+    for instant, price in observations:
+        grouped.setdefault(instant, []).append(price)
+    points = sorted((instant, median(prices)) for instant, prices in grouped.items())
+    if len(points) < 2:
+        return {"available": False, "reason": "insufficient_history", "points": len(points)}
+    origin = points[0][0]
+    xs = [instant - origin for instant, _ in points]
+    vals = [price for _, price in points]
+    xbar, ybar = mean(xs), mean(vals)
+    den = sum((x - xbar) ** 2 for x in xs)
+    slope = sum((x - xbar) * (y - ybar) for x, y in zip(xs, vals)) / den
+    residuals = [y - (ybar + slope * (x - xbar)) for x, y in zip(xs, vals)]
+    forecasts = {str(h): round(max(0, ybar + slope * (xs[-1] + h - xbar)), 2) for h in horizons}
+    unit = "day" if timestamps is not None else "snapshot"
+    result = {
+        "available": True, "points": len(points), "last": round(vals[-1], 2),
+        "direction": "alta" if slope > 0.15 else "queda" if slope < -0.15 else "estável",
+        "volatility_percent": round(math.sqrt(mean([r * r for r in residuals])) / ybar * 100, 2),
+        "forecast": forecasts, "horizon_unit": unit,
+        "method": "linear_regression_elapsed_days" if timestamps is not None else "linear_regression_snapshots",
+        "preliminary": len(points) < 5,
+        "limitations": ["linear_extrapolation", "not_a_guarantee"] + (["limited_history"] if len(points) < 5 else []),
+        f"trend_per_{unit}": round(slope, 3),
+    }
+    if timestamps is not None:
+        result["history_days"] = round(xs[-1], 3)
+        result["last_collected_at"] = datetime.fromtimestamp(points[-1][0] * 86400, timezone.utc).isoformat()
+        result["forecast_dates"] = {
+            str(h): datetime.fromtimestamp((points[-1][0] + h) * 86400, timezone.utc).isoformat()
+            for h in horizons
+        }
+    return result

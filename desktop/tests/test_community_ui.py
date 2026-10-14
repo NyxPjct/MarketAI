@@ -26,7 +26,8 @@ def test_paid_ui_is_not_present():
 def test_local_history_is_scoped_by_account():
     js = (ROOT / "frontend" / "app.js").read_text(encoding="utf-8")
     assert "function accountStorageKey" in js
-    assert "activeAccountId=String(u.id||u.email||'account')" in js
+    assert "nextAccount=String(u.id||u.email||'account')" in js
+    assert "activeAccountId=nextAccount" in js
     assert "localStorage.getItem('marketai-history')" not in js
     assert "localStorage.getItem('marketai-watch')" not in js
 
