@@ -1,5 +1,5 @@
 MARKETAI COMMUNITY — NOTA DE PRIVACIDADE
-Última atualização: 14/10/2026
+Última atualização: 19/10/2026
 
 1. CONTAS
 O MarketAI pode tratar nome, e-mail, identificador aleatório da instalação e
@@ -20,6 +20,14 @@ os campos informados são armazenados no histórico da conta no Cloud para consu
 em outros dispositivos. A imagem enviada não é armazenada nesse histórico.
 Registros locais anteriores são importados como resumos identificados, sem serem
 tratados como evidências verificadas de mercado.
+
+IMPORTAÇÃO DE CATÁLOGO
+O CSV é enviado ao Cloud para validação. Os campos selecionados (incluindo SKU,
+produto, custos e taxas), o progresso e os resultados resumidos são armazenados
+em lotes associados à conta. O arquivo CSV original não é retido pelo aplicativo.
+Excluir um lote remove seus campos e resumos; análises individuais já salvas
+continuam no Histórico e podem ser removidas por sua própria ação Limpar.
+Cancelar um lote interrompe os produtos em espera; a consulta atual pode terminar.
 
 4. SERVIÇOS EXTERNOS
 Marketplaces, agregadores, provedores de IA, câmbio e hospedagem possuem

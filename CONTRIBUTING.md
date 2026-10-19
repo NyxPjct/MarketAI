@@ -59,3 +59,12 @@ python tools/check_workflow.py --python /caminho/do/venv/bin/python --chromium /
 ```
 
 Os processos iniciados pelo teste são encerrados e os dados temporários removidos.
+
+O teste de navegador também cobre importação CSV, produtos inválidos, lotes com
+falha parcial, continuação após encerrar o processo Desktop, exportação e repetição
+dos produtos com erro. O CI executa esse fluxo com fontes sintéticas isoladas.
+
+No Windows, `tools/check_windows_installer.ps1` é executado no pipeline de release
+para validar instalação limpa, abertura da janela nativa e atualização a partir
+dos instaladores anteriores verificados por SHA-256. O relatório fica em
+`.release/validation/windows-v<versão>.json` após a execução.

@@ -108,6 +108,31 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
+## What is new in v1.2.0
+
+- Import a product catalog from CSV, review each row and select the products to analyze.
+- Track SKU, variant, purchase cost, currency, destination and fee assumptions.
+- Accept UTF-8 CSV with comma, semicolon or tab separators, including decimal commas.
+- Preview does not query marketplaces; processing begins only after confirmation.
+- Durable Cloud batches continue with the Desktop closed and resume interrupted work.
+- Inspect progress, errors and data quality per product, reopen analyses and export results.
+- Cancel waiting products, retry failed products and delete finished batch records.
+- Products without reliable evidence retain blocked prices instead of invented recommendations.
+- The native launcher uses the central application version and respects the configured data directory.
+- Windows release validation checks a clean installation, native window startup and upgrades from v1.0.5 and v1.1.0 with preference preservation.
+
+### Import a catalog
+
+1. Open **Catalog / CSV** and download the template.
+2. Fill `product_name` (required), plus `sku`, `variant_text`, `purchase_cost`, `purchase_currency`, `destination_country` and other supported template fields.
+3. Review the CSV, destination, costs and fees. Only selected valid rows will run.
+4. Start the batch and follow its progress from any device on the same account.
+5. Open individual analyses, export results, or retry failed products.
+
+Each file supports up to **50 products and 2 MB**; these are processing limits, not paid quotas. Blank numeric cells use the same analysis defaults (quantity 1, fees 16% + 6% + 3%, target margin 20%, currency BRL and destination BR). Enter actual costs and fees for useful margin estimates. Portuguese aliases such as `produto`, `variante`, `custo`, `moeda` and `quantidade` are also accepted. Preserve GTINs as text and use an unambiguous decimal separator.
+
+Cloud and Desktop must both run v1.2.0. The Cloud starts its batch worker automatically and creates the additive `analysis_batches` and `analysis_batch_items` tables. Keep the API running for background processing. `BATCH_WORKER_ENABLED=0` disables processing for controlled tests or maintenance. Sentinel remains a separate worker for recurring monitoring. Completed batch summaries and individual History records have separate delete actions.
+
 ## What is new in v1.1.0
 
 - Guided analysis flow: analyze the product, review evidence, compare margin, then monitor.
@@ -120,7 +145,7 @@ Important files:
 The new `analysis_history` table is created by the Cloud's existing startup initialization. Existing tables and data are preserved. Deploy the Cloud and Desktop changes together; older Clouds do not expose the new history endpoints. Live third-party integrations require the operator’s credentials and independent validation.
 
 
-## Screenshots — MarketAI v1.1.0
+## Screenshots — MarketAI v1.2.0
 
 The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
 
@@ -128,29 +153,33 @@ Demo values are used only to present the UI. They are not presented as real mark
 
 ### Login / account creation
 
-![MarketAI v1.1.0 — Login](docs/screenshots/01-login-community-v1.1.0.png)
+![MarketAI v1.2.0 — Login](docs/screenshots/01-login-community-v1.2.0.png)
 
 ### Dashboard / New analysis
 
-![MarketAI v1.1.0 — Dashboard](docs/screenshots/02-dashboard-v1.1.0.png)
+![MarketAI v1.2.0 — Dashboard](docs/screenshots/02-dashboard-v1.2.0.png)
 
 ### Intelligence Core
 
-![MarketAI v1.1.0 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.1.0.png)
+![MarketAI v1.2.0 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.2.0.png)
 
 ### My account
 
-![MarketAI v1.1.0 — My account](docs/screenshots/04-my-account-v1.1.0.png)
+![MarketAI v1.2.0 — My account](docs/screenshots/04-my-account-v1.2.0.png)
 
 ### Settings
 
 The Settings screen includes the interface language selector.
 
-![MarketAI v1.1.0 — Settings](docs/screenshots/05-settings-v1.1.0.png)
+![MarketAI v1.2.0 — Settings](docs/screenshots/05-settings-v1.2.0.png)
 
 ### Account-created confirmation
 
-![MarketAI v1.1.0 — Account created](docs/screenshots/06-account-created-modal-v1.1.0.png)
+![MarketAI v1.2.0 — Account created](docs/screenshots/06-account-created-modal-v1.2.0.png)
+
+### Catalog / CSV review
+
+![MarketAI v1.2.0 — Catalog CSV](docs/screenshots/07-catalog-csv-v1.2.0.png)
 
 ## Intelligence Core
 

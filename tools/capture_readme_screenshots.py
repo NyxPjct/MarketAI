@@ -6,7 +6,7 @@ BASE_URL = "http://127.0.0.1:8000"
 OUT = Path("docs/screenshots")
 OUT.mkdir(parents=True, exist_ok=True)
 
-VERSION = "v1.1.0"
+VERSION = "v1.2.0"
 
 
 def set_demo_account(page):
@@ -27,7 +27,7 @@ def set_demo_account(page):
         accountQuota: 'UNLIMITED',
         accountStatus: 'ACTIVE',
         apiStatus: 'Community · ONLINE',
-        appVersion: 'MarketAI v1.1.0'
+        appVersion: 'MarketAI v1.2.0'
       };
       for (const [id, value] of Object.entries(values)) {
         const el = document.getElementById(id);
@@ -158,7 +158,7 @@ with sync_playwright() as p:
     page.locator("#cloudEmail").fill("user@example.com")
     page.locator("#cloudPassword").fill("MarketAI123")
     page.wait_for_timeout(180)
-    shot(page, "01-login-community-v1.1.0.png")
+    shot(page, "01-login-community-v1.2.0.png")
     page.close()
 
     # Dashboard / New analysis
@@ -166,7 +166,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "analyze")
-    shot(page, "02-dashboard-v1.1.0.png")
+    shot(page, "02-dashboard-v1.2.0.png")
     page.close()
 
     # Intelligence Core
@@ -174,7 +174,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "intelligence")
-    shot(page, "03-intelligence-core-v1.1.0.png")
+    shot(page, "03-intelligence-core-v1.2.0.png")
     page.close()
 
     # My account
@@ -184,7 +184,7 @@ with sync_playwright() as p:
     open_view(page, "account")
     set_demo_account(page)
     page.wait_for_timeout(150)
-    shot(page, "04-my-account-v1.1.0.png")
+    shot(page, "04-my-account-v1.2.0.png")
     page.close()
 
     # Settings
@@ -192,7 +192,25 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "settings")
-    shot(page, "05-settings-v1.1.0.png")
+    shot(page, "05-settings-v1.2.0.png")
+    page.close()
+
+    # Catalog CSV review uses labeled demo inputs, never real market evidence.
+    page = context.new_page()
+    page.goto(BASE_URL, wait_until="networkidle")
+    wait_english(page)
+    open_view(page, "batches")
+    demo = {
+        "rows": [
+            {"line":2,"fields":{"sku":"PHONE-128","product_name":"Apple iPhone 16","variant_text":"128 GB","purchase_cost":2500,"purchase_currency":"BRL","destination_country":"BR","marketplace_fee_percent":16,"taxes_percent":6,"ads_percent":3,"desired_margin_percent":20},"valid":True,"errors":[]},
+            {"line":3,"fields":{"sku":"PERFUME-100","product_name":"Dior Sauvage","variant_text":"Eau de Parfum 100 ml","purchase_cost":450,"purchase_currency":"BRL","destination_country":"BR","marketplace_fee_percent":16,"taxes_percent":6,"ads_percent":3,"desired_margin_percent":20},"valid":True,"errors":[]}
+        ],"valid_count":2,"invalid_count":0,"max_rows":50,"delimiter":";"
+    }
+    page.route("**/api/batches/preview", lambda route: route.fulfill(json=demo))
+    page.locator("#batchFile").set_input_files({"name":"catalog-demo.csv","mimeType":"text/csv","buffer":b"product_name;purchase_cost\nApple iPhone 16;2500\nDior Sauvage;450\n"})
+    page.locator("#batchPreviewButton").click()
+    page.wait_for_function("document.querySelectorAll('#batchPreviewRows tr').length === 2")
+    shot(page, "07-catalog-csv-v1.2.0.png")
     page.close()
 
     # Account-created modal
@@ -213,12 +231,12 @@ with sync_playwright() as p:
     }
     """)
     page.wait_for_timeout(180)
-    shot(page, "06-account-created-modal-v1.1.0.png")
+    shot(page, "06-account-created-modal-v1.2.0.png")
     page.close()
 
     context.close()
     browser.close()
 
-shots = sorted(OUT.glob("*v1.1.0.png"))
-assert len(shots) == 6, f"Expected 6 v1.1.0 screenshots, got {len(shots)}"
+shots = sorted(OUT.glob("*v1.2.0.png"))
+assert len(shots) == 7, f"Expected 7 v1.2.0 screenshots, got {len(shots)}"
 print("English README screenshots generated:", len(shots))

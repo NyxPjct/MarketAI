@@ -26,3 +26,13 @@ Deleting history applies across devices after synchronization. Stopping monitori
 ## Windows builds
 
 Set `MARKETAI_CLOUD_URL` to the HTTPS Cloud deployment before running `build_installer.bat`. Installer filenames use the application version automatically. Update Cloud and Desktop together when using the new history endpoints.
+
+## Catalog / CSV
+
+Use Catalog / CSV to review UTF-8 files of up to 50 products (2 MB), select valid
+rows and submit a durable Cloud batch. SKU, variants, costs, currencies, countries
+and fee assumptions are shown before processing. Jobs continue after closing the
+Desktop while the Cloud API is running. Failed products can be retried, results
+can be exported, and completed batches can be deleted independently of History.
+Both Cloud and Desktop require v1.2.0 for this workflow. See the root README for
+supported headers and defaults.

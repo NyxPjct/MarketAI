@@ -1,8 +1,8 @@
 from __future__ import annotations
-import os, secrets, hashlib
+import asyncio, os, secrets, hashlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI, Depends, HTTPException, Body, File, Form, UploadFile, Request
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -61,9 +61,20 @@ async def lifespan(_app):
     db=SessionLocal()
     try: seed(db)
     finally: db.close()
-    yield
+    task = None
+    if os.getenv('BATCH_WORKER_ENABLED', '1').lower() not in {'0', 'false', 'no'}:
+        from app.batch_worker import run_forever
+        task = asyncio.create_task(run_forever())
+    _app.state.batch_worker = task
+    try:
+        yield
+    finally:
+        if task:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
 
-app=FastAPI(title="MarketAI Cloud",version="1.1.0",lifespan=lifespan)
+app=FastAPI(title="MarketAI Cloud",version="1.2.0",lifespan=lifespan)
 
 from app.admin import router as admin_router
 from app.intelligence import router as intelligence_router
@@ -71,6 +82,8 @@ app.include_router(admin_router)
 app.include_router(intelligence_router)
 from app.history import router as history_router, record_analysis
 app.include_router(history_router)
+from app.batches import router as batches_router
+app.include_router(batches_router)
 ADMIN_DIR=Path(__file__).resolve().parent.parent/"admin"
 if settings.admin_panel_enabled and ADMIN_DIR.exists():
     app.mount("/admin/assets", StaticFiles(directory=str(ADMIN_DIR)), name="admin-assets")
@@ -82,7 +95,9 @@ def admin_panel():
     return FileResponse(str(ADMIN_DIR/"index.html"))
 
 @app.get("/health")
-def health(): return {"ok":True,"service":"MarketAI Cloud","version":"1.1.0","edition":"Community Open Source","intelligence_core":True,"free":True,"open_source":True}
+def health():
+    worker = getattr(app.state, "batch_worker", None)
+    return {"ok":True,"service":"MarketAI Cloud","version":"1.2.0","edition":"Community Open Source","intelligence_core":True,"free":True,"open_source":True,"batch_processing": bool(worker and not worker.done())}
 
 @app.get("/v1/plans")
 def plans(country_code:str="BR",currency:str="",db:Session=Depends(get_db)):
@@ -252,7 +267,7 @@ async def analysis(request:Request,user:User=Depends(current_user),db:Session=De
 @app.get("/v1/updates/latest")
 def latest_update(platform:str="windows",channel:str="stable"):
     path=Path(os.getenv("UPDATE_MANIFEST_PATH",str(Path(__file__).resolve().parent.parent/"releases/windows-stable.json")))
-    if not path.exists(): return {"available":False,"version":"1.1.0"}
+    if not path.exists(): return {"available":False,"version":"1.2.0"}
     import json; return json.loads(path.read_text(encoding="utf-8"))
 
 @app.post("/v1/admin/licenses")

@@ -62,7 +62,7 @@ def entitlement(db: Session, user: User):
     }
 
 
-def consume_analysis(db: Session, user: User):
+def consume_analysis(db: Session, user: User, *, commit=True):
     """Track usage without enforcing a paid quota."""
     key = period_key()
     row = (
@@ -74,5 +74,7 @@ def consume_analysis(db: Session, user: User):
         row = UsageCounter(user_id=user.id, period_key=key, analyses_used=0)
         db.add(row)
     row.analyses_used += 1
-    db.commit()
+    db.flush()
+    if commit:
+        db.commit()
     return entitlement(db, user)

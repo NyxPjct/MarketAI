@@ -1,0 +1,3 @@
+sku;product_name;variant_text;purchase_cost;purchase_currency;destination_country;quantity;marketplace_fee_percent;taxes_percent;ads_percent;desired_margin_percent
+PHONE-128;Apple iPhone 16;128 GB;2500;BRL;BR;1;16;6;3;20
+PERFUME-100;Dior Sauvage;Eau de Parfum 100 ml;450;BRL;BR;1;16;6;3;20

@@ -13,8 +13,7 @@ from pathlib import Path
 import uvicorn
 import webview
 
-APP_NAME = "MarketAI"
-APP_VERSION = "1.0.5"
+from backend.version import APP_NAME, APP_VERSION
 MUTEX_NAME = "Local\\MarketAI.Desktop.v1.0"
 
 
@@ -31,8 +30,9 @@ def bundled_directory() -> Path:
 
 
 def user_data_directory() -> Path:
+    explicit = os.getenv("MARKETAI_DATA_DIR", "").strip()
     base = os.environ.get("LOCALAPPDATA")
-    root = Path(base) / APP_NAME if base else Path.home() / ".marketai"
+    root = Path(explicit) if explicit else (Path(base) / APP_NAME if base else Path.home() / ".marketai")
     root.mkdir(parents=True, exist_ok=True)
     return root
 

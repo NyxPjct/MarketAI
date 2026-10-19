@@ -134,6 +134,48 @@ jobs:
             }
           }
 
+      - name: Ensure WebView2 runtime for native validation
+        shell: pwsh
+        run: |
+          $runtime = Get-ChildItem "${env:ProgramFiles(x86)}/Microsoft/EdgeWebView/Application/*/msedgewebview2.exe" -ErrorAction SilentlyContinue
+          if (-not $runtime) {
+            choco install webview2-runtime -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'WebView2 runtime installation failed.' }
+          }
+
+      - name: Verify installed application and upgrades
+        id: native_smoke
+        shell: pwsh
+        run: |
+          $report = Join-Path $env:RUNNER_TEMP 'windows-validation.json'
+          try {
+            ./tools/check_windows_installer.ps1 -Installer "desktop/dist-installer/$env:INSTALLER_NAME" -ExpectedVersion $env:RELEASE_VERSION -Report $report
+          } catch {
+            if (-not (Test-Path $report)) {
+              @{version=$env:RELEASE_VERSION;status='failed';message=$_.Exception.Message} | ConvertTo-Json | Set-Content -Path $report -Encoding utf8
+            }
+            throw
+          }
+
+      - name: Publish Windows validation report
+        if: always() && steps.native_smoke.outcome != 'skipped'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $path = Join-Path $env:RUNNER_TEMP 'windows-validation.json'
+          if (-not (Test-Path $path)) { throw 'Native validation report missing.' }
+          $text = Get-Content $path -Raw
+          $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($text))
+          $endpoint = "repos/$env:GITHUB_REPOSITORY/contents/.release/validation/windows-$env:RELEASE_TAG.json"
+          $existingSha = $null
+          $existingText = gh api "${endpoint}?ref=main" 2>$null
+          if ($LASTEXITCODE -eq 0) { $existingSha = ($existingText | ConvertFrom-Json).sha }
+          $validationArgs = @('api','--method','PUT',$endpoint,'-f',"message=ci: record Windows installer validation $env:RELEASE_TAG",'-f',"content=$b64",'-f','branch=main')
+          if ($existingSha) { $validationArgs += @('-f',"sha=$existingSha") }
+          & gh @validationArgs
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish native validation report.' }
+
       - name: Build provenance attestation
         uses: actions/attest-build-provenance@v2
         with:

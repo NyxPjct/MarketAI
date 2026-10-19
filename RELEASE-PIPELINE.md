@@ -18,7 +18,7 @@ Edite .release/windows.json:
 ```json
 {
   "cloud_url": "https://api.seudominio.com",
-  "release_tag": "v1.0.2",
+  "release_tag": "v1.2.0",
   "create_release": true
 }
 ```
@@ -28,9 +28,9 @@ O workflow usa a tag para definir o nome dos artefatos.
 Exemplo:
 
 ```text
-v1.0.2
-MarketAI-Setup-v1.0.2.exe
-MarketAI-Setup-v1.0.2.sha256
+v1.2.0
+MarketAI-Setup-v1.2.0.exe
+MarketAI-Setup-v1.2.0.sha256
 ```
 
 Não existe mais um nome fixo de instalador v0.0.
@@ -43,7 +43,7 @@ Informe:
 
 - cloud_url: URL HTTPS do MarketAI Cloud;
 - create_release: true para publicar GitHub Release;
-- release_tag: por exemplo v1.0.2.
+- release_tag: por exemplo v1.2.0.
 
 ## Segurança
 
@@ -77,3 +77,17 @@ Depois do release, o workflow atualiza cloud/releases/windows-stable.json com:
 - data de publicação.
 
 O Desktop só inicia uma atualização após validar o hash.
+
+## Validação do instalador
+
+Antes de publicar a release, o pipeline verifica o instalador real em Windows:
+
+- instalação limpa em uma pasta temporária;
+- abertura da janela nativa com a versão correta;
+- resposta do backend empacotado e presença dos arquivos da interface CSV;
+- atualização a partir de v1.0.5 e v1.1.0, com hashes das versões de origem verificados;
+- preservação de preferências e arquivos de usuário.
+
+O teste usa pastas isoladas e não acessa contas nem serviços de produção.
+O relatório é publicado em `.release/validation/windows-v<versão>.json`.
+Falhas nessa validação impedem a publicação do novo instalador.

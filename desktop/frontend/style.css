@@ -411,3 +411,16 @@ td:last-child{color:#fff}
 .forecast-values>div{display:flex;flex-direction:column;gap:8px}
 .copilot-answer{white-space:pre-wrap}
 @media(max-width:640px){.forecast-values{grid-template-columns:1fr}.workflow-steps li{width:100%}.watch-item{flex-wrap:wrap}}
+
+.batch-card{padding:24px;margin-bottom:20px}
+.batch-card .action-row{margin:16px 0}
+.batch-card progress{width:100%;height:14px;margin-bottom:12px;accent-color:#eee}
+.batch-card label{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.batch-card td small{display:block;color:var(--muted);margin-top:6px}
+.batch-card .table-wrap{margin-top:16px;max-height:520px;overflow:auto}
+.batch-card input[type=checkbox]{width:20px;height:20px;accent-color:#ddd}
+.batch-card .ghost[download]{display:inline-block;text-decoration:none}
+.batch-card .card-head{align-items:flex-start;gap:20px}
+.batch-card .card-head>div{display:block;flex:1;min-width:0}
+.batch-card .card-head h2{margin:4px 0 8px;font-size:22px}
+.batch-card .card-head p.muted{margin:0;line-height:1.5}

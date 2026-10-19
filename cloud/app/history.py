@@ -26,7 +26,11 @@ def history_json(row):
             "date": aware(row.created_at).isoformat(), "imported": row.payload_json is None}
 
 
-def record_analysis(db, user, result):
+def record_analysis(db, user, result, *, client_id=None, commit=True):
+    if client_id is not None:
+        existing = db.query(AnalysisHistory).filter_by(user_id=user.id, client_id=client_id).first()
+        if existing and existing.payload_json is not None:
+            return existing.id
     pricing = result.get("pricing") or {}
     market = result.get("market") or {}
     rec = (pricing.get("strategies") or {}).get("recommended") or {}
@@ -39,11 +43,13 @@ def record_analysis(db, user, result):
         "mode": (market.get("quality") or {}).get("state", "unavailable"),
         "form": request,
     }
-    row = AnalysisHistory(user_id=user.id, summary_json=json.dumps(summary, ensure_ascii=False),
+    row = AnalysisHistory(user_id=user.id, client_id=client_id, summary_json=json.dumps(summary, ensure_ascii=False),
                           payload_json=json.dumps(result, ensure_ascii=False, allow_nan=False))
     db.add(row)
-    db.commit()
-    db.refresh(row)
+    db.flush()
+    if commit:
+        db.commit()
+        db.refresh(row)
     return row.id
 
 

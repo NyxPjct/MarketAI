@@ -182,3 +182,28 @@ class AnalysisHistory(Base):
     summary_json: Mapped[str] = mapped_column(Text, default="{}")
     payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class AnalysisBatch(Base):
+    __tablename__ = "analysis_batches"
+    __table_args__ = (UniqueConstraint("user_id", "client_id", name="uq_batch_user_client"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    client_id: Mapped[str] = mapped_column(String(36))
+    active_owner: Mapped[str | None] = mapped_column(String(36), unique=True, nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="queued", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class AnalysisBatchItem(Base):
+    __tablename__ = "analysis_batch_items"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    batch_id: Mapped[str] = mapped_column(ForeignKey("analysis_batches.id"), index=True)
+    line: Mapped[int] = mapped_column(Integer)
+    fields_json: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(24), default="queued", index=True)
+    analysis_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    summary_json: Mapped[str] = mapped_column(Text, default="{}")
+    error_code: Mapped[str] = mapped_column(String(64), default="")
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)

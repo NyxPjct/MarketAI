@@ -30,6 +30,8 @@ from app.main import app
 import uvicorn
 
 async def identity(name,variant,*args):
+    if name == 'Timeout fixture':
+        raise TimeoutError('synthetic timeout')
     return {'product_name':name,'brand':'Apple','model':'iPhone 16','category':'smartphone','confidence':90,'variant_summary':'128GB'}
 
 async def source(query,**kwargs):
@@ -46,7 +48,7 @@ market.search_google_shopping_live=unavailable
 uvicorn.run(app,host='127.0.0.1',port=int(os.environ['WORKFLOW_CLOUD_PORT']))
 '''
 
-def check_workflow(desktop_a, desktop_b, db_path, chromium):
+def check_workflow(desktop_a, desktop_b, db_path, chromium, stop_device):
     password=secrets.token_urlsafe(24)
     credentials={'email':f'browser-{uuid.uuid4().hex}@example.com','password':password,'full_name':'Workflow test'}
     r=httpx.post(desktop_a+'/api/cloud/register',json=credentials);r.raise_for_status();uid=r.json()['user']['id']
@@ -129,6 +131,41 @@ def check_workflow(desktop_a, desktop_b, db_path, chromium):
         a.locator('#analysisForm [type=submit]').click();expect(a.locator('#result')).to_be_visible()
         expect(a.locator('#recommendedPrice')).to_have_text('BLOCKED')
         expect(a.locator('#nextActionMessage')).to_contain_text('No source returned market data')
+        # Batch preview rejects bad rows, persists work after closing a device and shares results.
+        a.locator('[data-view=batches]').click()
+        catalog=b'product_name;variant_text;purchase_cost;destination_country\nApple iPhone 16;128GB;50;BR\nInvalid;128GB;-5;BR\nTimeout fixture;;50;BR\nNo source product;;50;CA\n'
+        a.locator('#batchFile').set_input_files({'name':'catalog.csv','mimeType':'text/csv','buffer':catalog})
+        a.locator('#batchPreviewButton').click()
+        expect(a.locator('#batchFeedback')).to_contain_text('Ready: 3')
+        expect(a.locator('#batchPreviewRows input:disabled')).to_have_count(1)
+        a.locator('[data-batch-row="3"]').uncheck()
+        a.evaluate("window.MarketI18n.setLanguage('pt-BR')")
+        expect(a.locator('#batchPreviewRows input:checked')).to_have_count(2)
+        a.evaluate("window.MarketI18n.setLanguage('en')")
+        a.locator('[data-batch-row="3"]').check()
+        a.locator('#batchStart').click()
+        expect(a.locator('#batchFeedback')).to_contain_text('Batch saved to your account')
+        a.close()
+        stop_device()
+        b.locator('[data-view=batches]').click()
+        expect(b.locator('#batchProgress')).to_contain_text('Completed with errors',timeout=20000)
+        expect(b.locator('#batchResultRows tr')).to_have_count(3)
+        expect(b.locator('#batchResultRows')).to_contain_text('timed out')
+        expect(b.locator('#batchResultRows')).to_contain_text('no source')
+        with b.expect_download() as download:
+            b.locator('#batchExport').click()
+        export=Path(download.value.path()).read_text(encoding='utf-8-sig')
+        assert 'Apple iPhone 16' in export and 'analysis_timeout' in export
+        for lang in ['pt-BR','de','es','fr','en']:
+            b.evaluate('(lang)=>window.MarketI18n.setLanguage(lang)',lang)
+            assert b.locator('#batchStart').inner_text()!='Analyze selected products' or lang=='en'
+        b.locator('.batch-open').first.click()
+        expect(b.locator('#result')).to_be_visible()
+        b.locator('[data-view=batches]').click()
+        b.locator('#batchRetry').click()
+        expect(b.locator('#batchFeedback')).to_contain_text('Batch saved')
+        expect(b.locator('#batchProgress')).to_contain_text('Completed with errors',timeout=20000)
+        expect(b.locator('#batchResultRows tr')).to_have_count(1)
         b.locator('[data-view=account]').click();b.locator('#cloudLogout').click()
         expect(b.locator('#authGate')).to_be_visible()
         assert b.evaluate('currentAnalysis===null')
@@ -184,7 +221,10 @@ def services(python):
                     time.sleep(0.1)
                 else:
                     raise RuntimeError('Test service did not become ready')
-            yield (f'http://127.0.0.1:{ports[1]}', f'http://127.0.0.1:{ports[2]}', db_path)
+            def stop_device():
+                processes[1].terminate()
+                processes[1].wait(timeout=5)
+            yield (f'http://127.0.0.1:{ports[1]}', f'http://127.0.0.1:{ports[2]}', db_path, stop_device)
         finally:
             for process in reversed(processes):
                 process.terminate()
@@ -202,9 +242,9 @@ def main():
     parser.add_argument('--python', default=sys.executable, help='Python with Cloud/Desktop dependencies')
     parser.add_argument('--chromium', default=shutil.which('chromium'), help='Chromium executable; otherwise use Playwright browser')
     args = parser.parse_args()
-    with services(args.python) as (desktop_a, desktop_b, db_path):
-        check_workflow(desktop_a, desktop_b, db_path, args.chromium)
-    print('PASS: guided analysis, evidence, migration, two-device sync, forecast, Copilot, five languages, offline cache, deletion and logout')
+    with services(args.python) as (desktop_a, desktop_b, db_path, stop_device):
+        check_workflow(desktop_a, desktop_b, db_path, args.chromium, stop_device)
+    print('PASS: guided analysis, two-device sync, CSV review, durable batches with Desktop stopped, partial failure/retry, export, forecast, Copilot, five languages and logout')
 
 
 if __name__ == '__main__':

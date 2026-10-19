@@ -1,35 +1,43 @@
-MARKETAI 1.1.0 — ACCOUNT SYNC AND EVIDENCE RELEASE
+MARKETAI 1.2.0 — CATALOG CSV AND DURABLE BATCH ANALYSIS
 
-What changed:
-- Forecast projects 7, 30 and 60 days using the actual collection timestamps.
-- Missing/invalid observations are excluded without changing their date alignment.
-- Limited history is labeled preliminary; projections are not guaranteed prices.
-- Recommendation evidence highlights collection dates, listing counts, cost floors,
-  margin assumptions, incompatible listings and missing market evidence.
-- A guided flow connects product analysis, margin comparison and monitoring.
-- Analyses are saved in account-scoped Cloud history and can be reopened across devices.
-- Legacy local history is imported once as labeled summaries, not verified evidence.
-- Monitored products use the Cloud Sentinel list, with manual refresh, local caches
-  and explicit feedback when saving or synchronization fails.
-- Copilot addresses margin, costs, alerts and forecasts using saved account context.
-- Users can select a monitored product for Copilot and Forecast.
-- Deterministic Copilot fallback works without an AI provider in all five languages.
-- Signing out clears the analysis and account-specific content displayed by the UI.
-- README, development instructions and privacy notice describe the new workflow.
+New catalog workflow:
+- Import UTF-8 CSV with comma, semicolon or tab separators and decimal commas.
+- Preserve SKU, GTIN, product variants, currencies, destinations, costs and fee assumptions.
+- Review validation errors per row and select only valid products before querying sources.
+- Files support up to 50 products and 2 MB; these are processing limits, not paid quotas.
+- Durable Cloud batches continue after the Desktop closes and recover interrupted work.
+- Track progress, partial failures, missing market evidence and recommendations per product.
+- Reopen saved analyses, export results, retry failed products and cancel waiting products.
+- A running product may finish when a batch is cancelled.
+- Delete finished batches separately from their saved History analyses.
+- All batch operations are scoped to the authenticated account.
+- Exported text is protected against spreadsheet formula interpretation.
+
+Reliability and native application:
+- Price recommendations remain blocked when real market evidence is insufficient.
+- The native window title now uses the central application version.
+- The launcher respects MARKETAI_DATA_DIR for isolated development and validation.
+- Release validation checks clean installation, native startup and upgrades from
+  v1.0.5 and v1.1.0 while preserving preferences and user files.
+- Batch preview, controls, errors and progress support all five interface languages.
 
 Validation:
-- 33 Cloud tests and 17 Desktop tests passed.
-- Browser regression checks two devices, five languages, migration, evidence,
-  Forecast, Copilot, offline cache behavior, deletion and logout isolation.
-- Browser market data is synthetic test data, not a live marketplace validation.
+- 65 Cloud tests and 17 Desktop tests passed locally.
+- The browser regression verifies two devices, CSV validation, processing with
+  the first Desktop process stopped, partial failure/retry and CSV export.
+- Sentinel snapshot and alert logic is tested with controlled input data.
+- Native installer checks run in the Windows release pipeline before publication.
+- Synthetic market data is used only for isolated automated tests and UI screenshots.
+- Hosted Cloud and live-provider validation are separate from these checks.
 
-Deployment:
-- Update Cloud and Desktop together to version 1.1.0.
-- Cloud startup creates the additional analysis_history table.
-- Sentinel collection requires its worker to remain running.
-- External providers still require the operator's own credentials and quotas.
+Deployment and data:
+- Update Cloud and Desktop together to v1.2.0.
+- Cloud startup creates analysis_batches and analysis_batch_items without altering
+  existing tables. Keep the API running for background batches.
+- BATCH_WORKER_ENABLED=0 disables processing for maintenance or controlled tests.
+- Sentinel is still a separate worker for recurring monitoring.
+- The CSV original is not retained; selected product fields and batch results are
+  stored on the Cloud. See the updated Privacy Notice for delete behavior.
+- External services retain their own credentials, costs, quotas and availability.
 
-Community foundation:
-- Free and open source; no paid plans or monthly MarketAI quota.
-- English, Português (Brasil), Deutsch, Español and Français.
-- MarketAI never fabricates market prices when evidence is insufficient.
+Community remains free, open source and without paid MarketAI quotas.

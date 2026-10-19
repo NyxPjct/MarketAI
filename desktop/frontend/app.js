@@ -58,6 +58,7 @@ function switchView(name){
   $(`#view-${name}`).classList.add('active');
   if(name==='history'){renderHistory();syncAccountData();}
   if(name==='watchlist'){renderWatchlist();syncAccountData();}
+  if(name==='batches') window.MarketBatches?.load();
   if(name==='integrations') loadIntegrations();
   if(name==='settings') loadSettings();
 }
@@ -246,10 +247,8 @@ function renderHistory(){
   const items=readAccountItems('marketai-history');
   $('#historyList').innerHTML=items.length?items.map(x=>`<div class="history-item"><div><strong>${escapeHtml(x.name)}</strong><small>${new Date(x.date).toLocaleString(appLocale())} · ${escapeHtml(historyModeLabel(x.mode))}</small></div><div><small>MarketAI</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${x.recommended==null?'sem recomendação':fmtBRL(x.recommended)}</div>${x.imported?`<small>${escapeHtml(tr('Imported summary'))}</small>`:x.id?`<button class="ghost reopen-analysis" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Open analysis'))}</button>`:''}</div>`).join(''):'<div class="empty">Nenhuma análise salva ainda.</div>';
   renderHistoryChart(items);
-  $$('.reopen-analysis').forEach(button=>button.addEventListener('click',async()=>{
-    const account=activeAccountId;
-    try{const d=await intelJson('/api/history/'+encodeURIComponent(button.dataset.id));if(account!==activeAccountId)return;if(!d.analysis)throw new Error(tr('Imported summary'));currentAnalysis=d.analysis;currentAnalysis.history_id=d.item.id;currentFormSnapshot=d.analysis.request;if(currentPreviewURL)URL.revokeObjectURL(currentPreviewURL);currentPreviewURL='';imageInput.value='';preview.hidden=true;uploadPrompt.hidden=false;Object.entries(currentFormSnapshot||{}).forEach(([key,value])=>{const input=form.elements[key];if(input)input.value=value??''});switchView('analyze');renderAnalysis(currentAnalysis);form.style.display='none';result.hidden=false;setWorkflowStep('compare');}catch(e){alert(e.message)}
-  }));
+  $$('.reopen-analysis').forEach(button=>button.addEventListener('click',()=>openSavedAnalysis(button.dataset.id)));
+
 }
 function historyModeLabel(mode){return ({reliable:'mercado confiável',ambiguous:'variante ambígua',insufficient:'amostra insuficiente',no_match:'sem match',unavailable:'sem fonte'})[mode]||mode||'—'}
 
@@ -295,7 +294,7 @@ $('#refreshWatchlist').addEventListener('click',()=>syncAccountData(true));
 $('#printReport').addEventListener('click',()=>window.print());
 $('#exportCsv').addEventListener('click',()=>{
   if(!currentAnalysis)return; const d=currentAnalysis, rec=d.pricing.strategies.recommended;
-  const rows=[['MarketAI v1.1.0 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
+  const rows=[['MarketAI v1.2.0 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
   const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`marketai-${slugify(d.request.typed_name)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 });
 
@@ -370,7 +369,7 @@ $('#savePreferences')?.addEventListener('click',async()=>{
 function downloadJson(filename,data){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.1.0',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
+$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.2.0',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
 $('#importBackupBtn')?.addEventListener('click',()=>$('#importBackupFile').click());
 $('#importBackupFile')?.addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
@@ -492,6 +491,7 @@ function applyAccountData(d={}){
   if($('#accountQuota'))$('#accountQuota').textContent='ILIMITADAS';
   if($('#accountStatus'))$('#accountStatus').textContent='ATIVO';
   setAuthScreen(true);
+  document.dispatchEvent(new CustomEvent('marketai:accountready',{detail:{id:activeAccountId}}));
 }
 
 function setAuthFeedback(id,message='',kind='error'){
@@ -800,6 +800,7 @@ function setWorkflowStep(step){
   $$('#workflowSteps li').forEach(el=>{el.classList.toggle('active',el.dataset.step===step);if(el.dataset.step===step)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});
 }
 function resetAnalysis(){
+  window.MarketBatches?.reset();
   currentAnalysis=null;currentFormSnapshot=null;result.hidden=true;form.style.display='grid';
   if(currentPreviewURL)URL.revokeObjectURL(currentPreviewURL);
   currentPreviewURL='';imageInput.value='';preview.hidden=true;uploadPrompt.hidden=false;
@@ -821,3 +822,19 @@ function renderEvidence(d){
 $('#refineAnalysis').addEventListener('click',()=>{$('#newAnalysis').click();form.elements.variant_text.focus()});
 $('#compareMargin').addEventListener('click',()=>{$('#simulatorCard').scrollIntoView({behavior:'smooth'});$('#priceSlider').focus();setWorkflowStep('compare')});
 $('#inspectEvidence').addEventListener('click',()=>$('#compatibleEvidence').scrollIntoView({behavior:'smooth'}));
+
+
+async function openSavedAnalysis(id){
+  const account=activeAccountId;
+  try{
+    const data=await intelJson('/api/history/'+encodeURIComponent(id));
+    if(account!==activeAccountId)return;
+    if(!data.analysis)throw new Error(tr('Imported summary'));
+    currentAnalysis=data.analysis;currentAnalysis.history_id=data.item.id;
+    currentFormSnapshot=data.analysis.request;
+    if(currentPreviewURL)URL.revokeObjectURL(currentPreviewURL);
+    currentPreviewURL='';imageInput.value='';preview.hidden=true;uploadPrompt.hidden=false;
+    Object.entries(currentFormSnapshot||{}).forEach(([key,value])=>{const input=form.elements[key];if(input)input.value=value??''});
+    switchView('analyze');renderAnalysis(currentAnalysis);form.style.display='none';result.hidden=false;setWorkflowStep('compare');
+  }catch(error){if(account===activeAccountId)alert(error.message)}
+}

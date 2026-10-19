@@ -66,6 +66,8 @@ where node >nul 2>nul
 if errorlevel 1 goto :skip_node_check
 node --check frontend\app.js
 if errorlevel 1 goto :fail
+node --check frontend\batches.js
+if errorlevel 1 goto :fail
 :skip_node_check
 
 echo [4/9] Limpando builds anteriores...

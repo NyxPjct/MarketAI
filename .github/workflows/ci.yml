@@ -60,3 +60,12 @@ jobs:
         run: |
           node --check desktop/frontend/i18n.js
           node --check desktop/frontend/app.js
+          node --check desktop/frontend/batches.js
+
+      - name: Install browser validation dependencies
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Validate two-device and CSV batch workflows
+        run: python tools/check_workflow.py

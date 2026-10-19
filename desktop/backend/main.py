@@ -786,3 +786,40 @@ async def account_history_clear(): return await _proxy_intelligence("DELETE", "/
 async def account_history_item(analysis_id: str): return await _proxy_intelligence("GET", f"/v1/history/{analysis_id}")
 @app.delete("/api/intelligence/watches")
 async def intelligence_watches_clear(): return await _proxy_intelligence("DELETE", "/v1/intelligence/watches")
+
+
+# Catalog batches use the same authenticated Cloud session as single analyses.
+@app.post("/api/batches/preview")
+async def batch_preview(file: UploadFile = File(...)):
+    content = await file.read(2 * 1024 * 1024 + 1)
+    if len(content) > 2 * 1024 * 1024:
+        return JSONResponse(status_code=413, content={"detail": "csv_too_large"})
+    try:
+        response = await cloud_service.request("POST", "/v1/batches/preview",
+            files={"file": ("catalog.csv", content, "text/csv")})
+        return JSONResponse(status_code=response.status_code, content=response.json())
+    except Exception:
+        return JSONResponse(status_code=503, content={"detail": "cloud_unavailable"})
+
+@app.get("/api/batches")
+async def batches_list(): return await _proxy_intelligence("GET", "/v1/batches")
+@app.post("/api/batches")
+async def batch_create(payload: Dict[str, Any] = Body(...)): return await _proxy_intelligence("POST", "/v1/batches", payload)
+@app.get("/api/batches/{batch_id}")
+async def batch_get(batch_id: str): return await _proxy_intelligence("GET", f"/v1/batches/{batch_id}")
+@app.post("/api/batches/{batch_id}/cancel")
+async def batch_cancel(batch_id: str): return await _proxy_intelligence("POST", f"/v1/batches/{batch_id}/cancel", {})
+@app.get("/api/batches/{batch_id}/export")
+async def batch_export(batch_id: str):
+    try:
+        response = await cloud_service.request("GET", f"/v1/batches/{batch_id}/export")
+        if not response.is_success:
+            return JSONResponse(status_code=response.status_code, content=response.json())
+        from fastapi.responses import Response
+        return Response(content=response.content, media_type="text/csv; charset=utf-8",
+                        headers={"Content-Disposition": "attachment; filename=MarketAI-batch-results.csv"})
+    except Exception:
+        return JSONResponse(status_code=503, content={"detail": "cloud_unavailable"})
+
+@app.delete("/api/batches/{batch_id}")
+async def batch_delete(batch_id: str): return await _proxy_intelligence("DELETE", f"/v1/batches/{batch_id}")
