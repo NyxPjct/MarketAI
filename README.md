@@ -15,24 +15,24 @@ Each person uses an individual account, with separate analyses, monitored produc
 
 ## Download for Windows
 
-Current version: **v1.1.0**
+Current version: **v1.2.0**
 
 One multilingual installer for **Windows 10/11 x64**, with English, Português (Brasil), Deutsch, Español and Français.
 
 ```text
-MarketAI-Setup-v1.1.0.exe
+MarketAI-Setup-v1.2.0.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.1.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.1.0/MarketAI-Setup-v1.1.0.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.1.0/MarketAI-Setup-v1.1.0.sha256)
-- [GitHub Release v1.1.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.1.0)
+- [MarketAI-Setup-v1.2.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.2.0/MarketAI-Setup-v1.2.0.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.2.0/MarketAI-Setup-v1.2.0.sha256)
+- [GitHub Release v1.2.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.2.0)
 
 SHA-256:
 
 ```text
-2de675419ba98011d18a26afaa82287d07d5f21800f52e12e9636249d6931d67
+2674c7cbc921724182bf6f8eb0cb5ccb49f8ed0ad58f2a44c709f6324e6ecb22
 ```
 
 All releases:
@@ -120,6 +120,8 @@ Important files:
 - Products without reliable evidence retain blocked prices instead of invented recommendations.
 - The native launcher uses the central application version and respects the configured data directory.
 - Windows release validation checks a clean installation, native window startup and upgrades from v1.0.5 and v1.1.0 with preference preservation.
+
+The v1.2.0 release passed **65 Cloud tests, 17 Desktop tests**, the two-device browser regression and native Windows installation/upgrade checks. The [Windows validation report](.release/validation/windows-v1.2.0.json) confirms clean installation, native window startup and upgrades from v1.0.5 and v1.1.0 with preferences and user files preserved. Market-provider tests use controlled data; these checks do not establish that a hosted instance has live provider access.
 
 ### Import a catalog
 
@@ -368,8 +370,8 @@ run_desktop_dev.bat
 Installer filenames follow the application version automatically.
 
 ```text
-v1.1.0 -> MarketAI-Setup-v1.1.0.exe
 v1.2.0 -> MarketAI-Setup-v1.2.0.exe
+v1.3.0 -> MarketAI-Setup-v1.3.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
 
