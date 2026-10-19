@@ -1,10 +1,10 @@
 {
   "available": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "channel": "stable",
   "platform": "windows",
-  "download_url": "https://github.com/NyxPjct/MarketAI/releases/download/v1.1.0/MarketAI-Setup-v1.1.0.exe",
-  "sha256": "2de675419ba98011d18a26afaa82287d07d5f21800f52e12e9636249d6931d67",
-  "release_url": "https://github.com/NyxPjct/MarketAI/releases/tag/v1.1.0",
-  "published_at": "2026-10-14T19:53:29.1796408Z"
+  "download_url": "https://github.com/NyxPjct/MarketAI/releases/download/v1.2.0/MarketAI-Setup-v1.2.0.exe",
+  "sha256": "2674c7cbc921724182bf6f8eb0cb5ccb49f8ed0ad58f2a44c709f6324e6ecb22",
+  "release_url": "https://github.com/NyxPjct/MarketAI/releases/tag/v1.2.0",
+  "published_at": "2026-10-19T12:50:09.3395921Z"
 }
