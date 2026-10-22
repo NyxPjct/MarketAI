@@ -15,24 +15,24 @@ Each person uses an individual account, with separate analyses, monitored produc
 
 ## Download for Windows
 
-Current version: **v1.2.0**
+Current version: **v1.3.0**
 
 One multilingual installer for **Windows 10/11 x64**, with English, Português (Brasil), Deutsch, Español and Français.
 
 ```text
-MarketAI-Setup-v1.2.0.exe
+MarketAI-Setup-v1.3.0.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.2.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.2.0/MarketAI-Setup-v1.2.0.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.2.0/MarketAI-Setup-v1.2.0.sha256)
-- [GitHub Release v1.2.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.2.0)
+- [MarketAI-Setup-v1.3.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.3.0/MarketAI-Setup-v1.3.0.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.3.0/MarketAI-Setup-v1.3.0.sha256)
+- [GitHub Release v1.3.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.3.0)
 
 SHA-256:
 
 ```text
-2674c7cbc921724182bf6f8eb0cb5ccb49f8ed0ad58f2a44c709f6324e6ecb22
+3f5ab1666967998b369f0cdf61bbb1866b48dda7945970042f583a61f6597a52
 ```
 
 All releases:
@@ -120,6 +120,8 @@ Important files:
 - Zero fees and a zero target margin are respected by the analysis engine.
 - Catalog controls, editor, revision history and errors support all five interface languages.
 
+The v1.3.0 release passed **77 Cloud tests, 17 Desktop tests**, the extended two-device browser regression and actual Windows clean-install/native-window/upgrade validation. The [Windows report](.release/validation/windows-v1.3.0.json) confirms upgrades from v1.0.5, v1.1.0 and v1.2.0 with preferences and user files preserved. The published installer was downloaded and verified against its SHA-256 file. Provider tests use controlled data.
+
 ### Use the saved catalog
 
 1. Open **Product catalog → Add product**, or review a file in **CSV batches** and choose **Save selection to catalog**. Each saved product needs a SKU.
@@ -131,6 +133,8 @@ Important files:
 The comparison uses saved server analyses collected after products enter the catalog. It does not convert imported history summaries into market evidence. Deleting a product removes its catalog revisions and comparison links and pauses its monitor; saved History analyses, previous snapshots and alerts remain. Clearing account History removes linked comparison results while keeping catalog inputs. Finished batch deletion remains independent. Catalog inputs and revisions are not included in the existing local History/watchlist backup export; back up the Cloud database for those records.
 
 Deploy Cloud and Desktop **v1.3.0 together**. Startup creates only the additive `catalog_products`, `catalog_revisions` and `catalog_analyses` tables; existing tables are preserved. Take a database backup before deployment. Hosted login and live marketplace access require validation on the deployed instance.
+
+**Hosted deployment check (2026-10-22):** the configured public Cloud responded as **v1.0.5** and its schema lacked catalog, batch and History routes. A GitHub release does not update that service by itself. Follow the [Railway deployment steps](PRODUCTION-SETUP.md#atualizar-o-serviço-no-railway-para-v130) before using the new workflows against that instance.
 
 ## What is new in v1.2.0
 
@@ -398,7 +402,7 @@ run_desktop_dev.bat
 Installer filenames follow the application version automatically.
 
 ```text
-v1.2.0 -> MarketAI-Setup-v1.2.0.exe
+v1.3.0 -> MarketAI-Setup-v1.3.0.exe
 v1.3.0 -> MarketAI-Setup-v1.3.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```

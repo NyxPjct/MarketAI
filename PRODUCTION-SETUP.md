@@ -25,6 +25,33 @@ SERPAPI_KEY=
 
 O MarketAI Community não depende de gateway de pagamento.
 
+### Atualizar o serviço no Railway para v1.3.0
+
+Publicar o instalador no GitHub não atualiza automaticamente um serviço Railway
+que esteja desconectado do repositório ou com deploy automático desativado.
+
+1. No serviço da API, confira a origem `NyxPjct/MarketAI`, branch `main`, e o
+   diretório raiz `/cloud`. O Dockerfile e o `railway.toml` usam essa pasta como
+   contexto. Preserve o domínio público, as variáveis e o banco existentes.
+2. Faça um backup do PostgreSQL e publique o commit atual. Não recrie o banco.
+   O startup adiciona as tabelas de Histórico, lotes e catálogo, sem alterar as
+   tabelas anteriores. Mantenha a API ativa para os lotes; não inicie uma segunda
+   cópia do processador de lotes. `BATCH_WORKER_ENABLED=0` desliga esse processador.
+3. Atualize o worker Sentinel com a mesma origem e o mesmo `DATABASE_URL`, usando
+   `python -m app.sentinel_worker`. Ele é necessário para coletas recorrentes.
+4. Confira por HTTPS o `/health`: deve informar `version: 1.3.0` e
+   `batch_processing: true` na API. O `/openapi.json` precisa incluir `/v1/catalog`,
+   `/v1/batches` e `/v1/history`. As consultas privadas sem sessão devem continuar
+   rejeitadas; não desative a autenticação para validar o serviço.
+5. Com uma conta autorizada, confirme login, catálogo, lote e coleta real usando
+   as integrações configuradas. Dados sintéticos dos testes não comprovam acesso
+   aos provedores no ambiente hospedado.
+
+Verificação em 22/10/2026: o domínio hospedado configurado respondeu aos endpoints
+públicos como v1.0.5, sem as rotas acima. O ambiente de desenvolvimento não dispõe
+de credencial ou projeto Railway vinculado para executar esse deploy. Essa
+observação registra o estado encontrado; repita as verificações após publicar.
+
 ## 2. Banco
 
 Use PostgreSQL em produção. Cada usuário possui sua própria conta e os dados persistentes do Intelligence Core são relacionados ao user_id.
@@ -52,7 +79,7 @@ O nome do instalador acompanha a versão definida em desktop/installer/MarketAI.
 Exemplo:
 
 ```text
-MarketAI-Setup-v1.0.2.exe
+MarketAI-Setup-v1.3.0.exe
 ```
 
 ## 5. Release
@@ -62,7 +89,7 @@ Atualize .release/windows.json com:
 ```json
 {
   "cloud_url": "https://api.seudominio.com",
-  "release_tag": "v1.0.2",
+  "release_tag": "v1.3.0",
   "create_release": true
 }
 ```
