@@ -133,7 +133,7 @@ def check_workflow(desktop_a, desktop_b, db_path, chromium, stop_device):
         expect(a.locator('#nextActionMessage')).to_contain_text('No source returned market data')
         # Batch preview rejects bad rows, persists work after closing a device and shares results.
         a.locator('[data-view=batches]').click()
-        catalog=b'product_name;variant_text;purchase_cost;destination_country\nApple iPhone 16;128GB;50;BR\nInvalid;128GB;-5;BR\nTimeout fixture;;50;BR\nNo source product;;50;CA\n'
+        catalog=b'sku;product_name;variant_text;purchase_cost;destination_country\n001-PHONE;Apple iPhone 16;128GB;50;BR\nINVALID;Invalid;128GB;-5;BR\n002-TIMEOUT;Timeout fixture;;50;BR\n003-NOSOURCE;No source product;;50;CA\n'
         a.locator('#batchFile').set_input_files({'name':'catalog.csv','mimeType':'text/csv','buffer':catalog})
         a.locator('#batchPreviewButton').click()
         expect(a.locator('#batchFeedback')).to_contain_text('Ready: 3')
@@ -143,6 +143,8 @@ def check_workflow(desktop_a, desktop_b, db_path, chromium, stop_device):
         expect(a.locator('#batchPreviewRows input:checked')).to_have_count(2)
         a.evaluate("window.MarketI18n.setLanguage('en')")
         a.locator('[data-batch-row="3"]').check()
+        a.locator('#batchSaveCatalog').click()
+        expect(a.locator('#batchFeedback')).to_contain_text('Products saved to your catalog')
         a.locator('#batchStart').click()
         expect(a.locator('#batchFeedback')).to_contain_text('Batch saved to your account')
         a.close()
@@ -166,9 +168,80 @@ def check_workflow(desktop_a, desktop_b, db_path, chromium, stop_device):
         expect(b.locator('#batchFeedback')).to_contain_text('Batch saved')
         expect(b.locator('#batchProgress')).to_contain_text('Completed with errors',timeout=20000)
         expect(b.locator('#batchResultRows tr')).to_have_count(1)
+        # Catalog persists across devices, links only trusted results and supports edits.
+        b.locator('[data-view=catalog]').click()
+        expect(b.locator('#catalogRows tr[data-product-id]')).to_have_count(3)
+        phone=b.locator('#catalogRows tr').filter(has_text='001-PHONE')
+        expect(phone).to_contain_text('Matching current inputs')
+        if os.getenv('MARKETAI_WORKFLOW_SCREENSHOTS'):
+            directory=Path(os.environ['MARKETAI_WORKFLOW_SCREENSHOTS']);directory.mkdir(parents=True,exist_ok=True)
+            b.screenshot(path=str(directory/'catalog-comparison.png'),full_page=True)
+        b.locator('#catalogQuality').select_option('reliable')
+        expect(b.locator('#catalogRows tr[data-product-id]')).to_have_count(1)
+        b.locator('#catalogQuality').select_option('all')
+        expect(b.locator('#catalogRows tr[data-product-id]')).to_have_count(3)
+        b.locator('#catalogSelectAll').check();b.locator('#catalogMonitor').click()
+        expect(b.locator('#catalogFeedback')).to_contain_text('Monitoring enabled')
+        expect(b.locator('#catalogRows')).to_contain_text('Enabled')
+        assert sum(watch['active'] for watch in httpx.get(desktop_b+'/api/intelligence/watches').json()['items'])==3
+        # Repeating activation reuses the same monitor for each SKU.
+        b.locator('#catalogSelectAll').check();b.locator('#catalogMonitor').click()
+        expect(b.locator('#catalogFeedback')).to_contain_text('Monitoring enabled')
+        assert sum(watch['active'] for watch in httpx.get(desktop_b+'/api/intelligence/watches').json()['items'])==3
+        phone.locator('.catalog-edit').click()
+        expect(b.locator('#catalogEditor')).to_be_visible()
+        if os.getenv('MARKETAI_WORKFLOW_SCREENSHOTS'):
+            b.screenshot(path=str(Path(os.environ['MARKETAI_WORKFLOW_SCREENSHOTS'])/'catalog-editor.png'),full_page=True)
+        b.locator('#catalogFields [name=purchase_cost]').fill('60')
+        b.locator('#catalogFields [name=stock]').fill('12')
+        b.locator('#catalogFields [name=supplier_name]').fill('Supplier A')
+        b.locator('#catalogSave').click()
+        expect(b.locator('#catalogEditor')).not_to_be_visible()
+        expect(phone).to_contain_text('Inputs changed')
+        expect(phone).to_contain_text('Supplier A')
+        phone.locator('.catalog-history').click()
+        expect(b.locator('.catalog-revision')).to_have_count(2)
+        expect(b.locator('.catalog-revision').first).to_contain_text('Revision 2')
+        b.locator('#catalogRevisionsClose').click()
+        b.locator('#catalogFreshness').select_option('outdated')
+        expect(b.locator('#catalogRows tr[data-product-id]')).to_have_count(1)
+        phone.locator('.catalog-select').check()
+        with b.expect_response(lambda response:response.url.endswith('/api/catalog/analyze') and response.request.method=='POST') as submission:
+            b.locator('#catalogAnalyze').click()
+        assert submission.value.status==200
+        catalog_job=submission.value.json()
+        assert catalog_job['rows'][0]['fields']['purchase_cost']==60
+        expect(b.locator('#view-batches')).to_have_class('view active')
+        expect(b.locator('#batchSelect')).to_have_value(catalog_job['id'])
+        expect(b.locator('#batchProgress')).to_contain_text('Completed · 1/1',timeout=20000)
+        expect(b.locator('#batchResultRows tr')).to_have_count(1)
+        snapshot=httpx.get(desktop_b+'/api/catalog').json()['items']
+        current_phone=next(item for item in snapshot if item['fields']['sku']=='001-PHONE')
+        assert not current_phone['latest']['outdated'], {'product':current_phone,'job':httpx.get(desktop_b+'/api/batches/'+catalog_job['id']).json()}
+        b.locator('[data-view=catalog]').click()
+        expect(b.locator('#catalogRows tr[data-product-id]')).to_have_count(0)
+        b.locator('#catalogFreshness').select_option('current')
+        expect(b.locator('#catalogRows tr[data-product-id]')).to_have_count(2)
+        for lang in ['pt-BR','de','es','fr','en']:
+            b.evaluate('(lang)=>window.MarketI18n.setLanguage(lang)',lang)
+            assert b.locator('#catalogNew').inner_text()!='Add product' or lang=='en'
+        # Manual creation stores a distinct stock count and all validated pricing fields.
+        b.locator('#catalogNew').click()
+        b.locator('#catalogFields [name=sku]').fill('004-MANUAL')
+        b.locator('#catalogFields [name=product_name]').fill('Manual product')
+        b.locator('#catalogFields [name=stock]').fill('7')
+        b.locator('#catalogSave').click()
+        expect(b.locator('#catalogEditor')).not_to_be_visible()
+        b.locator('#catalogFreshness').select_option('none')
+        expect(b.locator('#catalogRows')).to_contain_text('004-MANUAL')
+        manual=b.locator('#catalogRows tr').filter(has_text='004-MANUAL')
+        manual.locator('.catalog-delete').click()
+        expect(b.locator('#catalogRows')).not_to_contain_text('004-MANUAL')
         b.locator('[data-view=account]').click();b.locator('#cloudLogout').click()
         expect(b.locator('#authGate')).to_be_visible()
         assert b.evaluate('currentAnalysis===null')
+        assert b.locator('#catalogRows tr[data-product-id]').count()==0
+        assert b.locator('#catalogFields').inner_text()==''
         assert not errors,errors
         browser.close()
 
@@ -244,7 +317,7 @@ def main():
     args = parser.parse_args()
     with services(args.python) as (desktop_a, desktop_b, db_path, stop_device):
         check_workflow(desktop_a, desktop_b, db_path, args.chromium, stop_device)
-    print('PASS: guided analysis, two-device sync, CSV review, durable batches with Desktop stopped, partial failure/retry, export, forecast, Copilot, five languages and logout')
+    print('PASS: guided analysis, two-device sync, CSV review, durable batches with Desktop stopped, partial failure/retry, export, SKU catalog, comparisons, revision history, bulk monitoring, catalog reanalysis, five languages and logout')
 
 
 if __name__ == '__main__':

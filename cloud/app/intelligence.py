@@ -77,7 +77,9 @@ def create_watch(payload:dict=Body(...),user:User=Depends(current_user),db:Sessi
     if len(name) > 240: raise HTTPException(400,"product_name_too_long")
     variant=str(payload.get("variant_text") or "")
     country=str(payload.get("destination_country") or "BR").upper()
-    existing=db.query(ProductWatch).filter_by(user_id=user.id,product_name=name,variant_text=variant,country=country,active=True).first()
+    from app.catalog import sku_key
+    candidates=db.query(ProductWatch).filter_by(user_id=user.id,product_name=name,variant_text=variant,country=country,active=True).all()
+    existing=next((watch for watch in candidates if sku_key(str(json.loads(watch.settings_json or '{}').get('sku') or '')) == sku_key(str(payload.get('sku') or ''))), None)
     if existing:
         existing.settings_json=json.dumps(payload,ensure_ascii=False); existing.autopilot_enabled=bool(payload.get("autopilot_enabled")); existing.updated_at=now(); db.commit(); db.refresh(existing); return watch_json(existing)
     w=ProductWatch(user_id=user.id,product_name=name,variant_text=variant,country=country,settings_json=json.dumps(payload,ensure_ascii=False),autopilot_enabled=bool(payload.get("autopilot_enabled")))

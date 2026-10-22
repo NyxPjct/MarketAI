@@ -15,21 +15,11 @@ from app.evidence import recommendation_evidence
 from app.history import record_analysis
 from app.market_engine import run_analysis
 from app.models import AnalysisBatch, AnalysisBatchItem, AnalysisHistory, User
+from app.analysis_summary import summary_for
 
 logger = logging.getLogger(__name__)
 ANALYSIS_TIMEOUT = 90
 LEASE_SECONDS = 180
-
-
-def summary_for(result):
-    pricing = result.get('pricing') or {}
-    market = result.get('market') or {}
-    rec = (pricing.get('strategies') or {}).get('recommended') or {} if market.get('reliable') else {}
-    return {'quality': (market.get('quality') or {}).get('state', 'unavailable'),
-            'recommended_price': rec.get('price'), 'net_profit': rec.get('net_profit'),
-            'net_margin_percent': rec.get('net_margin_percent'),
-            'cost_floor': (pricing.get('costs') or {}).get('minimum_for_target_margin'),
-            'collected_at': market.get('checked_at')}
 
 
 def claim_next():

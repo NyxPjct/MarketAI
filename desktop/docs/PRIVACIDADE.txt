@@ -1,5 +1,5 @@
 MARKETAI COMMUNITY — NOTA DE PRIVACIDADE
-Última atualização: 19/10/2026
+Última atualização: 22/10/2026
 
 1. CONTAS
 O MarketAI pode tratar nome, e-mail, identificador aleatório da instalação e
@@ -28,6 +28,18 @@ em lotes associados à conta. O arquivo CSV original não é retido pelo aplicat
 Excluir um lote remove seus campos e resumos; análises individuais já salvas
 continuam no Histórico e podem ser removidas por sua própria ação Limpar.
 Cancelar um lote interrompe os produtos em espera; a consulta atual pode terminar.
+
+CATÁLOGO POR SKU
+Ao salvar um produto no catálogo, SKU, nome, variante, fornecedor, estoque manual,
+custos, taxas e revisões ficam no Cloud da conta, disponíveis em seus dispositivos.
+As análises feitas pelo servidor após o cadastro podem ser vinculadas ao produto
+para comparação; resumos importados não são tratados como evidência verificada.
+Excluir o produto remove o cadastro, suas revisões e os vínculos de comparação e
+pausa seu monitoramento. Análises já salvas no Histórico, snapshots e alertas
+anteriores permanecem sujeitos às suas próprias ações de exclusão e retenção.
+Limpar o Histórico remove os resultados vinculados, preservando o cadastro.
+O backup local de Histórico/monitorados não inclui o catálogo nem suas revisões;
+o operador pode protegê-los com backups do banco de dados do Cloud.
 
 4. SERVIÇOS EXTERNOS
 Marketplaces, agregadores, provedores de IA, câmbio e hospedagem possuem

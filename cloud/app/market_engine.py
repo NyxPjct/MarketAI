@@ -46,7 +46,9 @@ def _advice(pricing,quality):
 
 async def run_analysis(fields:dict,image_bytes:bytes|None=None,image_content_type:str|None=None):
     def f(name,default=0.0):
-        try:return float(fields.get(name,default) or default)
+        try:
+            value=fields.get(name)
+            return float(default if value is None or value == '' else value)
         except:return float(default)
     def i(name,default=1):
         try:return int(fields.get(name,default) or default)

@@ -31,6 +31,7 @@
   function updateButtons(){
     const count=$$('#batchPreviewRows input:checked:not(:disabled)').length;
     $('#batchStart').disabled=busy||!count||jobs.some(job=>!finalStates.has(job.status));
+    $('#batchSaveCatalog').disabled=busy||!count;
     $('#batchPreviewButton').disabled=busy;
     $('#batchCancel').disabled=busy||!current||finalStates.has(current.status)||current.status==='cancelling';
     $('#batchRetry').disabled=busy||!current||!finalStates.has(current.status)||!current.rows.some(row=>row.status==='failed');
@@ -79,9 +80,9 @@
   }
   async function load(){
     if(!active())return;stopPoll();
-    const account=activeAccountId,version=generation;
+    const account=activeAccountId,version=generation,ticket=++serial;
     try{
-      const data=await request('/api/batches');if(!validContext(account,version))return;
+      const data=await request('/api/batches');if(!validContext(account,version)||ticket!==serial)return;
       jobs=data.items;
       const selected=jobs.some(job=>job.id===current?.id)?current.id:jobs[0]?.id;
       $('#batchSelect').innerHTML=`<option value="">${escapeHtml(tr('Select a batch'))}</option>`+jobs.map(job=>`<option value="${escapeAttr(job.id)}">${escapeHtml(new Date(job.created_at).toLocaleString(appLocale()))} · ${escapeHtml(statusLabel(job.status))} · ${job.total}</option>`).join('');
@@ -90,7 +91,7 @@
     }catch(error){if(validContext(account,version))$('#batchProgress').textContent=error.message;}
   }
   async function submitRows(selected,key){
-    const account=activeAccountId,version=generation;busy=true;updateButtons();feedback(tr('Submitting batch…'));
+    const account=activeAccountId,version=generation;++serial;busy=true;updateButtons();feedback(tr('Submitting batch…'));
     try{
       const job=await request('/api/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:key,rows:selected})});
       if(!validContext(account,version))return;
@@ -115,6 +116,15 @@
     const selected=$$('#batchPreviewRows input:checked:not(:disabled)').map(input=>rows[Number(input.dataset.batchRow)]).map(row=>({line:row.line,fields:row.fields}));
     if(!selected.length)return;
     createKey=createKey||crypto.randomUUID();submitRows(selected,createKey);
+  });
+  $('#batchSaveCatalog').addEventListener('click',async()=>{
+    const selected=$$('#batchPreviewRows input:checked:not(:disabled)').map(input=>rows[Number(input.dataset.batchRow)]);
+    if(selected.some(row=>!row.fields.sku)){feedback(tr('Every selected product needs a SKU to be saved in the catalog.'));return;}
+    const account=activeAccountId,version=generation;busy=true;updateButtons();
+    try{
+      await window.MarketCatalog.importProducts(selected.map(row=>({fields:row.fields,stock:0})));
+      if(validContext(account,version))feedback(tr('Products saved to your catalog. Existing products were preserved.'));
+    }catch(error){if(validContext(account,version))feedback(error.message)}finally{if(validContext(account,version)){busy=false;updateButtons()}}
   });
   $('#batchSelect').addEventListener('change',()=>{
     const id=$('#batchSelect').value;
@@ -153,7 +163,10 @@
     $('#batchFile').value='';$('#batchPreviewRows').innerHTML='';$('#batchPreviewPanel').hidden=true;$('#batchResultRows').innerHTML='';
     $('#batchSelect').innerHTML=`<option value="">${escapeHtml(tr('Select a batch'))}</option>`;$('#batchProgress').textContent='';$('#batchProgressBar').value=0;feedback('');updateButtons();
   }
-  document.addEventListener('marketai:languagechange',()=>{if(rows.length)renderPreview();if(current)renderJob(current);if(active()&&visible())load()});
+  document.addEventListener('marketai:languagechange',()=>{if(rows.length)renderPreview();if(current?.rows)renderJob(current);if(active()&&visible())load()});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&active()&&visible())load()});
-  window.MarketBatches={load,reset};
+  window.MarketBatches={load,reset,open:id=>{
+    ++serial;stopPoll();current={id};$('#batchResultRows').innerHTML='';$('#batchProgress').textContent=tr('Loading…');$('#batchProgressBar').value=0;
+    switchView('batches');
+  }};
 })();

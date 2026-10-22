@@ -1,43 +1,42 @@
-MARKETAI 1.2.0 — CATALOG CSV AND DURABLE BATCH ANALYSIS
+MARKETAI 1.3.0 — SAVED SKU CATALOG, COMPARISONS AND BULK MONITORING
 
-New catalog workflow:
-- Import UTF-8 CSV with comma, semicolon or tab separators and decimal commas.
-- Preserve SKU, GTIN, product variants, currencies, destinations, costs and fee assumptions.
-- Review validation errors per row and select only valid products before querying sources.
-- Files support up to 50 products and 2 MB; these are processing limits, not paid quotas.
-- Durable Cloud batches continue after the Desktop closes and recover interrupted work.
-- Track progress, partial failures, missing market evidence and recommendations per product.
-- Reopen saved analyses, export results, retry failed products and cancel waiting products.
-- A running product may finish when a batch is cancelled.
-- Delete finished batches separately from their saved History analyses.
-- All batch operations are scoped to the authenticated account.
-- Exported text is protected against spreadsheet formula interpretation.
+Saved account catalog:
+- Create products manually or save selected valid CSV rows with a SKU.
+- Keep variants, suppliers, manual stock, destinations, currencies and pricing inputs.
+- SKUs are unique per account, case/Unicode normalized, and cannot be renamed.
+- Import retries reuse identical products; conflicting existing data is preserved.
+- Edit products with revision checks and inspect paginated change history.
 
-Reliability and native application:
-- Price recommendations remain blocked when real market evidence is insufficient.
-- The native window title now uses the central application version.
-- The launcher respects MARKETAI_DATA_DIR for isolated development and validation.
-- Release validation checks clean installation, native startup and upgrades from
-  v1.0.5 and v1.1.0 while preserving preferences and user files.
-- Batch preview, controls, errors and progress support all five interface languages.
+Comparison and bulk actions:
+- Search by product/SKU and filter data quality or changed pricing inputs.
+- Sort across the catalog by margin, target price floor, SKU or last update.
+- Show the latest trusted saved analysis, collection date and exchange-rate fallback.
+- Flag results after pricing changes; supplier/stock edits preserve calculation status.
+- Start new durable batches from selected catalog products without another CSV.
+- Enable Sentinel for selected SKUs without duplicating monitors on retries.
+- Catalog cost edits update the linked monitor without reactivating paused products.
+- No orders, marketplace price changes or inventory synchronization are performed.
+- Zero fees and zero target margins now remain zero during analysis.
+- Catalog editor, controls, history and errors support five interface languages.
 
-Validation:
-- 65 Cloud tests and 17 Desktop tests passed locally.
-- The browser regression verifies two devices, CSV validation, processing with
-  the first Desktop process stopped, partial failure/retry and CSV export.
-- Sentinel snapshot and alert logic is tested with controlled input data.
-- Native installer checks run in the Windows release pipeline before publication.
-- Synthetic market data is used only for isolated automated tests and UI screenshots.
-- Hosted Cloud and live-provider validation are separate from these checks.
+Validation and Windows:
+- Cloud/Desktop tests exercise ownership, revisions, import conflicts, trusted
+  results, changed inputs, pagination, monitor reuse and delete behavior.
+- Browser regression exercises the catalog, comparisons, reanalysis and bulk monitoring
+  across devices, alongside the existing batch/forecast/Copilot workflows.
+- Windows release validation checks actual clean installation, native window startup
+  and upgrades from v1.0.5, v1.1.0 and v1.2.0 while preserving preferences/user files.
+- Tests use controlled data. Hosted login and live providers need separate validation.
 
 Deployment and data:
-- Update Cloud and Desktop together to v1.2.0.
-- Cloud startup creates analysis_batches and analysis_batch_items without altering
-  existing tables. Keep the API running for background batches.
-- BATCH_WORKER_ENABLED=0 disables processing for maintenance or controlled tests.
-- Sentinel is still a separate worker for recurring monitoring.
-- The CSV original is not retained; selected product fields and batch results are
-  stored on the Cloud. See the updated Privacy Notice for delete behavior.
-- External services retain their own credentials, costs, quotas and availability.
+- Deploy Cloud and Desktop v1.3.0 together. Back up the Cloud database first.
+- Startup adds catalog_products, catalog_revisions and catalog_analyses without
+  altering existing tables. Keep the Cloud API running for durable batches.
+- Sentinel remains a separate worker for recurring collections.
+- Deleting a product removes its catalog revisions/comparison links and pauses its
+  monitor. Saved History analyses and prior snapshots/alerts remain separate.
+- Clearing History removes linked comparison results, preserving catalog inputs.
+- The local History/watchlist backup export does not include the saved catalog;
+  use Cloud database backups for catalog inputs and revisions.
 
 Community remains free, open source and without paid MarketAI quotas.

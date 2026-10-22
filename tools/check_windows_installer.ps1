@@ -67,6 +67,9 @@ function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectP
     if ($html.Content -notmatch 'data-view="batches"') { throw 'Installed catalog interface is missing' }
     $js = Invoke-WebRequest ($url + '/static/batches.js') -UseBasicParsing -TimeoutSec 5
     if ($js.Content -notmatch 'MarketBatches') { throw 'Packaged batch script is missing' }
+    if ($html.Content -notmatch 'data-view="catalog"') { throw 'Installed SKU catalog interface is missing' }
+    $catalogJs = Invoke-WebRequest ($url + '/static/catalog.js') -UseBasicParsing -TimeoutSec 5
+    if ($catalogJs.Content -notmatch 'MarketCatalog') { throw 'Packaged catalog script is missing' }
     if ($ExpectPreferences -and $info.preferences.default_margin_percent -ne 27.5) { throw 'Preferences were not preserved through upgrade' }
     $result.native_window=$true
   } finally {
@@ -91,10 +94,11 @@ try {
   Uninstall-Package $clean
   $result.clean_install=$true
 
-  # Verify both previous official installers before using them as upgrade baselines.
+  # Verify previous official installers before using them as upgrade baselines.
   $baselines = @(
     @{ Version='1.0.5'; Sha='5a731338f2418146d022ae3bf2664f0dcb6d94b9e14b321459f774f837c149ac' },
-    @{ Version='1.1.0'; Sha='2de675419ba98011d18a26afaa82287d07d5f21800f52e12e9636249d6931d67' }
+    @{ Version='1.1.0'; Sha='2de675419ba98011d18a26afaa82287d07d5f21800f52e12e9636249d6931d67' },
+    @{ Version='1.2.0'; Sha='2674c7cbc921724182bf6f8eb0cb5ccb49f8ed0ad58f2a44c709f6324e6ecb22' }
   )
   $result.upgraded_from=@()
   foreach ($entry in $baselines) {

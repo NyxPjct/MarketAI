@@ -61,6 +61,7 @@ jobs:
           node --check desktop/frontend/i18n.js
           node --check desktop/frontend/app.js
           node --check desktop/frontend/batches.js
+          node --check desktop/frontend/catalog.js
 
       - name: Install browser validation dependencies
         run: |

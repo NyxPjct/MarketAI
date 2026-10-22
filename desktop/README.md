@@ -27,9 +27,25 @@ Deleting history applies across devices after synchronization. Stopping monitori
 
 Set `MARKETAI_CLOUD_URL` to the HTTPS Cloud deployment before running `build_installer.bat`. Installer filenames use the application version automatically. Update Cloud and Desktop together when using the new history endpoints.
 
-## Catalog / CSV
+## Saved SKU catalog
 
-Use Catalog / CSV to review UTF-8 files of up to 50 products (2 MB), select valid
+Product catalog stores SKU, supplier, variant, stock and validated pricing inputs
+on the Cloud account. Create products manually or save reviewed CSV rows. SKUs
+are unique within the account and imports never overwrite different existing data.
+Edits require the current revision and retain a change history. Comparison results
+come only from server-side analyses; changed pricing inputs flag them as outdated.
+Search, filters and sorting apply across the catalog, with 50 products per page.
+Analyze selection starts a durable batch with the saved inputs. Monitor selection
+reuses one Sentinel watch per SKU; the separate Sentinel worker must run for
+recurring collections. Editing costs updates that monitor while preserving its
+active/paused state. Stock is manual; no marketplace inventory sync is implied.
+The local backup export covers History/watchlist, not catalog data; use Cloud
+database backups for catalog inputs and revisions. Cloud and Desktop v1.3.0 are
+required for the new catalog endpoints.
+
+## CSV batches
+
+Use CSV batches to review UTF-8 files of up to 50 products (2 MB), select valid
 rows and submit a durable Cloud batch. SKU, variants, costs, currencies, countries
 and fee assumptions are shown before processing. Jobs continue after closing the
 Desktop while the Cloud API is running. Failed products can be retried, results

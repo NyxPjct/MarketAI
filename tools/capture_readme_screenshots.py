@@ -6,7 +6,7 @@ BASE_URL = "http://127.0.0.1:8000"
 OUT = Path("docs/screenshots")
 OUT.mkdir(parents=True, exist_ok=True)
 
-VERSION = "v1.2.0"
+VERSION = "v1.3.0"
 
 
 def set_demo_account(page):
@@ -27,7 +27,7 @@ def set_demo_account(page):
         accountQuota: 'UNLIMITED',
         accountStatus: 'ACTIVE',
         apiStatus: 'Community · ONLINE',
-        appVersion: 'MarketAI v1.2.0'
+        appVersion: 'MarketAI v1.3.0'
       };
       for (const [id, value] of Object.entries(values)) {
         const el = document.getElementById(id);
@@ -158,7 +158,7 @@ with sync_playwright() as p:
     page.locator("#cloudEmail").fill("user@example.com")
     page.locator("#cloudPassword").fill("MarketAI123")
     page.wait_for_timeout(180)
-    shot(page, "01-login-community-v1.2.0.png")
+    shot(page, "01-login-community-v1.3.0.png")
     page.close()
 
     # Dashboard / New analysis
@@ -166,7 +166,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "analyze")
-    shot(page, "02-dashboard-v1.2.0.png")
+    shot(page, "02-dashboard-v1.3.0.png")
     page.close()
 
     # Intelligence Core
@@ -174,7 +174,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "intelligence")
-    shot(page, "03-intelligence-core-v1.2.0.png")
+    shot(page, "03-intelligence-core-v1.3.0.png")
     page.close()
 
     # My account
@@ -184,7 +184,7 @@ with sync_playwright() as p:
     open_view(page, "account")
     set_demo_account(page)
     page.wait_for_timeout(150)
-    shot(page, "04-my-account-v1.2.0.png")
+    shot(page, "04-my-account-v1.3.0.png")
     page.close()
 
     # Settings
@@ -192,7 +192,7 @@ with sync_playwright() as p:
     page.goto(BASE_URL, wait_until="networkidle")
     wait_english(page)
     open_view(page, "settings")
-    shot(page, "05-settings-v1.2.0.png")
+    shot(page, "05-settings-v1.3.0.png")
     page.close()
 
     # Catalog CSV review uses labeled demo inputs, never real market evidence.
@@ -210,7 +210,24 @@ with sync_playwright() as p:
     page.locator("#batchFile").set_input_files({"name":"catalog-demo.csv","mimeType":"text/csv","buffer":b"product_name;purchase_cost\nApple iPhone 16;2500\nDior Sauvage;450\n"})
     page.locator("#batchPreviewButton").click()
     page.wait_for_function("document.querySelectorAll('#batchPreviewRows tr').length === 2")
-    shot(page, "07-catalog-csv-v1.2.0.png")
+    shot(page, "07-catalog-csv-v1.3.0.png")
+    page.close()
+
+    # Saved SKU catalog shows demo inputs without fabricated market results.
+    page = context.new_page()
+    page.route('**/api/catalog?*', lambda route: route.fulfill(json={
+        'items': [{'id': 'catalog-demo-'+str(index), 'fields': row['fields'], 'stock': stock,
+                   'revision': 1, 'created_at': '2026-10-22T12:00:00Z', 'updated_at': '2026-10-22T12:00:00Z',
+                   'latest': None, 'watch_id': None, 'monitoring': False}
+                  for index, (row, stock) in enumerate(zip(demo['rows'], [12, 8]))],
+        'total': 2, 'offset': 0, 'limit': 50}))
+    page.goto(BASE_URL, wait_until='networkidle')
+    wait_english(page)
+    set_demo_account(page)
+    page.evaluate("activeAccountId='readme-demo';cloudAccount={authenticated:true}")
+    page.locator('[data-view="catalog"]').click()
+    page.wait_for_function("document.querySelectorAll('#catalogRows tr[data-product-id]').length === 2")
+    shot(page, '08-sku-catalog-v1.3.0.png')
     page.close()
 
     # Account-created modal
@@ -231,12 +248,12 @@ with sync_playwright() as p:
     }
     """)
     page.wait_for_timeout(180)
-    shot(page, "06-account-created-modal-v1.2.0.png")
+    shot(page, "06-account-created-modal-v1.3.0.png")
     page.close()
 
     context.close()
     browser.close()
 
-shots = sorted(OUT.glob("*v1.2.0.png"))
-assert len(shots) == 7, f"Expected 7 v1.2.0 screenshots, got {len(shots)}"
+shots = sorted(OUT.glob("*v1.3.0.png"))
+assert len(shots) == 8, f"Expected 8 v1.3.0 screenshots, got {len(shots)}"
 print("English README screenshots generated:", len(shots))

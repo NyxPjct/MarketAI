@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import current_user
-from app.models import AnalysisHistory, User
+from app.models import AnalysisHistory, CatalogAnalysis, User
 
 router = APIRouter(prefix="/v1/history", tags=["history"])
 
@@ -46,6 +46,9 @@ def record_analysis(db, user, result, *, client_id=None, commit=True):
     row = AnalysisHistory(user_id=user.id, client_id=client_id, summary_json=json.dumps(summary, ensure_ascii=False),
                           payload_json=json.dumps(result, ensure_ascii=False, allow_nan=False))
     db.add(row)
+    db.flush()
+    from app.catalog import link_analysis
+    link_analysis(db, user, row, result)
     db.flush()
     if commit:
         db.commit()
@@ -100,6 +103,8 @@ def import_history(payload: HistoryImport, user: User = Depends(current_user), d
 
 @router.delete("")
 def clear_history(user: User = Depends(current_user), db: Session = Depends(get_db)):
+    db.query(CatalogAnalysis).filter(CatalogAnalysis.history_id.in_(
+        db.query(AnalysisHistory.id).filter_by(user_id=user.id))).delete(synchronize_session=False)
     db.query(AnalysisHistory).filter_by(user_id=user.id).delete(synchronize_session=False)
     db.commit()
     return {"ok": True}

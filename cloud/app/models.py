@@ -207,3 +207,42 @@ class AnalysisBatchItem(Base):
     summary_json: Mapped[str] = mapped_column(Text, default="{}")
     error_code: Mapped[str] = mapped_column(String(64), default="")
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+
+
+class CatalogProduct(Base):
+    __tablename__ = 'catalog_products'
+    __table_args__ = (UniqueConstraint('user_id', 'sku_key', name='uq_catalog_user_sku'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    sku_key: Mapped[str] = mapped_column(String(64))
+    sku: Mapped[str] = mapped_column(String(120))
+    product_name: Mapped[str] = mapped_column(String(240))
+    fields_json: Mapped[str] = mapped_column(Text)
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    stock: Mapped[int] = mapped_column(Integer, default=0)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    watch_id: Mapped[str | None] = mapped_column(ForeignKey('product_watches.id'), nullable=True, unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class CatalogRevision(Base):
+    __tablename__ = 'catalog_revisions'
+    __table_args__ = (UniqueConstraint('product_id', 'revision', name='uq_catalog_revision'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    product_id: Mapped[str] = mapped_column(ForeignKey('catalog_products.id'), index=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    fields_json: Mapped[str] = mapped_column(Text)
+    stock: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class CatalogAnalysis(Base):
+    __tablename__ = 'catalog_analyses'
+    history_id: Mapped[str] = mapped_column(ForeignKey('analysis_history.id'), primary_key=True)
+    product_id: Mapped[str] = mapped_column(ForeignKey('catalog_products.id'), index=True)
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    summary_json: Mapped[str] = mapped_column(Text)
+    quality: Mapped[str] = mapped_column(String(32))
+    net_margin: Mapped[float | None] = mapped_column(Float, nullable=True)
+    cost_floor: Mapped[float | None] = mapped_column(Float, nullable=True)

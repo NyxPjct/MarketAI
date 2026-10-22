@@ -424,3 +424,32 @@ td:last-child{color:#fff}
 .batch-card .card-head>div{display:block;flex:1;min-width:0}
 .batch-card .card-head h2{margin:4px 0 8px;font-size:22px}
 .batch-card .card-head p.muted{margin:0;line-height:1.5}
+/* Saved SKU catalog and its native input dialogs. */
+.app-shell > main { min-width: 0; }
+.catalog-card { padding: 28px; min-width: 0; }
+.catalog-card .table-wrap { overflow: auto; max-height: 600px; }
+.catalog-card .card-head > div:first-child { display: block; }
+.catalog-filters, .catalog-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.catalog-filters { grid-template-columns: 2fr 1fr 1.3fr 1.2fr; margin: 20px 0; }
+.catalog-check { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+.catalog-check input, .catalog-select { width: 18px; height: 18px; accent-color: #54d6a5; }
+.catalog-table { min-width: 1300px; }
+.catalog-table small { display: block; margin-top: 5px; color: var(--muted); }
+.catalog-row-actions { display: grid; grid-template-columns: repeat(2,auto); gap: 6px; min-width: 180px; }
+.catalog-row-actions button { padding: 7px 8px; font-size: 11px; }
+.catalog-outdated { color: #e9b858; font-weight: 600; }
+.catalog-pagination { margin-top: 20px; }
+.catalog-dialog { width: min(850px,94vw); max-height: 90vh; overflow-y: auto; background: #121212; color: #e8eef3; border: 1px solid #303030; border-radius: 18px; padding: 28px; }
+.catalog-dialog::backdrop { background: #03080dcc; }
+.catalog-dialog .card-head { align-items: center; }
+.catalog-dialog .card-head h2 { margin: 0; }
+.catalog-dialog label { display: flex; flex-direction: column; gap: 7px; }
+.catalog-dialog input[readonly] { opacity: .6; }
+#catalogEditorError, #catalogRevisionFeedback { color: #f0bd74; }
+.catalog-revision { border-top: 1px solid #2a3a46; padding: 14px 0; }
+.catalog-revision summary { cursor: pointer; }
+.catalog-revision dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.catalog-revision dt { color: #8e9eaa; font-size: .8rem; }
+.catalog-revision dd { margin: 3px 0; overflow-wrap: anywhere; }
+@media(max-width: 1000px) { .catalog-filters { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width: 600px) { .catalog-filters, .catalog-fields, .catalog-revision dl { grid-template-columns: 1fr; } .catalog-card, .catalog-dialog { padding: 18px; } }

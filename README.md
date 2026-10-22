@@ -108,6 +108,30 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
+## What is new in v1.3.0
+
+- A saved, account-scoped product catalog with unique SKUs, variants, suppliers, manually entered stock and all pricing inputs.
+- Add products manually or save selected valid CSV rows to the catalog. Existing SKUs are preserved; edit them with revision checks instead of overwriting them during imports.
+- Edit costs and stock across devices, with a paginated change history and protection against stale edits.
+- Compare each product's latest trusted analysis by quality, net margin, target price floor and collection date. Search by SKU/name, filter and sort across the entire catalog, with 50 products per page.
+- Changed pricing inputs flag older results until a new analysis completes. Stock and supplier-only edits do not invalidate the pricing calculation.
+- Reanalyze selected products without uploading another CSV, using the durable Cloud batch worker.
+- Activate Sentinel monitoring for up to 50 selected products at once, reusing the same monitor for each SKU. Updating catalog costs updates its monitor without reactivating a paused one.
+- Zero fees and a zero target margin are respected by the analysis engine.
+- Catalog controls, editor, revision history and errors support all five interface languages.
+
+### Use the saved catalog
+
+1. Open **Product catalog → Add product**, or review a file in **CSV batches** and choose **Save selection to catalog**. Each saved product needs a SKU.
+2. Enter the actual costs, currency, destination, fees, supplier and stock. SKU identifies the product and cannot be renamed; add another product for a different SKU.
+3. Select products and choose **Analyze selection**. Follow the account batch from any device; processing continues with Desktop closed while Cloud is running.
+4. Return to the catalog to filter reliable results, sort by margin or price floor, and open the full analysis. Prices and floors are in BRL. Collection dates may differ, and fallback exchange rates are labeled.
+5. Choose **Monitor selection** to activate Sentinel. Its separate worker must be running for recurring collections; this action does not place orders or change marketplace prices.
+
+The comparison uses saved server analyses collected after products enter the catalog. It does not convert imported history summaries into market evidence. Deleting a product removes its catalog revisions and comparison links and pauses its monitor; saved History analyses, previous snapshots and alerts remain. Clearing account History removes linked comparison results while keeping catalog inputs. Finished batch deletion remains independent. Catalog inputs and revisions are not included in the existing local History/watchlist backup export; back up the Cloud database for those records.
+
+Deploy Cloud and Desktop **v1.3.0 together**. Startup creates only the additive `catalog_products`, `catalog_revisions` and `catalog_analyses` tables; existing tables are preserved. Take a database backup before deployment. Hosted login and live marketplace access require validation on the deployed instance.
+
 ## What is new in v1.2.0
 
 - Import a product catalog from CSV, review each row and select the products to analyze.
@@ -125,7 +149,7 @@ The v1.2.0 release passed **65 Cloud tests, 17 Desktop tests**, the two-device b
 
 ### Import a catalog
 
-1. Open **Catalog / CSV** and download the template.
+1. Open **CSV batches** and download the template.
 2. Fill `product_name` (required), plus `sku`, `variant_text`, `purchase_cost`, `purchase_currency`, `destination_country` and other supported template fields.
 3. Review the CSV, destination, costs and fees. Only selected valid rows will run.
 4. Start the batch and follow its progress from any device on the same account.
@@ -147,7 +171,7 @@ Cloud and Desktop must both run v1.2.0. The Cloud starts its batch worker automa
 The new `analysis_history` table is created by the Cloud's existing startup initialization. Existing tables and data are preserved. Deploy the Cloud and Desktop changes together; older Clouds do not expose the new history endpoints. Live third-party integrations require the operator’s credentials and independent validation.
 
 
-## Screenshots — MarketAI v1.2.0
+## Screenshots — MarketAI v1.3.0
 
 The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
 
@@ -155,13 +179,17 @@ Demo values are used only to present the UI. They are not presented as real mark
 
 ### Login / account creation
 
-![MarketAI v1.2.0 — Login](docs/screenshots/01-login-community-v1.2.0.png)
+![MarketAI v1.3.0 — Login](docs/screenshots/01-login-community-v1.3.0.png)
 
 ### Dashboard / New analysis
 
-![MarketAI v1.2.0 — Dashboard](docs/screenshots/02-dashboard-v1.2.0.png)
+![MarketAI v1.3.0 — Dashboard](docs/screenshots/02-dashboard-v1.3.0.png)
 
-### Intelligence Core
+#### Saved SKU catalog
+
+![MarketAI v1.3.0 — Saved catalog](docs/screenshots/08-sku-catalog-v1.3.0.png)
+
+## Intelligence Core
 
 ![MarketAI v1.2.0 — Intelligence Core](docs/screenshots/03-intelligence-core-v1.2.0.png)
 
@@ -389,7 +417,8 @@ Pushes and Pull Requests run:
 - Cloud tests;
 - Desktop tests;
 - Python compilation checks;
-- JavaScript syntax validation.
+- JavaScript syntax validation;
+- two-device browser regression for guided analysis, durable batches, the saved SKU catalog, comparisons and bulk monitoring.
 
 Updating `.release/windows.json` can trigger the Windows release pipeline and publish:
 

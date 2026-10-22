@@ -823,3 +823,23 @@ async def batch_export(batch_id: str):
 
 @app.delete("/api/batches/{batch_id}")
 async def batch_delete(batch_id: str): return await _proxy_intelligence("DELETE", f"/v1/batches/{batch_id}")
+
+
+@app.get('/api/catalog')
+async def catalog_list(q: str = '', quality: str = 'all', freshness: str = 'all', sort: str = 'sku', offset: int = 0):
+    from urllib.parse import urlencode
+    query = urlencode(dict(q=q, quality=quality, freshness=freshness, sort=sort, offset=offset))
+    return await _proxy_intelligence('GET', '/v1/catalog?' + query)
+
+@app.post('/api/catalog/import')
+async def catalog_import(payload: Dict[str, Any] = Body(...)): return await _proxy_intelligence('POST', '/v1/catalog/import', payload)
+@app.post('/api/catalog/analyze')
+async def catalog_analyze(payload: Dict[str, Any] = Body(...)): return await _proxy_intelligence('POST', '/v1/catalog/analyze', payload)
+@app.post('/api/catalog/monitor')
+async def catalog_monitor(payload: Dict[str, Any] = Body(...)): return await _proxy_intelligence('POST', '/v1/catalog/monitor', payload)
+@app.put('/api/catalog/{product_id}')
+async def catalog_update(product_id: str, payload: Dict[str, Any] = Body(...)): return await _proxy_intelligence('PUT', f'/v1/catalog/{product_id}', payload)
+@app.get('/api/catalog/{product_id}/revisions')
+async def catalog_revisions(product_id: str, offset: int = 0): return await _proxy_intelligence('GET', f'/v1/catalog/{product_id}/revisions?offset={offset}')
+@app.delete('/api/catalog/{product_id}')
+async def catalog_delete(product_id: str, revision: int): return await _proxy_intelligence('DELETE', f'/v1/catalog/{product_id}?revision={revision}')

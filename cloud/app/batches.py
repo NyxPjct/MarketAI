@@ -76,9 +76,17 @@ def list_batches(user: User = Depends(current_user), db: Session = Depends(get_d
 
 @router.post('')
 def create_batch(payload: BatchCreate, request: Request, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    require_device(db, user, request)
+    return store_batch(db, user, payload)
+
+
+def require_device(db, user, request):
     device_uuid = request.headers.get('x-device-id', '').strip()
     if not db.query(Device).filter_by(user_id=user.id, device_uuid=device_uuid, active=True).first():
         raise HTTPException(403, 'device_not_authorized')
+
+
+def store_batch(db, user, payload):
     key = str(payload.client_id)
     existing = db.query(AnalysisBatch).filter_by(user_id=user.id, client_id=key).first()
     if existing:
