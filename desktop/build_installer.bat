@@ -151,7 +151,7 @@ if "%WILL_SIGN%"=="1" (
 )
 
 echo Gerando SHA-256 do instalador...
-powershell -NoProfile -Command "$h=(Get-FileHash -Algorithm SHA256 ('dist-installer\\' + $env:INSTALLER_NAME)).Hash.ToLower(); Set-Content -Encoding ASCII ('dist-installer\\' + $env:CHECKSUM_NAME) ($h + '  ' + $env:INSTALLER_NAME); Write-Host ('SHA-256: ' + $h)"
+python "..\tools\write_installer_checksum.py" --installer "dist-installer\%INSTALLER_NAME%" --output "dist-installer\%CHECKSUM_NAME%"
 if errorlevel 1 goto :fail
 
 echo.
