@@ -1,0 +1,22 @@
+{
+  "version": "1.4.0",
+  "status": "failed",
+  "phase": 9,
+  "active_python": "Python 3.12.10",
+  "launcher_python": "Python 3.15.1",
+  "markers": [],
+  "failed_tests": [],
+  "unresolved_packages": [],
+  "artifact_verification": {
+    "checksum_exists": true,
+    "expected_sha256": "missing_or_invalid",
+    "files": [
+      "MarketAI-Setup-v1.4.0.exe",
+      "MarketAI-Setup-v1.4.0.sha256"
+    ],
+    "installer_exists": true,
+    "actual_sha256": "2a3cef41ab53d98df275ffe47a0b8b9277037df1e771505be4f79cee237960a2",
+    "version": "1.4.0",
+    "signing_enabled": false
+  }
+}
