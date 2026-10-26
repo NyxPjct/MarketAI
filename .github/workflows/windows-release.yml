@@ -186,6 +186,18 @@ jobs:
               @{version=$env:RELEASE_VERSION;status='failed';message=$_.Exception.Message} | ConvertTo-Json | Set-Content -Path $report -Encoding utf8
             }
             throw
+          } finally {
+            if (Test-Path $report) {
+              $safe = Get-Content $report -Raw | ConvertFrom-Json
+              $message = [string]$safe.message
+              $message = ($message -split "`n" | Where-Object { $_ -notmatch '(?i)password|token|secret|authorization' }) -join "`n"
+              if ($message.Length -gt 1800) { $message=$message.Substring(0,1800) }
+              $summary = @{version=$safe.version;status=$safe.status;message=$message;clean_install=$safe.clean_install;upgrade=$safe.upgrade;native_window=$safe.native_window;data_preserved=$safe.data_preserved;upgraded_from=$safe.upgraded_from}
+              Add-Content $env:GITHUB_STEP_SUMMARY '### Native validation report'
+              Add-Content $env:GITHUB_STEP_SUMMARY '```json'
+              Add-Content $env:GITHUB_STEP_SUMMARY ($summary | ConvertTo-Json -Depth 4)
+              Add-Content $env:GITHUB_STEP_SUMMARY '```'
+            }
           }
 
       - name: Publish Windows validation report

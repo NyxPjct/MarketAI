@@ -16,14 +16,30 @@ function Install-Package([string]$Path, [string]$Destination) {
   if (-not (Test-Path (Join-Path $Destination 'MarketAI.exe'))) { throw 'Installed executable is missing' }
 }
 
-function Family-Ids([int]$RootId) {
+function Family-Ids([int]$RootId, [datetime]$StartedAt, [string]$Directory) {
+  if ($RootId -le 0) { throw 'Invalid native application process ID' }
   $ids = @($RootId)
   $all = @(Get-CimInstance Win32_Process)
   do {
     $next = @($all | Where-Object { $_.ParentProcessId -in $ids -and $_.ProcessId -notin $ids } | Select-Object -ExpandProperty ProcessId)
     $ids += $next
   } while ($next.Count -gt 0)
-  return $ids
+  # PID reuse must never include the Actions runner or unrelated shell processes.
+  $prefix = [IO.Path]::GetFullPath($Directory).TrimEnd('\') + '\'
+  return @($all | Where-Object {
+    $_.ProcessId -in $ids -and $_.CreationDate -ge $StartedAt -and
+    (($_.Name -eq 'MarketAI.exe' -and $_.ExecutablePath -and $_.ExecutablePath.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) -or $_.Name -eq 'msedgewebview2.exe')
+  } | Select-Object -ExpandProperty ProcessId)
+}
+
+function Stop-NativeProcesses {
+  foreach ($processId in $script:processIds) {
+    $candidate = Get-Process -Id $processId -ErrorAction SilentlyContinue
+    if ($candidate -and $candidate.ProcessName -in @('MarketAI','msedgewebview2')) {
+      Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+    }
+  }
+  $script:processIds=@()
 }
 
 function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectPreferences) {
@@ -31,6 +47,7 @@ function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectP
   # Tests must never contact the hosted Cloud using synthetic local session data.
   $env:MARKETAI_CLOUD_URL = 'http://127.0.0.1:9'
   $process = Start-Process -FilePath (Join-Path $Directory 'MarketAI.exe') -PassThru
+  $startedAt = $process.StartTime
   $script:processIds = @($process.Id)
   $deadline = (Get-Date).AddSeconds(60)
   $info = $null
@@ -38,7 +55,7 @@ function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectP
   $windowFound = $false
   try {
     while ((Get-Date) -lt $deadline) {
-      $script:processIds = @(Family-Ids $process.Id)
+      $script:processIds = @(Family-Ids $process.Id $startedAt $Directory)
       $connections = @(Get-NetTCPConnection -LocalAddress '127.0.0.1' -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.OwningProcess -in $script:processIds })
       foreach ($connection in $connections) {
         try {
@@ -78,8 +95,7 @@ function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectP
     if ($ExpectPreferences -and $info.preferences.default_margin_percent -ne 27.5) { throw 'Preferences were not preserved through upgrade' }
     $result.native_window=$true
   } finally {
-    if ($script:processIds.Count -gt 0) { Stop-Process -Id $script:processIds -Force -ErrorAction SilentlyContinue }
-    $script:processIds=@()
+    Stop-NativeProcesses
   }
 }
 
@@ -134,7 +150,7 @@ try {
   $result.message=$_.Exception.Message
   throw
 } finally {
-  if ($processIds.Count -gt 0) { Stop-Process -Id $processIds -Force -ErrorAction SilentlyContinue }
+  Stop-NativeProcesses
   $parent=Split-Path $Report -Parent
   if ($parent) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
   $result | ConvertTo-Json | Set-Content -Path $Report -Encoding utf8
