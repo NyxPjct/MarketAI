@@ -109,11 +109,36 @@ jobs:
           }
 
       - name: Build MarketAI installer
+        id: installer_build
         working-directory: desktop
-        shell: cmd
+        shell: pwsh
         env:
           MARKETAI_SIGN_PASSWORD: ${{ secrets.MARKETAI_SIGN_PASSWORD }}
-        run: build_installer.bat
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP 'marketai-windows-build.log'
+          & cmd.exe /d /c "build_installer.bat > `"$log`" 2>&1"
+          $buildExit = $LASTEXITCODE
+          Get-Content $log
+          exit $buildExit
+
+      - name: Publish safe build-failure diagnostics
+        if: failure() && steps.installer_build.outcome == 'failure'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $report = Join-Path $env:RUNNER_TEMP 'marketai-build-diagnostic.json'
+          ./tools/write_windows_build_diagnostic.ps1 -Log (Join-Path $env:RUNNER_TEMP 'marketai-windows-build.log') -Report $report
+          $text = Get-Content $report -Raw
+          $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($text))
+          $endpoint = "repos/$env:GITHUB_REPOSITORY/contents/.release/validation/windows-build-$env:RELEASE_TAG.json"
+          $existingSha = $null
+          $existing = gh api "${endpoint}?ref=main" 2>$null
+          if ($LASTEXITCODE -eq 0) { $existingSha = ($existing | ConvertFrom-Json).sha }
+          $diagnosticArgs = @('api','--method','PUT',$endpoint,'-f',"message=ci: record safe Windows build diagnostics $env:RELEASE_TAG",'-f',"content=$b64",'-f','branch=main')
+          if ($existingSha) { $diagnosticArgs += @('-f',"sha=$existingSha") }
+          & gh @diagnosticArgs
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish build diagnostics.' }
 
       - name: Verify installer and checksum
         shell: pwsh

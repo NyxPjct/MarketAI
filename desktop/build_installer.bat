@@ -33,16 +33,16 @@ echo Versao do build: %APP_VERSION%
 echo Instalador: %INSTALLER_NAME%
 echo.
 
-set "PYTHON_CMD=py -3"
-where py >nul 2>nul
+set "PYTHON_CMD=python"
+python -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3, 12) else 1)" >nul 2>nul
 if errorlevel 1 (
-  where python >nul 2>nul
+  py -3.12 -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3, 12) else 1)" >nul 2>nul
   if errorlevel 1 (
-    echo [ERRO] Python nao encontrado.
-    echo Instale Python 3.11 ou 3.12 e marque "Add Python to PATH".
+    echo [ERRO] Python 3.12 nao encontrado.
+    echo Ative Python 3.12 no PATH ou instale essa versao pelo launcher py.
     goto :fail
   )
-  set "PYTHON_CMD=python"
+  set "PYTHON_CMD=py -3.12"
 )
 
 if not exist ".venv-desktop\Scripts\python.exe" (
@@ -52,9 +52,15 @@ if not exist ".venv-desktop\Scripts\python.exe" (
 )
 
 call ".venv-desktop\Scripts\activate.bat"
+python -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3, 12) else 1)"
+if errorlevel 1 (
+  echo [ERRO] O ambiente .venv-desktop deve usar Python 3.12. Recrie esse ambiente de build.
+  goto :fail
+)
 
 echo [2/9] Instalando dependencias...
 python -m pip install --upgrade pip
+if errorlevel 1 goto :fail
 python -m pip install -r requirements-desktop.txt
 if errorlevel 1 goto :fail
 
@@ -67,6 +73,14 @@ if errorlevel 1 goto :skip_node_check
 node --check frontend\app.js
 if errorlevel 1 goto :fail
 node --check frontend\batches.js
+if errorlevel 1 goto :fail
+node --check frontend\i18n.js
+if errorlevel 1 goto :fail
+node --check frontend\catalog.js
+if errorlevel 1 goto :fail
+node --check frontend\catalog-backup.js
+if errorlevel 1 goto :fail
+node --check frontend\alert-rules.js
 if errorlevel 1 goto :fail
 :skip_node_check
 
