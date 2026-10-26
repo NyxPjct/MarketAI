@@ -46,7 +46,7 @@
   function render(){
     $('#catalogRows').innerHTML=products.map(product=>{
       const f=product.fields,latest=product.latest;
-      return `<tr data-product-id="${escapeAttr(product.id)}"><td><input class="catalog-select" type="checkbox" ${selection.has(product.id)?'checked':''} aria-label="${escapeAttr(tr('Select product'))}"></td><td><strong>${escapeHtml(f.product_name)}</strong><small>${escapeHtml(f.sku)} · ${escapeHtml(f.variant_text||'—')}</small><small>${escapeHtml(f.supplier_name||'')}</small></td><td>${fmtMoney(f.purchase_cost,f.purchase_currency)}<small>${escapeHtml(tr('Stock'))}: ${product.stock.toLocaleString(appLocale())}</small></td><td>${latest?escapeHtml(tr(historyModeLabel(latest.quality))):'—'}${latest?.currency_fallback?`<small>${escapeHtml(tr('Fallback exchange rate'))}</small>`:''}</td><td>${fmtBRL(latest?.recommended_price)}</td><td>${latest?.net_margin_percent==null?'—':Number(latest.net_margin_percent).toLocaleString(appLocale())+'%'}</td><td>${fmtBRL(latest?.cost_floor)}</td><td>${latest?.collected_at?escapeHtml(new Date(latest.collected_at).toLocaleString(appLocale())):'—'}</td><td class="${latest?.outdated?'catalog-outdated':''}">${escapeHtml(tr(!latest?'Not analyzed':latest.outdated?'Inputs changed':'Matching current inputs'))}</td><td>${escapeHtml(tr(product.monitoring?'Enabled':'Inactive'))}</td><td><div class="catalog-row-actions"><button class="ghost catalog-edit">${escapeHtml(tr('Edit product'))}</button><button class="ghost catalog-history">${escapeHtml(tr('Change history'))}</button>${latest?`<button class="ghost catalog-open">${escapeHtml(tr('Open analysis'))}</button>`:''}<button class="ghost catalog-delete">${escapeHtml(tr('Delete product'))}</button></div></td></tr>`;
+      return `<tr data-product-id="${escapeAttr(product.id)}"><td><input class="catalog-select" type="checkbox" ${selection.has(product.id)?'checked':''} aria-label="${escapeAttr(tr('Select product'))}"></td><td><strong>${escapeHtml(f.product_name)}</strong><small>${escapeHtml(f.sku)} · ${escapeHtml(f.variant_text||'—')}</small><small>${escapeHtml(f.supplier_name||'')}</small></td><td>${fmtMoney(f.purchase_cost,f.purchase_currency)}<small>${escapeHtml(tr('Stock'))}: ${product.stock.toLocaleString(appLocale())}</small></td><td>${latest?escapeHtml(tr(historyModeLabel(latest.quality))):'—'}${latest?.currency_fallback?`<small>${escapeHtml(tr('Fallback exchange rate'))}</small>`:''}</td><td>${fmtBRL(latest?.recommended_price)}</td><td>${latest?.net_margin_percent==null?'—':Number(latest.net_margin_percent).toLocaleString(appLocale())+'%'}</td><td>${fmtBRL(latest?.cost_floor)}</td><td>${latest?.collected_at?escapeHtml(new Date(latest.collected_at).toLocaleString(appLocale())):'—'}</td><td class="${latest?.outdated?'catalog-outdated':''}">${escapeHtml(tr(!latest?'Not analyzed':latest.outdated?'Inputs changed':'Matching current inputs'))}</td><td>${escapeHtml(tr(product.monitoring?'Enabled':'Inactive'))}</td><td><div class="catalog-row-actions"><button class="ghost catalog-edit">${escapeHtml(tr('Edit product'))}</button><button class="ghost catalog-history">${escapeHtml(tr('Change history'))}</button>${product.watch_id?`<button class="ghost catalog-alerts">${escapeHtml(tr('Alert rules'))}</button>`:''}${latest?`<button class="ghost catalog-open">${escapeHtml(tr('Open analysis'))}</button>`:''}<button class="ghost catalog-delete">${escapeHtml(tr('Delete product'))}</button></div></td></tr>`;
     }).join('')||`<tr><td colspan="11" class="empty">${escapeHtml(tr('No products match. Add a product or save a reviewed CSV selection.'))}</td></tr>`;
     for(const row of $$('#catalogRows tr[data-product-id]')){
       const product=products.find(p=>p.id===row.dataset.productId);
@@ -55,6 +55,7 @@
         pending=null;buttons();
       });
       row.querySelector('.catalog-edit').addEventListener('click',()=>editor(product));
+      row.querySelector('.catalog-alerts')?.addEventListener('click',()=>window.MarketAlerts.open(product.watch_id));
       row.querySelector('.catalog-history').addEventListener('click',()=>{revisionProduct=product;revisionOffset=0;$('#catalogRevisions').showModal();loadRevisions()});
       row.querySelector('.catalog-open')?.addEventListener('click',()=>openSavedAnalysis(product.latest.analysis_id));
       row.querySelector('.catalog-delete').addEventListener('click',()=>remove(product));
@@ -128,7 +129,7 @@
     try{
       const data=await request(`/api/catalog/${encodeURIComponent(id)}/revisions?offset=${page}`);
       if(!valid(account,version)||revisionProduct?.id!==id||revisionOffset!==page)return;
-      $('#catalogRevisionList').innerHTML=data.items.map(item=>`<details class="catalog-revision"><summary>${escapeHtml(tr('Revision'))} ${item.revision} · ${escapeHtml(new Date(item.created_at).toLocaleString(appLocale()))} · ${fmtMoney(item.fields.purchase_cost,item.fields.purchase_currency)}</summary><dl>${Object.entries({...item.fields,stock:item.stock}).map(([key,value])=>`<div><dt>${escapeHtml(tr(labels[key]||key))}</dt><dd>${escapeHtml(String(value??'—'))}</dd></div>`).join('')}</dl></details>`).join('');
+      $('#catalogRevisionList').innerHTML=data.items.map(item=>`<details class="catalog-revision"><summary>${escapeHtml(tr('Revision'))} ${item.revision}${item.restored?' · '+escapeHtml(tr('Restored from backup')):''} · ${escapeHtml(new Date(item.created_at).toLocaleString(appLocale()))} · ${fmtMoney(item.fields.purchase_cost,item.fields.purchase_currency)}</summary><dl>${Object.entries({...item.fields,stock:item.stock}).map(([key,value])=>`<div><dt>${escapeHtml(tr(labels[key]||key))}</dt><dd>${escapeHtml(String(value??'—'))}</dd></div>`).join('')}</dl></details>`).join('');
       $('#catalogRevisionPrevious').disabled=page===0;$('#catalogRevisionNext').disabled=page+20>=data.total;
     }catch(error){if(valid(account,version))$('#catalogRevisionFeedback').textContent=error.message}
   }
@@ -154,5 +155,5 @@
   }
   document.addEventListener('marketai:languagechange',()=>{render();if(active()&&$('#view-catalog').classList.contains('active'))load()});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&active()&&$('#view-catalog').classList.contains('active'))load()});
-  window.MarketCatalog={load,reset,importProducts};
+  window.MarketCatalog={load,reset,importProducts,refresh:()=>{clearSelection();load()}};
 })();

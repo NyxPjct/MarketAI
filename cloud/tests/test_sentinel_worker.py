@@ -1,12 +1,13 @@
 import asyncio
 from uuid import uuid4
 
-from app.db import SessionLocal
+from app.db import Base, engine, SessionLocal
 from app.models import IntelligenceAlert, MarketSnapshot, ProductWatch, User
 from app import sentinel_worker
 
 
 def test_sentinel_stores_snapshots_and_alerts_without_a_desktop_client(monkeypatch):
+    Base.metadata.create_all(engine)
     with SessionLocal() as db:
         user = User(email=f'{uuid4().hex}@example.com', password_hash='unused-test-hash', status='active')
         db.add(user);db.flush()

@@ -18,7 +18,7 @@ Edite .release/windows.json:
 ```json
 {
   "cloud_url": "https://api.seudominio.com",
-  "release_tag": "v1.3.0",
+  "release_tag": "v1.4.0",
   "create_release": true
 }
 ```
@@ -28,9 +28,9 @@ O workflow usa a tag para definir o nome dos artefatos.
 Exemplo:
 
 ```text
-v1.3.0
-MarketAI-Setup-v1.3.0.exe
-MarketAI-Setup-v1.3.0.sha256
+v1.4.0
+MarketAI-Setup-v1.4.0.exe
+MarketAI-Setup-v1.4.0.sha256
 ```
 
 Não existe mais um nome fixo de instalador v0.0.
@@ -43,7 +43,7 @@ Informe:
 
 - cloud_url: URL HTTPS do MarketAI Cloud;
 - create_release: true para publicar GitHub Release;
-- release_tag: por exemplo v1.3.0.
+- release_tag: por exemplo v1.4.0.
 
 ## Segurança
 

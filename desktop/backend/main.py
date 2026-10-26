@@ -843,3 +843,48 @@ async def catalog_update(product_id: str, payload: Dict[str, Any] = Body(...)): 
 async def catalog_revisions(product_id: str, offset: int = 0): return await _proxy_intelligence('GET', f'/v1/catalog/{product_id}/revisions?offset={offset}')
 @app.delete('/api/catalog/{product_id}')
 async def catalog_delete(product_id: str, revision: int): return await _proxy_intelligence('DELETE', f'/v1/catalog/{product_id}?revision={revision}')
+
+
+@app.get('/api/catalog/backup')
+async def catalog_backup_export():
+    from fastapi.responses import Response
+    try:
+        response = await cloud_service.request('GET', '/v1/catalog/backup')
+        if not response.is_success:
+            return JSONResponse(status_code=response.status_code, content=response.json())
+        return Response(response.content, media_type='application/json', headers={
+            'Content-Disposition': 'attachment; filename=MarketAI-catalog-backup.json', 'Cache-Control': 'no-store'})
+    except Exception:
+        return JSONResponse(status_code=503, content={'detail':'cloud_unavailable'})
+
+
+async def _catalog_backup_upload(path, file, plan=None):
+    content = await file.read(10*1024*1024+1)
+    if len(content)>10*1024*1024:
+        return JSONResponse(status_code=413, content={'detail':'catalog_backup_too_large'})
+    try:
+        response = await cloud_service.request('POST', '/v1/catalog/backup/'+path,
+            files={'file':('backup.json',content,'application/json')}, data={'plan':plan} if plan is not None else None)
+        return JSONResponse(status_code=response.status_code, content=response.json())
+    except Exception:
+        return JSONResponse(status_code=503, content={'detail':'cloud_unavailable'})
+
+
+@app.post('/api/catalog/backup/preview')
+async def catalog_backup_preview(file: UploadFile = File(...)):
+    return await _catalog_backup_upload('preview', file)
+
+
+@app.post('/api/catalog/backup/restore')
+async def catalog_backup_restore(file: UploadFile = File(...), plan: str = Form(...)):
+    return await _catalog_backup_upload('restore', file, plan)
+
+
+@app.get('/api/intelligence/watches/{watch_id}/alert-rules')
+async def watch_alert_rules(watch_id: str):
+    return await _proxy_intelligence('GET', f'/v1/intelligence/watches/{watch_id}/alert-rules')
+
+
+@app.put('/api/intelligence/watches/{watch_id}/alert-rules')
+async def watch_alert_rules_update(watch_id: str, payload: Dict[str, Any] = Body(...)):
+    return await _proxy_intelligence('PUT', f'/v1/intelligence/watches/{watch_id}/alert-rules', payload)

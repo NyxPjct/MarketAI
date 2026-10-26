@@ -1,5 +1,5 @@
 MARKETAI COMMUNITY — NOTA DE PRIVACIDADE
-Última atualização: 22/10/2026
+Última atualização: 26/10/2026
 
 1. CONTAS
 O MarketAI pode tratar nome, e-mail, identificador aleatório da instalação e
@@ -40,6 +40,22 @@ anteriores permanecem sujeitos às suas próprias ações de exclusão e retenç
 Limpar o Histórico remove os resultados vinculados, preservando o cadastro.
 O backup local de Histórico/monitorados não inclui o catálogo nem suas revisões;
 o operador pode protegê-los com backups do banco de dados do Cloud.
+
+BACKUP DO CATÁLOGO E REGRAS DE ALERTA
+A função específica Backup do catálogo exporta produtos, fornecedores, custos,
+estoque manual, revisões e regras de alerta em JSON. O arquivo contém dados
+comerciais e deve ser guardado com cuidado. Ele não inclui credenciais, análises
+de mercado, snapshots, alertas emitidos ou lotes. A restauração exige a mesma
+conta e uma seleção revisada. Substituições preservam o histórico existente e
+acrescentam as revisões do arquivo, identificadas como restauradas. Monitores
+restaurados ficam pausados até a ativação explícita. O arquivo é enviado ao
+Cloud para validação e restauração, mas não é retido como arquivo pelo aplicativo;
+recibos técnicos de restauração guardam identificadores, data e contagens.
+As regras de alerta, os intervalos entre avisos e os detalhes dos alertas ficam
+no Cloud, vinculados ao monitor e à conta. Eles são usados em consultas manuais
+e no Sentinel. Alertas aparecem no aplicativo; esta versão não envia e-mail ou
+notificações para serviços externos. Backups já baixados não são apagados pelas
+ações de exclusão da conta no aplicativo.
 
 4. SERVIÇOS EXTERNOS
 Marketplaces, agregadores, provedores de IA, câmbio e hospedagem possuem

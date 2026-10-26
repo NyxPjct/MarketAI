@@ -6,6 +6,7 @@ No live providers are contacted; all databases and credentials are disposable.
 """
 from __future__ import annotations
 import argparse
+import json
 from contextlib import contextmanager
 import httpx
 import os
@@ -237,11 +238,98 @@ def check_workflow(desktop_a, desktop_b, db_path, chromium, stop_device):
         manual=b.locator('#catalogRows tr').filter(has_text='004-MANUAL')
         manual.locator('.catalog-delete').click()
         expect(b.locator('#catalogRows')).not_to_contain_text('004-MANUAL')
+        # Per-product alert rules round-trip through catalog and watchlist editors.
+        b.locator('#catalogFreshness').select_option('all')
+        phone=b.locator('#catalogRows tr').filter(has_text='001-PHONE')
+        phone.locator('.catalog-alerts').click()
+        expect(b.locator('#alertRulesSave')).to_be_enabled()
+        b.locator('#alertPricePercent').fill('20');b.locator('#alertPriceDirection').select_option('drop')
+        b.locator('#alertMarginPercent').fill('80');b.locator('#alertStaleEnabled').check()
+        b.locator('#alertStaleHours').fill('2');b.locator('#alertCooldownHours').fill('6')
+        b.locator('#alertRulesSave').click()
+        expect(b.locator('#alertRulesFeedback')).to_contain_text('Alert rules saved')
+        b.locator('#alertRulesClose').click()
+        phone_data=next(row for row in httpx.get(desktop_b+'/api/catalog').json()['items'] if row['fields']['sku']=='001-PHONE')
+        b.locator('[data-view=watchlist]').click()
+        b.locator(f'.alert-rules-watch[data-id="{phone_data["watch_id"]}"]').click()
+        expect(b.locator('#alertMarginPercent')).to_have_value('80')
+        expect(b.locator('#alertPriceDirection')).to_have_value('drop')
+        for lang in ['pt-BR','de','es','fr','en']:
+            b.evaluate('(lang)=>window.MarketI18n.setLanguage(lang)',lang)
+            assert b.locator('#alertRulesSave').inner_text()!='Save alert rules' or lang=='en'
+        if os.getenv('MARKETAI_WORKFLOW_SCREENSHOTS'):
+            b.screenshot(path=str(Path(os.environ['MARKETAI_WORKFLOW_SCREENSHOTS'])/'alert-rules.png'),full_page=True)
+        b.locator('#alertRulesClose').click()
+        with b.expect_response(lambda response:response.url.endswith('/check') and response.request.method=='POST') as checked:
+            b.locator(f'.check-watch[data-id="{phone_data["watch_id"]}"]').click()
+        assert checked.value.status==200
+        b.locator('[data-view=intelligence]').click()
+        expect(b.locator('#intelAlerts')).to_contain_text('Margin below threshold')
+        # Full catalog archives include all inputs, revisions and rules, with reviewed replacement.
+        b.locator('[data-view=catalog]').click();b.locator('#catalogBackupPanel summary').click()
+        with b.expect_download() as download:
+            b.locator('#catalogBackupExport').click()
+        backup=Path(download.value.path()).read_bytes()
+        archive=json.loads(backup)
+        assert len(archive['products'])==3
+        archived_phone=next(row for row in archive['products'] if row['fields']['sku']=='001-PHONE')
+        assert archived_phone['alert_rules']['minimum_margin_percent']==80 and len(archived_phone['revisions'])==2
+        wrong=json.loads(backup);wrong['account_id']=str(uuid.uuid4())
+        b.locator('#catalogBackupFile').set_input_files({'name':'wrong.json','mimeType':'application/json','buffer':json.dumps(wrong).encode()})
+        b.locator('#catalogBackupReview').click()
+        expect(b.locator('#catalogBackupFeedback')).to_contain_text('another account')
+        b.locator('#catalogBackupFile').set_input_files({'name':'catalog.json','mimeType':'application/json','buffer':backup})
+        b.locator('#catalogBackupReview').click()
+        expect(b.locator('#catalogBackupRows input:disabled')).to_have_count(3)
+        expect(b.locator('#catalogBackupRows input:checked')).to_have_count(0)
+        b.locator('#catalogBackupReplace').check()
+        restore_phone=b.locator('#catalogBackupRows tr').filter(has_text='001-PHONE')
+        restore_phone.locator('input').check()
+        # An edit after preview must not be overwritten by an obsolete plan.
+        response=httpx.put(desktop_b+'/api/catalog/'+phone_data['id'],json={
+            'fields':{**phone_data['fields'],'purchase_cost':75},'stock':12,'revision':phone_data['revision']})
+        response.raise_for_status()
+        b.locator('#catalogBackupRestore').click()
+        expect(b.locator('#catalogBackupFeedback')).to_contain_text('catalog or alert rules changed')
+        with b.expect_response(lambda response:response.url.endswith('/api/catalog/backup/preview')) as reviewed:
+            b.locator('#catalogBackupReview').click()
+        assert reviewed.value.status==200
+        expect(b.locator('#catalogBackupFeedback')).to_contain_text('Review the selection')
+        expect(b.locator('#catalogBackupReplace')).not_to_be_checked()
+        expect(b.locator('#catalogBackupReplace')).to_be_enabled()
+        expect(b.locator('#catalogBackupRows input:disabled')).to_have_count(3)
+        b.locator('#catalogBackupReplace').check();restore_phone.locator('input').check()
+        expect(b.locator('#catalogBackupRows input:checked')).to_have_count(1)
+        for lang in ['pt-BR','de','es','fr','en']:
+            b.evaluate('(lang)=>window.MarketI18n.setLanguage(lang)',lang)
+            expect(b.locator('#catalogBackupRows input:checked')).to_have_count(1)
+            assert b.locator('#catalogBackupRestore').inner_text()!='Restore selected products' or lang=='en'
+        b.locator('#catalogBackupRestore').click()
+        expect(b.locator('#catalogBackupFeedback')).to_contain_text('Replaced: 1')
+        restored=next(row for row in httpx.get(desktop_b+'/api/catalog').json()['items'] if row['fields']['sku']=='001-PHONE')
+        assert restored['fields']['purchase_cost']==60 and not restored['monitoring'] and restored['revision']==5
+        phone.locator('.catalog-history').click()
+        expect(b.locator('#catalogRevisionList')).to_contain_text('Restored from backup')
+        b.locator('#catalogRevisionsClose').click()
+        # Recover a deleted SKU; imported input archives never forge a market result.
+        phone.locator('.catalog-delete').click()
+        expect(b.locator('#catalogRows')).not_to_contain_text('001-PHONE')
+        b.locator('#catalogBackupFile').set_input_files({'name':'catalog.json','mimeType':'application/json','buffer':backup})
+        b.locator('#catalogBackupReview').click()
+        expect(b.locator('#catalogBackupRows input:checked:not(:disabled)')).to_have_count(1)
+        b.locator('#catalogBackupRestore').click()
+        expect(b.locator('#catalogBackupFeedback')).to_contain_text('Created: 1')
+        recovered=next(row for row in httpx.get(desktop_b+'/api/catalog').json()['items'] if row['fields']['sku']=='001-PHONE')
+        assert recovered['latest'] is None and not recovered['monitoring']
+        rule=httpx.get(desktop_b+f'/api/intelligence/watches/{recovered["watch_id"]}/alert-rules').json()
+        assert rule['rules']['minimum_margin_percent']==80 and rule['rules']['price_direction']=='drop'
         b.locator('[data-view=account]').click();b.locator('#cloudLogout').click()
         expect(b.locator('#authGate')).to_be_visible()
         assert b.evaluate('currentAnalysis===null')
         assert b.locator('#catalogRows tr[data-product-id]').count()==0
         assert b.locator('#catalogFields').inner_text()==''
+        assert b.locator('#catalogBackupRows').inner_text()==''
+        assert b.locator('#alertRulesProduct').inner_text()==''
         assert not errors,errors
         browser.close()
 
@@ -317,7 +405,7 @@ def main():
     args = parser.parse_args()
     with services(args.python) as (desktop_a, desktop_b, db_path, stop_device):
         check_workflow(desktop_a, desktop_b, db_path, args.chromium, stop_device)
-    print('PASS: guided analysis, two-device sync, CSV review, durable batches with Desktop stopped, partial failure/retry, export, SKU catalog, comparisons, revision history, bulk monitoring, catalog reanalysis, five languages and logout')
+    print('PASS: two-device workflow, durable batches, SKU catalog, comparisons, bulk monitoring, alert rules and actual manual alerts, full catalog backup, reviewed replacement, conflict protection, deleted-product recovery, five languages and logout')
 
 
 if __name__ == '__main__':

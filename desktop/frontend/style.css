@@ -443,6 +443,7 @@ td:last-child{color:#fff}
 .catalog-dialog::backdrop { background: #03080dcc; }
 .catalog-dialog .card-head { align-items: center; }
 .catalog-dialog .card-head h2 { margin: 0; }
+.catalog-dialog .card-head > div { display: block; }
 .catalog-dialog label { display: flex; flex-direction: column; gap: 7px; }
 .catalog-dialog input[readonly] { opacity: .6; }
 #catalogEditorError, #catalogRevisionFeedback { color: #f0bd74; }
@@ -453,3 +454,11 @@ td:last-child{color:#fff}
 .catalog-revision dd { margin: 3px 0; overflow-wrap: anywhere; }
 @media(max-width: 1000px) { .catalog-filters { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media(max-width: 600px) { .catalog-filters, .catalog-fields, .catalog-revision dl { grid-template-columns: 1fr; } .catalog-card, .catalog-dialog { padding: 18px; } }
+.catalog-backup { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--line); }
+.catalog-backup > summary { cursor: pointer; font-weight: 650; }
+.catalog-backup > label { margin-top: 18px; }
+.catalog-backup .table-wrap { margin: 16px 0; max-height: 420px; }
+.catalog-backup td small { display: block; margin-top: 4px; color: var(--muted); }
+.catalog-dialog label.catalog-check { flex-direction: row; align-items: center; }
+.catalog-dialog .catalog-check input { flex: 0 0 18px; }
+#catalogBackupFeedback, #alertRulesFeedback { overflow-wrap: anywhere; }

@@ -1,42 +1,40 @@
-MARKETAI 1.3.0 — SAVED SKU CATALOG, COMPARISONS AND BULK MONITORING
+MARKETAI 1.4.0 — COMPLETE CATALOG BACKUPS AND CONFIGURABLE ALERTS
 
-Saved account catalog:
-- Create products manually or save selected valid CSV rows with a SKU.
-- Keep variants, suppliers, manual stock, destinations, currencies and pricing inputs.
-- SKUs are unique per account, case/Unicode normalized, and cannot be renamed.
-- Import retries reuse identical products; conflicting existing data is preserved.
-- Edit products with revision checks and inspect paginated change history.
+Catalog backups:
+- Export all catalog products, validated costs, suppliers, manual stock, revisions
+  and linked alert rules, independent of the current page, search or filters.
+- Archives are account-bound and contain no credentials or imported market evidence.
+- Review selected products before restoration; existing SKUs require explicit selection.
+- Restore missing products or replace reviewed inputs without deleting prior revisions.
+- Restored input revisions are labeled; restored monitors remain paused until enabled.
+- Restore transactions are atomic, revision checked and idempotent across retries.
+- Limits: 10 MB, 5,000 products, 50,000 revisions. Oversized exports fail explicitly;
+  the app never silently exports only part of the catalog.
+- Keep database backups for account authentication, market history and the full service.
 
-Comparison and bulk actions:
-- Search by product/SKU and filter data quality or changed pricing inputs.
-- Sort across the catalog by margin, target price floor, SKU or last update.
-- Show the latest trusted saved analysis, collection date and exchange-rate fallback.
-- Flag results after pricing changes; supplier/stock edits preserve calculation status.
-- Start new durable batches from selected catalog products without another CSV.
-- Enable Sentinel for selected SKUs without duplicating monitors on retries.
-- Catalog cost edits update the linked monitor without reactivating paused products.
-- No orders, marketplace price changes or inventory synchronization are performed.
-- Zero fees and zero target margins now remain zero during analysis.
-- Catalog editor, controls, history and errors support five interface languages.
+Configurable Sentinel alerts:
+- Set price-change percentage and direction, minimum net margin, hours without valid
+  collections, and minimum hours between alerts of the same type.
+- Rules are shared by manual checks and the separately running Sentinel worker.
+- Defaults: 8% price variation, legacy saved minimum margin or 15%, 24-hour cooldown;
+  stale-data alerts are disabled until configured.
+- Missing/unreliable data does not trigger price or margin alerts. Failures do not
+  reset the last valid timestamp. Paused monitors do not issue new alerts.
+- Stale checks include watches outside the current Sentinel collection batch.
+- Collection-error alerts also obey cooldowns. Alerts appear in Intelligence.
+- No email/push delivery, orders or marketplace price changes are introduced.
+- Backup controls, rule editors and new structured alerts support five languages.
 
-Validation and Windows:
-- Cloud/Desktop tests exercise ownership, revisions, import conflicts, trusted
-  results, changed inputs, pagination, monitor reuse and delete behavior.
-- Browser regression exercises the catalog, comparisons, reanalysis and bulk monitoring
-  across devices, alongside the existing batch/forecast/Copilot workflows.
-- Windows release validation checks actual clean installation, native window startup
-  and upgrades from v1.0.5, v1.1.0 and v1.2.0 while preserving preferences/user files.
-- Tests use controlled data. Hosted login and live providers need separate validation.
-
-Deployment and data:
-- Deploy Cloud and Desktop v1.3.0 together. Back up the Cloud database first.
-- Startup adds catalog_products, catalog_revisions and catalog_analyses without
-  altering existing tables. Keep the Cloud API running for durable batches.
-- Sentinel remains a separate worker for recurring collections.
-- Deleting a product removes its catalog revisions/comparison links and pauses its
-  monitor. Saved History analyses and prior snapshots/alerts remain separate.
-- Clearing History removes linked comparison results, preserving catalog inputs.
-- The local History/watchlist backup export does not include the saved catalog;
-  use Cloud database backups for catalog inputs and revisions.
+Validation and deployment:
+- Tests cover ownership, malformed archives, optimistic conflicts, atomic restores,
+  retries, provenance, zero-margin rules, cooldowns and failed/stale collections.
+- Browser regression covers actual backup export, reviewed replacement, stale-plan
+  rejection, deleted-product recovery, rule editing and manual alerts.
+- Windows release checks clean installation/native startup and verified upgrades from
+  v1.0.5, v1.1.0, v1.2.0 and v1.3.0 with user data preserved.
+- Update API, Sentinel worker and Desktop to v1.4.0 together. Startup creates additive
+  rule, delivery, alert detail, restoration and revision-source tables.
+- Hosted Cloud still reported v1.0.5 on 2026-10-26; deploy it separately and validate
+  real providers. Controlled test data does not establish live-provider readiness.
 
 Community remains free, open source and without paid MarketAI quotas.

@@ -246,3 +246,43 @@ class CatalogAnalysis(Base):
     quality: Mapped[str] = mapped_column(String(32))
     net_margin: Mapped[float | None] = mapped_column(Float, nullable=True)
     cost_floor: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class WatchAlertRules(Base):
+    __tablename__ = 'watch_alert_rules'
+    watch_id: Mapped[str] = mapped_column(ForeignKey('product_watches.id'), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    settings_json: Mapped[str] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class WatchAlertDelivery(Base):
+    __tablename__ = 'watch_alert_deliveries'
+    __table_args__ = (UniqueConstraint('watch_id', 'kind', name='uq_watch_alert_delivery'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    watch_id: Mapped[str] = mapped_column(ForeignKey('product_watches.id'), index=True)
+    kind: Mapped[str] = mapped_column(String(48))
+    last_sent: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class AlertDetails(Base):
+    __tablename__ = 'alert_details'
+    alert_id: Mapped[str] = mapped_column(ForeignKey('intelligence_alerts.id'), primary_key=True)
+    payload_json: Mapped[str] = mapped_column(Text)
+
+
+class CatalogRestore(Base):
+    __tablename__ = 'catalog_restores'
+    __table_args__ = (UniqueConstraint('user_id', 'client_id', name='uq_catalog_restore_client'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    client_id: Mapped[str] = mapped_column(String(36))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    result_json: Mapped[str] = mapped_column(Text, default='{}')
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class CatalogRevisionSource(Base):
+    __tablename__ = 'catalog_revision_sources'
+    revision_id: Mapped[str] = mapped_column(ForeignKey('catalog_revisions.id'), primary_key=True)
+    restored_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

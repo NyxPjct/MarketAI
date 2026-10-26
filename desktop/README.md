@@ -39,9 +39,24 @@ Analyze selection starts a durable batch with the saved inputs. Monitor selectio
 reuses one Sentinel watch per SKU; the separate Sentinel worker must run for
 recurring collections. Editing costs updates that monitor while preserving its
 active/paused state. Stock is manual; no marketplace inventory sync is implied.
-The local backup export covers History/watchlist, not catalog data; use Cloud
-database backups for catalog inputs and revisions. Cloud and Desktop v1.3.0 are
-required for the new catalog endpoints.
+The Settings backup covers History/watchlist. Product catalog now has a separate
+full backup for catalog inputs, revisions and linked alert rules. Review before
+restoring; existing SKUs require explicit replacement selection and restored
+monitors remain paused. Only archives from the same account can be restored.
+No market evidence or credentials are imported. Limits are 10 MB, 5,000 products
+and 50,000 revisions; exports reject oversized catalogs rather than truncating.
+Keep Cloud database backups for the complete service. Deploy Cloud/Desktop v1.4.0.
+
+## Alert rules
+
+Open Alert rules from a monitored product or its catalog row. Set price-change
+threshold/direction, minimum net margin, stale-collection hours and a cooldown.
+Rules are revision checked and shared by manual checks and the Sentinel worker.
+Alerts appear in Intelligence in the selected interface language. Invalid or
+missing prices cannot trigger price/margin alerts; unsuccessful collections do
+not reset the last valid timestamp. Cooldowns also bound collection-error alerts.
+Stale checks run on Sentinel cycles, including watches beyond the current
+collection batch. API and Sentinel must be updated together to v1.4.0.
 
 ## CSV batches
 

@@ -74,7 +74,7 @@
 
       <div class="sidebar-foot">
         <div class="status-dot-wrap"><i class="status-dot"></i><span id="apiStatus">verificando API…</span></div>
-        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.3.0</small>
+        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.4.0</small>
       </div>
     </aside>
 
@@ -278,6 +278,21 @@
           <div class="table-wrap"><table class="catalog-table"><thead><tr><th>Select</th><th>Product / SKU</th><th>Purchase cost / stock</th><th>Data quality</th><th>Recommended price</th><th>Net margin</th><th>Minimum price for target margin</th><th>Collected at</th><th>Analysis status</th><th>Monitoring</th><th>Actions</th></tr></thead><tbody id="catalogRows"></tbody></table></div>
           <div class="action-row catalog-pagination"><button class="ghost" id="catalogPrevious" disabled>Previous page</button><span id="catalogPage" role="status"></span><button class="ghost" id="catalogNext" disabled>Next page</button></div>
           <p class="micro">Monitoring runs while the Cloud Sentinel worker is active. Enabling monitoring does not place orders or change marketplace prices.</p>
+          <details class="catalog-backup" id="catalogBackupPanel">
+            <summary>Catalog backup</summary>
+            <p class="muted">Export all catalog products, costs, stock, revision history and alert rules. Market analyses and account credentials are not included.</p>
+            <button class="ghost" id="catalogBackupExport">Export full catalog backup</button>
+            <label>Catalog backup file<input id="catalogBackupFile" type="file" accept=".json,application/json"></label>
+            <p class="micro">Archives support up to 10 MB, 5,000 products and 50,000 revisions. Exports fail explicitly if the complete catalog exceeds these limits.</p>
+            <button class="ghost" id="catalogBackupReview">Review catalog backup</button>
+            <div id="catalogBackupPreview" hidden>
+              <p class="micro">New products are selected by default. Replacing an existing SKU appends the archived revisions and preserves its previous change history. Restored monitors are paused; use Monitor selection to enable them.</p>
+              <label class="catalog-check"><input id="catalogBackupReplace" type="checkbox">Allow replacing selected existing SKUs</label>
+              <div class="table-wrap"><table><thead><tr><th>Select</th><th>Product / SKU</th><th>Purchase cost / stock</th><th>Revisions</th><th>Restore action</th></tr></thead><tbody id="catalogBackupRows"></tbody></table></div>
+              <button class="primary compact" id="catalogBackupRestore" disabled>Restore selected products</button>
+            </div>
+            <p id="catalogBackupFeedback" role="status" aria-live="polite"></p>
+          </details>
         </div>
       </section>
 
@@ -392,7 +407,7 @@
 
       <section id="view-about" class="view">
         <div class="about-grid">
-          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.3.0</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
+          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.4.0</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
           <div class="card"><h3>Compromissos do MarketAI</h3><ul class="clean-list"><li>Não fabrica preços de mercado quando as fontes não respondem.</li><li>Bloqueia recomendação com amostra insuficiente ou variante ambígua.</li><li>Mostra os anúncios usados e descartados para auditoria.</li><li>Não coloca os recursos principais atrás de paywall.</li><li>Tokens de sessão são protegidos no Windows e as chaves dos marketplaces ficam apenas no MarketAI Cloud.</li></ul></div>
           <div class="card"><h3>Limites importantes</h3><p class="muted">Preços mudam, APIs podem limitar resultados e compatibilidade textual não comprova autenticidade física de um item. NCM, impostos, desembaraço e decisões contábeis devem ser validados com profissionais responsáveis.</p></div>
           <div class="card"><h3>Documentos</h3><p class="muted">Os Termos de Uso, Política de Privacidade e Avisos de Terceiros acompanham o instalador e a pasta do aplicativo.</p><div class="legal-links"><span>Termos de Uso</span><span>Privacidade</span><span>Terceiros</span></div></div>
@@ -419,9 +434,29 @@
     </form>
   </dialog>
   <dialog id="catalogRevisions" class="catalog-dialog"><div class="card-head"><h2>Change history</h2><button class="ghost" id="catalogRevisionsClose">Close</button></div><div id="catalogRevisionList"></div><p id="catalogRevisionFeedback" role="status"></p><div class="action-row"><button class="ghost" id="catalogRevisionPrevious">Previous page</button><button class="ghost" id="catalogRevisionNext">Next page</button></div></dialog>
+  <dialog id="alertRulesDialog" class="catalog-dialog">
+    <form id="alertRulesForm">
+      <div class="card-head"><div><h2>Alert rules</h2><p id="alertRulesProduct" class="muted"></p></div><button class="ghost" id="alertRulesClose" type="button">Close</button></div>
+      <p class="micro">Rules apply to manual checks and the Cloud Sentinel worker. Recurring monitoring requires Sentinel to be running. Alerts appear in Intelligence.</p>
+      <div class="catalog-fields">
+        <label class="catalog-check"><input id="alertPriceEnabled" type="checkbox">Alert on price changes</label>
+        <label>Price change threshold (%)<input id="alertPricePercent" type="number" min="0.01" max="1000" step="any" required></label>
+        <label>Price direction<select id="alertPriceDirection"><option value="both">Rises and drops</option><option value="drop">Drops only</option><option value="rise">Rises only</option></select></label>
+        <label class="catalog-check"><input id="alertMarginEnabled" type="checkbox">Alert on low margin</label>
+        <label>Minimum net margin (%)<input id="alertMarginPercent" type="number" min="0" max="100" step="any" required></label>
+        <label class="catalog-check"><input id="alertStaleEnabled" type="checkbox">Alert when valid collections stop</label>
+        <label>Hours without a valid collection<input id="alertStaleHours" type="number" min="1" max="2160" step="1" required></label>
+        <label>Minimum hours between alerts of the same type<input id="alertCooldownHours" type="number" min="1" max="720" step="1" required></label>
+      </div>
+      <p class="micro">Missing or unreliable prices do not trigger price or margin alerts. An unsuccessful collection does not reset the time since the last valid collection.</p>
+      <p id="alertRulesFeedback" role="status" aria-live="polite"></p><button id="alertRulesSave" type="submit" class="primary compact" disabled>Save alert rules</button>
+    </form>
+  </dialog>
   <script src="/static/i18n.js"></script>
   <script src="/static/app.js"></script>
   <script src="/static/batches.js"></script>
   <script src="/static/catalog.js"></script>
+  <script src="/static/catalog-backup.js"></script>
+  <script src="/static/alert-rules.js"></script>
 </body>
 </html>

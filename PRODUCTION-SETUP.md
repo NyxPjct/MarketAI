@@ -25,7 +25,7 @@ SERPAPI_KEY=
 
 O MarketAI Community não depende de gateway de pagamento.
 
-### Atualizar o serviço no Railway para v1.3.0
+### Atualizar o serviço no Railway para v1.4.0
 
 Publicar o instalador no GitHub não atualiza automaticamente um serviço Railway
 que esteja desconectado do repositório ou com deploy automático desativado.
@@ -39,7 +39,7 @@ que esteja desconectado do repositório ou com deploy automático desativado.
    cópia do processador de lotes. `BATCH_WORKER_ENABLED=0` desliga esse processador.
 3. Atualize o worker Sentinel com a mesma origem e o mesmo `DATABASE_URL`, usando
    `python -m app.sentinel_worker`. Ele é necessário para coletas recorrentes.
-4. Confira por HTTPS o `/health`: deve informar `version: 1.3.0` e
+4. Confira por HTTPS o `/health`: deve informar `version: 1.4.0` e
    `batch_processing: true` na API. O `/openapi.json` precisa incluir `/v1/catalog`,
    `/v1/batches` e `/v1/history`. As consultas privadas sem sessão devem continuar
    rejeitadas; não desative a autenticação para validar o serviço.
@@ -47,7 +47,7 @@ que esteja desconectado do repositório ou com deploy automático desativado.
    as integrações configuradas. Dados sintéticos dos testes não comprovam acesso
    aos provedores no ambiente hospedado.
 
-Verificação em 22/10/2026: o domínio hospedado configurado respondeu aos endpoints
+Verificação em 26/10/2026: o domínio hospedado configurado respondeu aos endpoints
 públicos como v1.0.5, sem as rotas acima. O ambiente de desenvolvimento não dispõe
 de credencial ou projeto Railway vinculado para executar esse deploy. Essa
 observação registra o estado encontrado; repita as verificações após publicar.
@@ -79,7 +79,7 @@ O nome do instalador acompanha a versão definida em desktop/installer/MarketAI.
 Exemplo:
 
 ```text
-MarketAI-Setup-v1.3.0.exe
+MarketAI-Setup-v1.4.0.exe
 ```
 
 ## 5. Release
@@ -89,7 +89,7 @@ Atualize .release/windows.json com:
 ```json
 {
   "cloud_url": "https://api.seudominio.com",
-  "release_tag": "v1.3.0",
+  "release_tag": "v1.4.0",
   "create_release": true
 }
 ```

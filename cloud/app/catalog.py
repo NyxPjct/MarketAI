@@ -18,7 +18,7 @@ from app.batch_csv import AnalysisFields, BatchCreate, BatchRow
 from app.batches import batch_json, store_batch, require_device, iso, now
 from app.db import get_db
 from app.deps import current_user
-from app.models import CatalogProduct, CatalogRevision, CatalogAnalysis, AnalysisHistory, ProductWatch, User
+from app.models import CatalogProduct, CatalogRevision, CatalogRevisionSource, CatalogAnalysis, AnalysisHistory, ProductWatch, User
 
 router = APIRouter(prefix='/v1/catalog', tags=['catalog'])
 
@@ -249,8 +249,10 @@ def revisions(product_id: str, offset: int = Query(default=0, ge=0), user: User 
     query = db.query(CatalogRevision).filter_by(product_id=product_id)
     total = query.count()
     rows = query.order_by(CatalogRevision.revision.desc()).offset(offset).limit(20).all()
+    restored = {row.revision_id for row in db.query(CatalogRevisionSource).filter(
+        CatalogRevisionSource.revision_id.in_([row.id for row in rows])).all()}
     return {'items': [{'revision': row.revision, 'fields': json.loads(row.fields_json), 'stock': row.stock,
-                       'created_at': iso(row.created_at)} for row in rows], 'total': total, 'offset': offset}
+                       'created_at': iso(row.created_at), 'restored': row.id in restored} for row in rows], 'total': total, 'offset': offset}
 
 
 @router.delete('/{product_id}')
@@ -262,6 +264,8 @@ def delete_product(product_id: str, revision: int = Query(ge=1), user: User = De
     if watch:
         watch.active, watch.updated_at = False, now()
     db.query(CatalogAnalysis).filter_by(product_id=product.id).delete(synchronize_session=False)
+    db.query(CatalogRevisionSource).filter(CatalogRevisionSource.revision_id.in_(
+        db.query(CatalogRevision.id).filter_by(product_id=product.id))).delete(synchronize_session=False)
     db.query(CatalogRevision).filter_by(product_id=product.id).delete(synchronize_session=False)
     db.delete(product)
     db.commit()

@@ -108,6 +108,35 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
+## What is new in v1.4.0
+
+- Full catalog JSON backups include every product, supplier, pricing input, manual stock value, revision and linked alert rule.
+- Review a backup before restoring. New SKUs are selected by default; existing SKUs require explicit replacement selection. Concurrent catalog or rule changes reject stale restore plans.
+- Restoration is atomic and retries do not duplicate changes. Existing revision history is preserved, archived revisions are appended and labeled as restored, and restored monitors are paused.
+- Configure price-change thresholds and direction, minimum net margin (including zero), time without valid market collections and a cooldown for each alert type.
+- Manual checks and the Sentinel worker use the same rules. Missing or unreliable prices cannot trigger price/margin alerts; failed collections do not reset the last-valid-collection timer.
+- New alert messages, backup review controls and rule editors support all five interface languages.
+
+### Back up and restore a catalog
+
+1. Open **Product catalog → Catalog backup → Export full catalog backup**. The file includes all catalog inputs, revisions and linked rules, regardless of the current search, filter or page.
+2. Keep the file securely: it contains your commercial inputs. It excludes credentials, market analyses, snapshots, emitted alerts and batch jobs. The separate Settings backup still handles History/watchlist summaries.
+3. Choose a file in **Catalog backup** and select **Review catalog backup**. Only a backup from the same account is accepted; this is not an account-transfer feature.
+4. Choose products. Existing SKUs remain unchanged unless replacement is enabled and each SKU is selected. Replacement preserves existing local revisions and appends the archived input history.
+5. Select **Restore selected products**. Restored monitors are paused; activate them using **Monitor selection**. Run an analysis to collect market evidence for a recovered product.
+
+Archives support **10 MB, 5,000 products and 50,000 revisions**. These are processing limits. An export that exceeds them fails explicitly; it never silently truncates the catalog. Database backups remain necessary to protect the complete hosted service, authentication data and market history.
+
+### Configure Sentinel alerts
+
+Open **Alert rules** from a monitored product or its catalog row. Select price changes in either/both directions, a percentage threshold, minimum margin, and whether to alert after a chosen number of hours without valid collections. Set the minimum hours between alerts of the same type. Changes are revision checked and apply to future checks.
+
+Defaults retain the previous **8% price movement / 15% minimum margin** rules (or a watch's saved legacy minimum margin), add a **24-hour cooldown**, and leave the new stale-data alert disabled until configured. Cooldowns also bound collection-error notices. Alerts appear in **Intelligence**; email/push delivery is not included. Recurring checks require the separate Sentinel worker; stale-data alerts are evaluated on its cycles, not by a minute-exact scheduler. If no valid collection exists yet, elapsed time starts when the watch was created. Paused monitors do not issue new alerts.
+
+Deploy the API and Sentinel worker from **v1.4.0 together**, then update Desktop. Startup creates additive `watch_alert_rules`, `watch_alert_deliveries`, `alert_details`, `catalog_restores` and `catalog_revision_sources` tables without altering previous tables. Existing monitors use defaults until configured. Back up PostgreSQL before deployment.
+
+**Hosted check (2026-10-26):** the configured Cloud still responded as **v1.0.5**. No Railway deployment credential or project binding is available in this development environment. Follow the [deployment guide](PRODUCTION-SETUP.md) to update the API and Sentinel; GitHub installer publication alone does not deploy that service. Live-provider validation remains pending on the hosted instance.
+
 ## What is new in v1.3.0
 
 - A saved, account-scoped product catalog with unique SKUs, variants, suppliers, manually entered stock and all pricing inputs.
@@ -134,7 +163,7 @@ The comparison uses saved server analyses collected after products enter the cat
 
 Deploy Cloud and Desktop **v1.3.0 together**. Startup creates only the additive `catalog_products`, `catalog_revisions` and `catalog_analyses` tables; existing tables are preserved. Take a database backup before deployment. Hosted login and live marketplace access require validation on the deployed instance.
 
-**Hosted deployment check (2026-10-22):** the configured public Cloud responded as **v1.0.5** and its schema lacked catalog, batch and History routes. A GitHub release does not update that service by itself. Follow the [Railway deployment steps](PRODUCTION-SETUP.md#atualizar-o-serviço-no-railway-para-v130) before using the new workflows against that instance.
+**Hosted deployment check (2026-10-22):** the configured public Cloud responded as **v1.0.5** and its schema lacked catalog, batch and History routes. A GitHub release does not update that service by itself. Follow the [Railway deployment steps](PRODUCTION-SETUP.md) before using the new workflows against that instance.
 
 ## What is new in v1.2.0
 
@@ -175,7 +204,7 @@ Cloud and Desktop must both run v1.2.0. The Cloud starts its batch worker automa
 The new `analysis_history` table is created by the Cloud's existing startup initialization. Existing tables and data are preserved. Deploy the Cloud and Desktop changes together; older Clouds do not expose the new history endpoints. Live third-party integrations require the operator’s credentials and independent validation.
 
 
-## Screenshots — MarketAI v1.3.0
+## Screenshots — MarketAI v1.4.0
 
 The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
 
@@ -183,15 +212,23 @@ Demo values are used only to present the UI. They are not presented as real mark
 
 ### Login / account creation
 
-![MarketAI v1.3.0 — Login](docs/screenshots/01-login-community-v1.3.0.png)
+![MarketAI v1.4.0 — Login](docs/screenshots/01-login-community-v1.4.0.png)
 
 ### Dashboard / New analysis
 
-![MarketAI v1.3.0 — Dashboard](docs/screenshots/02-dashboard-v1.3.0.png)
+![MarketAI v1.4.0 — Dashboard](docs/screenshots/02-dashboard-v1.4.0.png)
 
 #### Saved SKU catalog
 
-![MarketAI v1.3.0 — Saved catalog](docs/screenshots/08-sku-catalog-v1.3.0.png)
+![MarketAI v1.4.0 — Saved catalog](docs/screenshots/08-sku-catalog-v1.4.0.png)
+
+### Catalog backup review
+
+![MarketAI v1.4.0 — Catalog backup](docs/screenshots/09-catalog-backup-v1.4.0.png)
+
+### Alert rules
+
+![MarketAI v1.4.0 — Alert rules](docs/screenshots/10-alert-rules-v1.4.0.png)
 
 ## Intelligence Core
 

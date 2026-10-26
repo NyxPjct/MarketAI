@@ -103,20 +103,16 @@ async def check_watch(watch_id:str,user:User=Depends(current_user),db:Session=De
     w=db.query(ProductWatch).filter_by(id=watch_id,user_id=user.id,active=True).first()
     if not w: raise HTTPException(404,"watch_not_found")
     fields=json.loads(w.settings_json or "{}"); fields["product_name"]=w.product_name;fields["variant_text"]=w.variant_text;fields["destination_country"]=w.country
-    analysis=await run_analysis(fields)
-    dq=data_quality_score(analysis); ms=market_score(analysis)
-    ap=autopilot_price(analysis,str(fields.get("autopilot_strategy") or "balanced"),float(fields.get("undercut_amount") or 1),float(fields.get("minimum_margin_percent") or fields.get("desired_margin_percent") or 15)) if w.autopilot_enabled else {"available":False,"reason":"Autopilot desativado."}
-    pm=analysis.get("pricing",{}).get("market",{}); rec=analysis.get("pricing",{}).get("strategies",{}).get("recommended") or {}
-    snap=MarketSnapshot(watch_id=w.id,user_id=user.id,market_median=float(pm.get("median") or 0) or None,market_min=float(pm.get("min") or 0) or None,market_max=float(pm.get("max") or 0) or None,listing_count=int(pm.get("count") or 0),quality_score=dq["score"],market_score=ms.get("score"),net_margin=rec.get("net_margin_percent"),suggested_price=(ap.get("suggested_price") if ap.get("available") else rec.get("price")),payload_json=json.dumps({"quality":dq,"score":ms,"autopilot":ap,"analysis":analysis_context(analysis)},ensure_ascii=False))
-    prev=db.query(MarketSnapshot).filter_by(watch_id=w.id,user_id=user.id).order_by(MarketSnapshot.created_at.desc()).first();db.add(snap)
-    if prev and snap.market_median and prev.market_median:
-        pct=(snap.market_median-prev.market_median)/prev.market_median*100
-        if abs(pct)>=8:
-            direction="subiu" if pct>0 else "caiu"; db.add(IntelligenceAlert(user_id=user.id,watch_id=w.id,severity="opportunity" if pct>0 else "attention",kind="price_move",title=f"Preço de mercado {direction} {abs(pct):.1f}%",message=f"{w.product_name}: mediana foi de R$ {prev.market_median:.2f} para R$ {snap.market_median:.2f}."))
-    if rec and float(rec.get("net_margin_percent") or 0)<float(fields.get("minimum_margin_percent") or 15):
-        db.add(IntelligenceAlert(user_id=user.id,watch_id=w.id,severity="critical",kind="margin",title="Margem abaixo do limite",message=f"{w.product_name}: margem líquida estimada em {float(rec.get('net_margin_percent') or 0):.1f}%."))
-    w.updated_at=now();db.commit();db.refresh(snap)
-    return {"watch":watch_json(w),"analysis":analysis,"data_quality":dq,"market_score":ms,"autopilot":ap,"snapshot_id":snap.id}
+    from app.watch_collection import persist_snapshot, record_failure
+    try:
+        analysis=await run_analysis(fields)
+        saved=persist_snapshot(db,w,analysis,fields)
+        db.commit();db.refresh(saved['snapshot'])
+    except Exception:
+        db.rollback();record_failure(db,w);db.commit()
+        raise HTTPException(502,'watch_collection_failed') from None
+    return {'watch':watch_json(w),'analysis':analysis,'data_quality':saved['data_quality'],
+            'market_score':saved['market_score'],'autopilot':saved['autopilot'],'snapshot_id':saved['snapshot'].id}
 
 @router.get("/radar")
 def radar(user:User=Depends(current_user),db:Session=Depends(get_db)):
@@ -132,7 +128,13 @@ def radar(user:User=Depends(current_user),db:Session=Depends(get_db)):
 
 @router.get("/alerts")
 def alerts(user:User=Depends(current_user),db:Session=Depends(get_db)):
-    require(db,user,"sentinel"); rows=db.query(IntelligenceAlert).filter_by(user_id=user.id).order_by(IntelligenceAlert.created_at.desc()).limit(100).all(); return {"items":[{"id":x.id,"watch_id":x.watch_id,"severity":x.severity,"kind":x.kind,"title":x.title,"message":x.message,"acknowledged":x.acknowledged,"created_at":iso(x.created_at)} for x in rows]}
+    from app.models import AlertDetails
+    require(db,user,'sentinel')
+    rows=db.query(IntelligenceAlert).filter_by(user_id=user.id).order_by(IntelligenceAlert.created_at.desc()).limit(100).all()
+    details={item.alert_id:json.loads(item.payload_json) for item in db.query(AlertDetails).filter(AlertDetails.alert_id.in_([x.id for x in rows])).all()}
+    return {'items':[{'id':x.id,'watch_id':x.watch_id,'severity':x.severity,'kind':x.kind,'title':x.title,
+                     'message':x.message,'details':details.get(x.id),'acknowledged':x.acknowledged,
+                     'created_at':iso(x.created_at)} for x in rows]}
 
 @router.post("/alerts/{alert_id}/ack")
 def ack(alert_id:str,user:User=Depends(current_user),db:Session=Depends(get_db)):

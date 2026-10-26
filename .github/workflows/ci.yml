@@ -62,6 +62,8 @@ jobs:
           node --check desktop/frontend/app.js
           node --check desktop/frontend/batches.js
           node --check desktop/frontend/catalog.js
+          node --check desktop/frontend/catalog-backup.js
+          node --check desktop/frontend/alert-rules.js
 
       - name: Install browser validation dependencies
         run: |

@@ -271,8 +271,9 @@ $('#clearHistory').addEventListener('click',async()=>{
 
 function renderWatchlist(){
   const items=readAccountItems('marketai-watch');
-  $('#watchList').innerHTML=items.length?items.map((x,i)=>`<div class="history-item watch-item"><div><strong>${escapeHtml(x.name)}</strong><small>${escapeHtml(x.variant||'')} · ${escapeHtml(x.country||'')} · ${x.date?new Date(x.date).toLocaleString(appLocale()):escapeHtml(tr('No snapshots yet'))}</small></div><div><small>Score</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${intelMoney(x.recommended)}</div><div class="action-row"><button class="ghost reanalyze" data-i="${i}">${escapeHtml(tr('Reanalyze'))}</button>${x.id?`<button class="ghost check-watch" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Check now'))}</button><button class="ghost forecast-watch" data-id="${escapeAttr(x.id)}">Forecast</button><button class="ghost remove-watch" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Remove'))}</button>`:''}</div></div>`).join(''):`<div class="empty">${escapeHtml(tr('No monitored products. Analyze a product and select Monitor.'))}</div>`;
+  $('#watchList').innerHTML=items.length?items.map((x,i)=>`<div class="history-item watch-item"><div><strong>${escapeHtml(x.name)}</strong><small>${escapeHtml(x.variant||'')} · ${escapeHtml(x.country||'')} · ${x.date?new Date(x.date).toLocaleString(appLocale()):escapeHtml(tr('No snapshots yet'))}</small></div><div><small>Score</small><div>${x.score==null?'—':x.score+'/100'}</div></div><div class="history-price">${intelMoney(x.recommended)}</div><div class="action-row"><button class="ghost reanalyze" data-i="${i}">${escapeHtml(tr('Reanalyze'))}</button>${x.id?`<button class="ghost check-watch" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Check now'))}</button><button class="ghost alert-rules-watch" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Alert rules'))}</button><button class="ghost forecast-watch" data-id="${escapeAttr(x.id)}">Forecast</button><button class="ghost remove-watch" data-id="${escapeAttr(x.id)}">${escapeHtml(tr('Remove'))}</button>`:''}</div></div>`).join(''):`<div class="empty">${escapeHtml(tr('No monitored products. Analyze a product and select Monitor.'))}</div>`;
   $$('.reanalyze').forEach(btn=>btn.addEventListener('click',()=>loadWatch(items[num(btn.dataset.i)])));
+  $$('.alert-rules-watch').forEach(btn=>btn.addEventListener('click',()=>window.MarketAlerts.open(btn.dataset.id)));
   $$('.check-watch').forEach(btn=>btn.addEventListener('click',async()=>{
     btn.disabled=true; const account=activeAccountId;
     try{await intelJson(`/api/intelligence/watches/${encodeURIComponent(btn.dataset.id)}/check`,{method:'POST'});if(account!==activeAccountId)return;await syncAccountData(true);}catch(e){setSyncStatus(e.message)}finally{btn.disabled=false}
@@ -295,7 +296,7 @@ $('#refreshWatchlist').addEventListener('click',()=>syncAccountData(true));
 $('#printReport').addEventListener('click',()=>window.print());
 $('#exportCsv').addEventListener('click',()=>{
   if(!currentAnalysis)return; const d=currentAnalysis, rec=d.pricing.strategies.recommended;
-  const rows=[['MarketAI v1.3.0 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
+  const rows=[['MarketAI v1.4.0 Community'],['Produto',d.product.product_name||d.request.typed_name],['Variante',d.request.variant_text||d.product.variant_summary||''],['Qualidade',d.market.quality.label],['Score',d.pricing.opportunity.score??'bloqueado'],['Veredito',d.advice.verdict],['Custo real',d.pricing.costs.unit_cost],['Piso pela margem',d.pricing.costs.minimum_for_target_margin],['Preço recomendado',rec?.price??'indisponível'],['Lucro líquido',rec?.net_profit??'indisponível'],['Margem %',rec?.net_margin_percent??'indisponível'],[],['STATUS','Match','Fonte','Anúncio','Moeda','Preço original','Preço BRL','Motivo'],...d.market.listings.map(x=>['COMPATÍVEL',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.used_for_pricing?'USADO NO CÁLCULO':'']),...d.market.discarded.map(x=>['DESCARTADO',x.match_score,x.source,x.title,x.currency,x.price,x.price_brl,x.rejection_reason])];
   const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`marketai-${slugify(d.request.typed_name)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 });
 
@@ -370,7 +371,7 @@ $('#savePreferences')?.addEventListener('click',async()=>{
 function downloadJson(filename,data){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.3.0',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
+$('#exportBackup')?.addEventListener('click',()=>downloadJson(`marketai-backup-${new Date().toISOString().slice(0,10)}.json`,{format:'MarketAIBackup',version:'1.4.0',account_id:activeAccountId,exported_at:new Date().toISOString(),history:readAccountItems('marketai-history'),watchlist:readAccountItems('marketai-watch')}));
 $('#importBackupBtn')?.addEventListener('click',()=>$('#importBackupFile').click());
 $('#importBackupFile')?.addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
@@ -695,7 +696,7 @@ async function loadIntelligence(){
     if(account!==activeAccountId)return;
     updateProductSelectors(w.items.filter(x=>x.active));
     radar.innerHTML=(r.items||[]).length?(r.items||[]).slice(0,8).map((x,i)=>`<div class="intel-row"><b>#${i+1} ${escapeHtml(x.product_name)}</b><span>${x.market_score==null?escapeHtml(tr('Score blocked')):x.score+'/100'}</span><small>${intelMoney(x.median)} · ${escapeHtml(tr('trend'))} ${Number(x.price_trend_percent||0).toFixed(1)}% · ${x.collected_at?escapeHtml(new Date(x.collected_at).toLocaleString(appLocale())):''}</small></div>`).join(''):`<div class="empty">${escapeHtml(tr('There are no snapshots yet. Add products to Sentinel and run checks.'))}</div>`;
-    const open=(a.items||[]).filter(x=>!x.acknowledged); alerts.innerHTML=open.length?open.slice(0,8).map(x=>`<div class="intel-row alert-${escapeAttr(x.severity)}"><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.message)}</small></div>`).join(''):`<div class="empty">${escapeHtml(tr('No pending alerts.'))}</div>`;
+    const open=(a.items||[]).filter(x=>!x.acknowledged); alerts.innerHTML=open.length?open.slice(0,8).map(x=>{const text=window.MarketAlerts?.describe(x)||x;return `<div class="intel-row alert-${escapeAttr(x.severity)}"><b>${escapeHtml(text.title)}</b><small>${escapeHtml(text.message)}</small></div>`}).join(''):`<div class="empty">${escapeHtml(tr('No pending alerts.'))}</div>`;
   }catch(e){radar.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`;alerts.innerHTML=`<div class="empty">${escapeHtml(tr('Sign in to your account to access Intelligence Core.'))}</div>`}
 }
 $('#intelRefresh')?.addEventListener('click',loadIntelligence);
@@ -801,6 +802,8 @@ function setWorkflowStep(step){
   $$('#workflowSteps li').forEach(el=>{el.classList.toggle('active',el.dataset.step===step);if(el.dataset.step===step)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});
 }
 function resetAnalysis(){
+  window.MarketCatalogBackup?.reset();
+  window.MarketAlerts?.reset();
   window.MarketBatches?.reset();
   window.MarketCatalog?.reset();
   currentAnalysis=null;currentFormSnapshot=null;result.hidden=true;form.style.display='grid';
