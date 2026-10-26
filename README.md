@@ -15,24 +15,24 @@ Each person uses an individual account, with separate analyses, monitored produc
 
 ## Download for Windows
 
-Current version: **v1.3.0**
+Current version: **v1.4.0**
 
 One multilingual installer for **Windows 10/11 x64**, with English, Português (Brasil), Deutsch, Español and Français.
 
 ```text
-MarketAI-Setup-v1.3.0.exe
+MarketAI-Setup-v1.4.0.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.3.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.3.0/MarketAI-Setup-v1.3.0.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.3.0/MarketAI-Setup-v1.3.0.sha256)
-- [GitHub Release v1.3.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.3.0)
+- [MarketAI-Setup-v1.4.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.0/MarketAI-Setup-v1.4.0.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.0/MarketAI-Setup-v1.4.0.sha256)
+- [GitHub Release v1.4.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.4.0)
 
 SHA-256:
 
 ```text
-3f5ab1666967998b369f0cdf61bbb1866b48dda7945970042f583a61f6597a52
+25f17acbe21ae025887466d036f1c51ed15de7f0d1ac4f92a192528f2c31be08
 ```
 
 All releases:
@@ -116,6 +116,8 @@ Important files:
 - Configure price-change thresholds and direction, minimum net margin (including zero), time without valid market collections and a cooldown for each alert type.
 - Manual checks and the Sentinel worker use the same rules. Missing or unreliable prices cannot trigger price/margin alerts; failed collections do not reset the last-valid-collection timer.
 - New alert messages, backup review controls and rule editors support all five interface languages.
+
+The v1.4.0 release passed **100 Cloud tests, 17 Desktop tests**, the full browser regression and actual Windows installation/upgrade validation. The [Windows report](.release/validation/windows-v1.4.0.json) confirms a clean installation, native window startup and upgrades from v1.0.5, v1.1.0, v1.2.0 and v1.3.0 with user data preserved. The published installer was downloaded and verified against its SHA-256 file. Provider tests use controlled data.
 
 ### Back up and restore a catalog
 
@@ -439,8 +441,8 @@ run_desktop_dev.bat
 Installer filenames follow the application version automatically.
 
 ```text
-v1.3.0 -> MarketAI-Setup-v1.3.0.exe
-v1.3.0 -> MarketAI-Setup-v1.3.0.exe
+v1.4.0 -> MarketAI-Setup-v1.4.0.exe
+v1.4.0 -> MarketAI-Setup-v1.4.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
 

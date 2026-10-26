@@ -27,6 +27,11 @@ Deleting history applies across devices after synchronization. Stopping monitori
 
 Set `MARKETAI_CLOUD_URL` to the HTTPS Cloud deployment before running `build_installer.bat`. Installer filenames use the application version automatically. Update Cloud and Desktop together when using the new history endpoints.
 
+Installer builds require Python **3.12**. The script prefers that version on PATH
+and otherwise uses `py -3.12`; an existing build virtual environment using another
+Python version must be recreated. The Windows workflow records safe build-failure
+metadata without publishing raw build logs.
+
 ## Saved SKU catalog
 
 Product catalog stores SKU, supplier, variant, stock and validated pricing inputs

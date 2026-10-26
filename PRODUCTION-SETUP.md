@@ -34,14 +34,16 @@ que esteja desconectado do repositório ou com deploy automático desativado.
    diretório raiz `/cloud`. O Dockerfile e o `railway.toml` usam essa pasta como
    contexto. Preserve o domínio público, as variáveis e o banco existentes.
 2. Faça um backup do PostgreSQL e publique o commit atual. Não recrie o banco.
-   O startup adiciona as tabelas de Histórico, lotes e catálogo, sem alterar as
-   tabelas anteriores. Mantenha a API ativa para os lotes; não inicie uma segunda
+   O startup adiciona as tabelas de Histórico, lotes, catálogo, restaurações e
+   regras de alerta, sem alterar as tabelas anteriores. Mantenha a API ativa para
+   os lotes; não inicie uma segunda
    cópia do processador de lotes. `BATCH_WORKER_ENABLED=0` desliga esse processador.
 3. Atualize o worker Sentinel com a mesma origem e o mesmo `DATABASE_URL`, usando
    `python -m app.sentinel_worker`. Ele é necessário para coletas recorrentes.
 4. Confira por HTTPS o `/health`: deve informar `version: 1.4.0` e
    `batch_processing: true` na API. O `/openapi.json` precisa incluir `/v1/catalog`,
-   `/v1/batches` e `/v1/history`. As consultas privadas sem sessão devem continuar
+   `/v1/batches`, `/v1/history`, `/v1/catalog/backup` e
+   `/v1/intelligence/watches/{watch_id}/alert-rules`. As consultas privadas sem sessão devem continuar
    rejeitadas; não desative a autenticação para validar o serviço.
 5. Com uma conta autorizada, confirme login, catálogo, lote e coleta real usando
    as integrações configuradas. Dados sintéticos dos testes não comprovam acesso
