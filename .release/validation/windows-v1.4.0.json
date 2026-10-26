@@ -1,9 +1,15 @@
 {
   "version": "1.4.0",
-  "status": "failed",
-  "clean_install": false,
-  "upgrade": false,
-  "native_window": false,
-  "data_preserved": false,
-  "message": "Cannot bind argument to parameter 'Id' because it is an empty array."
+  "status": "passed",
+  "clean_install": true,
+  "upgrade": true,
+  "native_window": true,
+  "data_preserved": true,
+  "message": "",
+  "upgraded_from": [
+    "1.0.5",
+    "1.1.0",
+    "1.2.0",
+    "1.3.0"
+  ]
 }
