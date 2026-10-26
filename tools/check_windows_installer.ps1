@@ -27,7 +27,7 @@ function Family-Ids([int]$RootId, [datetime]$StartedAt, [string]$Directory) {
   # PID reuse must never include the Actions runner or unrelated shell processes.
   $prefix = [IO.Path]::GetFullPath($Directory).TrimEnd('\') + '\'
   return @($all | Where-Object {
-    $_.ProcessId -in $ids -and $_.CreationDate -ge $StartedAt -and
+    $_.ProcessId -in $ids -and $_.CreationDate.ToUniversalTime() -ge $StartedAt.ToUniversalTime().AddSeconds(-1) -and
     (($_.Name -eq 'MarketAI.exe' -and $_.ExecutablePath -and $_.ExecutablePath.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) -or $_.Name -eq 'msedgewebview2.exe')
   } | Select-Object -ExpandProperty ProcessId)
 }
@@ -64,7 +64,10 @@ function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectP
           if ($data.name -eq 'MarketAI') { $info=$data; $url=$candidate; break }
         } catch { }
       }
-      $windows = @(Get-Process -Id $script:processIds -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "MarketAI v$ExpectedVersion*" })
+      $windows = @()
+      if ($script:processIds.Count -gt 0) {
+        $windows = @(Get-Process -Id $script:processIds -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "MarketAI v$ExpectedVersion*" })
+      }
       if ($windows.Count -gt 0) { $windowFound=$true }
       if ($info -and $windowFound) { break }
       Start-Sleep -Milliseconds 500

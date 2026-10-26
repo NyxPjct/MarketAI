@@ -2,5 +2,5 @@
   "cloud_url": "https://marketai-cloud-production.up.railway.app",
   "release_tag": "v1.4.0",
   "create_release": true,
-  "build_revision": 5
+  "build_revision": 6
 }
