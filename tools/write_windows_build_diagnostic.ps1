@@ -22,4 +22,6 @@ $result = [ordered]@{
   launcher_python=(Python-Version 'py' @('-3','--version'))
   markers=$markers; failed_tests=$failedTests; unresolved_packages=$packages
 }
+$verification = Join-Path $env:RUNNER_TEMP 'marketai-artifact-verification.json'
+if (Test-Path $verification) { $result.artifact_verification = Get-Content $verification -Raw | ConvertFrom-Json }
 $result | ConvertTo-Json -Depth 5 | Set-Content $Report -Encoding utf8
