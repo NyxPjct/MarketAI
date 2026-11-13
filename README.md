@@ -15,24 +15,24 @@ The Windows installer runs locally by default, with a persistent profile, embedd
 
 ## Download for Windows
 
-Current version: **v1.4.1**
+Current version: **v1.5.1**
 
 One multilingual installer for **Windows 10/11 x64**, with English, Português (Brasil), Deutsch, Español and Français.
 
 ```text
-MarketAI-Setup-v1.4.1.exe
+MarketAI-Setup-v1.5.1.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.4.1.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.1/MarketAI-Setup-v1.4.1.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.1/MarketAI-Setup-v1.4.1.sha256)
-- [GitHub Release v1.4.1](https://github.com/NyxPjct/MarketAI/releases/tag/v1.4.1)
+- [MarketAI-Setup-v1.5.1.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.5.1/MarketAI-Setup-v1.5.1.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.5.1/MarketAI-Setup-v1.5.1.sha256)
+- [GitHub Release v1.5.1](https://github.com/NyxPjct/MarketAI/releases/tag/v1.5.1)
 
 SHA-256:
 
 ```text
-d5ed1a6663903ea5f892bc9d34f2379a878fad6704aa502b069d77270afde06a
+008a4ccec8842eb932c474620d877f276d868f9c1300f8f44ecfedc23dc67a1f
 ```
 
 All releases:
@@ -119,7 +119,7 @@ Important files:
 - Existing remote sessions and preferences remain separate from the local database.
 - New runtime regression covers local startup, catalog analysis, history, backups, restart persistence and all five interface languages.
 
-Windows installer validation and the published download are updated below after the release pipeline completes.
+Validation: **102 Cloud tests, 23 Desktop tests**, the two-device browser workflow and the embedded local-runtime regression passed. The [Windows v1.5.1 report](.release/validation/windows-v1.5.1.json) confirms clean installation, native local startup, SQLite persistence across restart and upgrades from v1.0.5 through v1.4.1 with preferences/user files preserved. The published installer was independently downloaded and matched its SHA-256 file and updater manifest. Provider tests use controlled data; live third-party access is not implied.
 
 ## Session repair (v1.4.1)
 
