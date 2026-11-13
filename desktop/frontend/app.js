@@ -546,6 +546,7 @@ async function loadCloudStatus(){
     if(epoch!==accountEpoch)return false;
     if(d.temporary_unavailable || r.status>=500){
       setSyncStatus(tr('Offline or sync failed. Showing saved data from this device.'));
+      if(!cloudAccount?.authenticated)setAuthFeedback('#loginFeedback',tr('Cloud unavailable. Try again.'));
       return false;
     }
     if(!r.ok || !d.authenticated){
@@ -560,6 +561,7 @@ async function loadCloudStatus(){
   }catch(e){
     if(epoch!==accountEpoch)return false;
     setSyncStatus(tr('Offline or sync failed. Showing saved data from this device.'));
+    if(!cloudAccount?.authenticated)setAuthFeedback('#loginFeedback',tr('Cloud unavailable. Try again.'));
     return false;
   }
 }
