@@ -15,24 +15,24 @@ Each person uses an individual account, with separate analyses, monitored produc
 
 ## Download for Windows
 
-Current version: **v1.4.0**
+Current version: **v1.4.1**
 
 One multilingual installer for **Windows 10/11 x64**, with English, Português (Brasil), Deutsch, Español and Français.
 
 ```text
-MarketAI-Setup-v1.4.0.exe
+MarketAI-Setup-v1.4.1.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.4.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.0/MarketAI-Setup-v1.4.0.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.0/MarketAI-Setup-v1.4.0.sha256)
-- [GitHub Release v1.4.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.4.0)
+- [MarketAI-Setup-v1.4.1.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.1/MarketAI-Setup-v1.4.1.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.4.1/MarketAI-Setup-v1.4.1.sha256)
+- [GitHub Release v1.4.1](https://github.com/NyxPjct/MarketAI/releases/tag/v1.4.1)
 
 SHA-256:
 
 ```text
-25f17acbe21ae025887466d036f1c51ed15de7f0d1ac4f92a192528f2c31be08
+d5ed1a6663903ea5f892bc9d34f2379a878fad6704aa502b069d77270afde06a
 ```
 
 All releases:
@@ -110,7 +110,7 @@ Important files:
 
 ## Session repair (v1.4.1)
 
-Transient Cloud outages preserve the current authenticated workspace and saved session. Concurrent expired requests share one token refresh, account status updates retain the renewed token, and logout prevents late refresh responses from restoring the session. Inactive accounts cannot renew sessions. Validation: 101 Cloud tests, 22 Desktop tests and the browser regression, including temporary Cloud-status failure.
+Transient Cloud outages preserve the current authenticated workspace and saved session. Concurrent expired requests share one token refresh, account status updates retain the renewed token, and logout prevents late refresh responses from restoring the session. Inactive accounts cannot renew sessions. Validation: 101 Cloud tests, 22 Desktop tests and the browser regression, including temporary Cloud-status failure. The Windows release passed clean installation, native startup and upgrades from v1.0.5 through v1.4.0 with data preserved; see [.release/validation/windows-v1.4.1.json](.release/validation/windows-v1.4.1.json). The published installer checksum was independently verified.
 
 Deployment access checked on 2026-11-13: no Railway token, project or service binding was available in this environment or the GitHub deployment secrets checked by the repair workflow. Hosted health checks were blocked by the development environment network policy. Server deployment and live validation remain pending authorized Railway access; publishing source/installers does not update the hosted service.
 
