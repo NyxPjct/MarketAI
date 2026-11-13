@@ -1,40 +1,10 @@
-MARKETAI 1.4.0 — COMPLETE CATALOG BACKUPS AND CONFIGURABLE ALERTS
+MARKETAI 1.4.1 — SESSION AND CONNECTION REPAIR
 
-Catalog backups:
-- Export all catalog products, validated costs, suppliers, manual stock, revisions
-  and linked alert rules, independent of the current page, search or filters.
-- Archives are account-bound and contain no credentials or imported market evidence.
-- Review selected products before restoration; existing SKUs require explicit selection.
-- Restore missing products or replace reviewed inputs without deleting prior revisions.
-- Restored input revisions are labeled; restored monitors remain paused until enabled.
-- Restore transactions are atomic, revision checked and idempotent across retries.
-- Limits: 10 MB, 5,000 products, 50,000 revisions. Oversized exports fail explicitly;
-  the app never silently exports only part of the catalog.
-- Keep database backups for account authentication, market history and the full service.
-
-Configurable Sentinel alerts:
-- Set price-change percentage and direction, minimum net margin, hours without valid
-  collections, and minimum hours between alerts of the same type.
-- Rules are shared by manual checks and the separately running Sentinel worker.
-- Defaults: 8% price variation, legacy saved minimum margin or 15%, 24-hour cooldown;
-  stale-data alerts are disabled until configured.
-- Missing/unreliable data does not trigger price or margin alerts. Failures do not
-  reset the last valid timestamp. Paused monitors do not issue new alerts.
-- Stale checks include watches outside the current Sentinel collection batch.
-- Collection-error alerts also obey cooldowns. Alerts appear in Intelligence.
-- No email/push delivery, orders or marketplace price changes are introduced.
-- Backup controls, rule editors and new structured alerts support five languages.
-
-Validation and deployment:
-- Tests cover ownership, malformed archives, optimistic conflicts, atomic restores,
-  retries, provenance, zero-margin rules, cooldowns and failed/stale collections.
-- Browser regression covers actual backup export, reviewed replacement, stale-plan
-  rejection, deleted-product recovery, rule editing and manual alerts.
-- Windows release checks clean installation/native startup and verified upgrades from
-  v1.0.5, v1.1.0, v1.2.0 and v1.3.0 with user data preserved.
-- Update API, Sentinel worker and Desktop to v1.4.0 together. Startup creates additive
-  rule, delivery, alert detail, restoration and revision-source tables.
-- Hosted Cloud still reported v1.0.5 on 2026-10-26; deploy it separately and validate
-  real providers. Controlled test data does not establish live-provider readiness.
-
-Community remains free, open source and without paid MarketAI quotas.
+- Keep the current workspace and stored login during temporary Cloud outages.
+- Serialize concurrent token refreshes and reuse the renewed access token.
+- Preserve renewed tokens when updating cached account information.
+- Prevent pending refresh or login responses from restoring a logged-out session.
+- Reject token renewal for inactive accounts on the Cloud.
+- 101 Cloud tests, 22 Desktop tests and the full browser workflow passed locally.
+- Hosted deployment requires authorized Railway access; installer publication does
+  not deploy the Cloud server. No deployment credential was available on 2026-11-13.

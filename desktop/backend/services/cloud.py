@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, os, socket, uuid, platform, subprocess, tempfile, hashlib
+import asyncio, json, os, socket, uuid, platform, subprocess, tempfile, hashlib
 from pathlib import Path
 import httpx
 from backend.services.settings import data_dir, load_cloud_session, save_cloud_session, clear_cloud_session
@@ -14,12 +14,25 @@ def device_uuid():
 
 def device_name(): return f"{platform.node() or 'Windows PC'} · {platform.system()}"
 
-async def _refresh(base=DEFAULT_CLOUD_URL):
-    sess=load_cloud_session(); ref=sess.get("refresh_token")
-    if not ref: return None
-    async with httpx.AsyncClient(timeout=20) as c:r=await c.post(base+"/v1/auth/refresh",json={"refresh_token":ref})
-    if r.status_code!=200: clear_cloud_session(); return None
-    d=r.json(); save_cloud_session({"refresh_token":d["refresh_token"],"access_token":d["access_token"],"account":d.get("user"),"entitlement":d.get("entitlement")}); return d["access_token"]
+_refresh_lock = asyncio.Lock()
+_session_epoch = 0
+
+async def _refresh(base=DEFAULT_CLOUD_URL, rejected_access=None):
+    async with _refresh_lock:
+        sess=load_cloud_session(); ref=sess.get("refresh_token"); epoch=_session_epoch
+        if rejected_access is not None and sess.get("access_token") != rejected_access:
+            return sess.get("access_token")
+        if not ref: return None
+        async with httpx.AsyncClient(timeout=20) as c:
+            r=await c.post(base+"/v1/auth/refresh",json={"refresh_token":ref})
+        if epoch != _session_epoch or load_cloud_session().get("refresh_token") != ref:
+            return None
+        if r.status_code in {401,403}:
+            clear_cloud_session(); return None
+        r.raise_for_status()
+        d=r.json()
+        save_cloud_session({"refresh_token":d["refresh_token"],"access_token":d["access_token"],"account":d.get("user"),"entitlement":d.get("entitlement")})
+        return d["access_token"]
 
 async def request(method,path,*,json_data=None,data=None,files=None,auth=True,base=DEFAULT_CLOUD_URL):
     sess=load_cloud_session(); token=sess.get("access_token"); headers={}
@@ -28,38 +41,61 @@ async def request(method,path,*,json_data=None,data=None,files=None,auth=True,ba
         headers["X-Device-Id"]=device_uuid()
     async with httpx.AsyncClient(timeout=45) as c:r=await c.request(method,base+path,headers=headers,json=json_data,data=data,files=files)
     if auth and r.status_code==401:
-        token=await _refresh(base)
+        token=await _refresh(base, rejected_access=token)
         if token:
             headers["Authorization"]="Bearer "+token
             async with httpx.AsyncClient(timeout=45) as c:r=await c.request(method,base+path,headers=headers,json=json_data,data=data,files=files)
     return r
 
 async def login(email,password):
+    global _session_epoch
+    _session_epoch += 1
+    epoch = _session_epoch
     async with httpx.AsyncClient(timeout=20) as c:r=await c.post(DEFAULT_CLOUD_URL+"/v1/auth/login",json={"email":email,"password":password,"device_uuid":device_uuid()})
     if r.status_code!=200:return r
+    if epoch != _session_epoch: raise ValueError("authentication_changed")
     d=r.json(); save_cloud_session({"refresh_token":d["refresh_token"],"access_token":d["access_token"],"account":d.get("user"),"entitlement":d.get("entitlement")});
     await request("POST","/v1/devices/activate",json_data={"device_uuid":device_uuid(),"name":device_name()})
     return r
 
 async def register(email,password,full_name):
+    global _session_epoch
+    _session_epoch += 1
+    epoch = _session_epoch
     async with httpx.AsyncClient(timeout=20) as c:r=await c.post(DEFAULT_CLOUD_URL+"/v1/auth/register",json={"email":email,"password":password,"full_name":full_name,"accept_terms":True,"device_uuid":device_uuid()})
     if r.status_code!=200:return r
+    if epoch != _session_epoch: raise ValueError("authentication_changed")
     d=r.json(); save_cloud_session({"refresh_token":d["refresh_token"],"access_token":d["access_token"],"account":d.get("user"),"entitlement":d.get("entitlement")}); await request("POST","/v1/devices/activate",json_data={"device_uuid":device_uuid(),"name":device_name()}); return r
 
 async def account_status():
+    epoch=_session_epoch
     sess=load_cloud_session()
-    if not sess.get("refresh_token") and not sess.get("access_token"): return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL}
-    try:r=await request("GET","/v1/account/me")
-    except Exception as e:return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL,"error":str(e)}
-    if r.status_code!=200:return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL,"error":r.text[:200]}
-    d=r.json(); save_cloud_session({**sess,"account":d.get("user"),"entitlement":d.get("entitlement")}); return {"authenticated":True,"cloud_url":DEFAULT_CLOUD_URL,**d}
+    if not sess.get("refresh_token") and not sess.get("access_token"):
+        return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL}
+    try:
+        r=await request("GET","/v1/account/me")
+        if epoch != _session_epoch:
+            return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL}
+        if r.status_code in {401,403}:
+            return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL,"error":"authentication_required"}
+        r.raise_for_status()
+        d=r.json()
+        current=load_cloud_session()
+        if not current.get("access_token"):
+            return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL}
+        save_cloud_session({**current,"account":d.get("user"),"entitlement":d.get("entitlement")})
+        return {"authenticated":True,"cloud_url":DEFAULT_CLOUD_URL,**d}
+    except (httpx.HTTPError,ValueError):
+        return {"authenticated":False,"temporary_unavailable":True,"cloud_url":DEFAULT_CLOUD_URL,"error":"cloud_unavailable"}
 
 async def logout():
+    global _session_epoch
+    _session_epoch += 1
     sess=load_cloud_session(); ref=sess.get("refresh_token")
+    clear_cloud_session()
     if ref:
         try: await request("POST","/v1/auth/logout",json_data={"refresh_token":ref},auth=False)
-        except: pass
-    clear_cloud_session()
+        except httpx.HTTPError: pass
 
 
 def _version_tuple(value:str):

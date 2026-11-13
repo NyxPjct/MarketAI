@@ -123,7 +123,8 @@ try {
     @{ Version='1.0.5'; Sha='5a731338f2418146d022ae3bf2664f0dcb6d94b9e14b321459f774f837c149ac' },
     @{ Version='1.1.0'; Sha='2de675419ba98011d18a26afaa82287d07d5f21800f52e12e9636249d6931d67' },
     @{ Version='1.2.0'; Sha='2674c7cbc921724182bf6f8eb0cb5ccb49f8ed0ad58f2a44c709f6324e6ecb22' },
-    @{ Version='1.3.0'; Sha='3f5ab1666967998b369f0cdf61bbb1866b48dda7945970042f583a61f6597a52' }
+    @{ Version='1.3.0'; Sha='3f5ab1666967998b369f0cdf61bbb1866b48dda7945970042f583a61f6597a52' },
+    @{ Version='1.4.0'; Sha='25f17acbe21ae025887466d036f1c51ed15de7f0d1ac4f92a192528f2c31be08' }
   )
   $result.upgraded_from=@()
   foreach ($entry in $baselines) {

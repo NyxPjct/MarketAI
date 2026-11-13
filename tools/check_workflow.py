@@ -110,6 +110,11 @@ def check_workflow(desktop_a, desktop_b, db_path, chromium, stop_device):
             expect(b.locator('html')).to_have_attribute('lang',language)
             assert b.locator('#loadForecast').inner_text() != 'View forecast' or language=='en'
         # A failed refresh preserves the local cache and explicitly reports it.
+        b.route('**/api/cloud/status',lambda route:route.fulfill(status=200,json={'authenticated':False,'temporary_unavailable':True}))
+        b.evaluate('loadCloudStatus()')
+        expect(b.locator('#appShell')).to_be_visible()
+        assert b.evaluate("activeAccountId!=='guest'")
+        b.unroute('**/api/cloud/status')
         b.evaluate('syncAccountData(true)')
         b.route('**/api/history',lambda route:route.abort())
         b.locator('[data-view=history]').click()

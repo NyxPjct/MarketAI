@@ -108,6 +108,12 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
+## Session repair (v1.4.1)
+
+Transient Cloud outages preserve the current authenticated workspace and saved session. Concurrent expired requests share one token refresh, account status updates retain the renewed token, and logout prevents late refresh responses from restoring the session. Inactive accounts cannot renew sessions. Validation: 101 Cloud tests, 22 Desktop tests and the browser regression, including temporary Cloud-status failure.
+
+Deployment access checked on 2026-11-13: no Railway token, project or service binding was available in this environment or the GitHub deployment secrets checked by the repair workflow. Hosted health checks were blocked by the development environment network policy. Server deployment and live validation remain pending authorized Railway access; publishing source/installers does not update the hosted service.
+
 ## What is new in v1.4.0
 
 - Full catalog JSON backups include every product, supplier, pricing input, manual stock value, revision and linked alert rule.
