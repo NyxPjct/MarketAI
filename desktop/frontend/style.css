@@ -462,3 +462,5 @@ td:last-child{color:#fff}
 .catalog-dialog label.catalog-check { flex-direction: row; align-items: center; }
 .catalog-dialog .catalog-check input { flex: 0 0 18px; }
 #catalogBackupFeedback, #alertRulesFeedback { overflow-wrap: anywhere; }
+
+#localModeNotice{padding:12px 16px;margin:0 0 18px;font-size:12px;line-height:1.5;color:var(--muted)}

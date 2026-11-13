@@ -108,8 +108,9 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
-## What is new in v1.5.0
+## Local mode in v1.5.0 / v1.5.1
 
+- v1.5.1 checks for future releases using the public GitHub update manifest, independently of Railway and without sending account tokens.
 - Embedded service and SQLite database start automatically with the Windows app.
 - Persistent local profile opens without Cloud login or Railway hosting.
 - Local batch worker and Sentinel start together and shut down with the app.
@@ -224,7 +225,15 @@ Cloud and Desktop must both run v1.2.0. The Cloud starts its batch worker automa
 The new `analysis_history` table is created by the Cloud's existing startup initialization. Existing tables and data are preserved. Deploy the Cloud and Desktop changes together; older Clouds do not expose the new history endpoints. Live third-party integrations require the operator’s credentials and independent validation.
 
 
-## Screenshots — MarketAI v1.4.0
+## Screenshots — local mode v1.5.1
+
+Captured from the embedded local runtime. The example SKU/cost/stock are demonstration inputs; no market prices are supplied.
+
+![Local catalog](docs/screenshots/local-catalog-v1.5.1.png)
+
+![Local integrations and preferences](docs/screenshots/local-settings-v1.5.1.png)
+
+## Screenshots — Cloud interface
 
 The screenshots below are generated automatically from the current Desktop interface in **English** at **1600×900**.
 

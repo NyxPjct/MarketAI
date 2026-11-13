@@ -1,5 +1,5 @@
 APP_NAME = "MarketAI"
-APP_VERSION = "1.5.0"
-APP_VERSION_TUPLE = (1, 5, 0, 0)
+APP_VERSION = "1.5.1"
+APP_VERSION_TUPLE = (1, 5, 1, 0)
 APP_CHANNEL = "Community Open Source"
 APP_TITLE = f"{APP_NAME} v{APP_VERSION}"

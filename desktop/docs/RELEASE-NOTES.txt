@@ -1,5 +1,7 @@
-MARKETAI 1.5.0 — LOCAL MODE, WITHOUT HOSTING
+MARKETAI 1.5.1 — LOCAL MODE, WITHOUT HOSTING
 
+- Local mode checks future updates directly through the public GitHub manifest,
+  without sending account tokens or depending on Railway.
 - Windows starts an embedded service and persistent local profile automatically.
 - No Railway subscription, hosted server or Cloud login is required in local mode.
 - Catalog, history, monitors, alerts, snapshots and batches use local SQLite.

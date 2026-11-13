@@ -74,7 +74,7 @@ async def lifespan(_app):
             with suppress(asyncio.CancelledError):
                 await task
 
-app=FastAPI(title="MarketAI Cloud",version="1.5.0",lifespan=lifespan)
+app=FastAPI(title="MarketAI Cloud",version="1.5.1",lifespan=lifespan)
 
 from app.admin import router as admin_router
 from app.intelligence import router as intelligence_router
@@ -103,7 +103,7 @@ def admin_panel():
 @app.get("/health")
 def health():
     worker = getattr(app.state, "batch_worker", None)
-    return {"ok":True,"service":"MarketAI Cloud","version":"1.5.0","edition":"Community Open Source","intelligence_core":True,"free":True,"open_source":True,"batch_processing": bool(worker and not worker.done())}
+    return {"ok":True,"service":"MarketAI Cloud","version":"1.5.1","edition":"Community Open Source","intelligence_core":True,"free":True,"open_source":True,"batch_processing": bool(worker and not worker.done())}
 
 @app.get("/v1/plans")
 def plans(country_code:str="BR",currency:str="",db:Session=Depends(get_db)):
@@ -279,7 +279,7 @@ async def analysis(request:Request,user:User=Depends(current_user),db:Session=De
 @app.get("/v1/updates/latest")
 def latest_update(platform:str="windows",channel:str="stable"):
     path=Path(os.getenv("UPDATE_MANIFEST_PATH",str(Path(__file__).resolve().parent.parent/"releases/windows-stable.json")))
-    if not path.exists(): return {"available":False,"version":"1.5.0"}
+    if not path.exists(): return {"available":False,"version":"1.5.1"}
     import json; return json.loads(path.read_text(encoding="utf-8"))
 
 @app.post("/v1/admin/licenses")

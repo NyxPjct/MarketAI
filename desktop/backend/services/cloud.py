@@ -6,6 +6,17 @@ from backend.services.settings import data_dir, load_cloud_session, save_cloud_s
 
 from backend.cloud_build import CLOUD_URL as BUILD_CLOUD_URL
 DEFAULT_CLOUD_URL=os.getenv("MARKETAI_CLOUD_URL",BUILD_CLOUD_URL).rstrip("/")
+PUBLIC_UPDATE_MANIFEST='https://raw.githubusercontent.com/NyxPjct/MarketAI/main/cloud/releases/windows-stable.json'
+
+async def latest_update():
+    if os.getenv('MARKETAI_LOCAL_MODE')=='1':
+        # Public metadata uses the normal external network configuration, without
+        # account tokens. Local mode must not depend on a hosted API for updates.
+        async with httpx.AsyncClient(timeout=10,follow_redirects=True) as client:
+            response=await client.get(PUBLIC_UPDATE_MANIFEST)
+    else:
+        response=await request('GET','/v1/updates/latest',auth=False)
+    return response
 
 def device_uuid():
     p=data_dir()/"device.id"

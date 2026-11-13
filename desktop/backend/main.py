@@ -688,7 +688,7 @@ async def cloud_remove_device(device_id: str):
 @app.get("/api/update/check")
 async def update_check():
     try:
-        r=await cloud_service.request("GET","/v1/updates/latest",auth=False); return JSONResponse(status_code=r.status_code,content=r.json())
+        r=await cloud_service.latest_update(); return JSONResponse(status_code=r.status_code,content=r.json())
     except Exception as e:
         return {"available":False,"version":APP_VERSION,"error":str(e)}
 

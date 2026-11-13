@@ -76,3 +76,15 @@ def test_invalid_refresh_does_clear_session(monkeypatch):
     transport(monkeypatch,lambda request:httpx.Response(401))
     assert asyncio.run(cloud._refresh()) is None
     assert state=={}
+
+
+def test_local_updates_use_public_metadata_without_sending_account_tokens(monkeypatch):
+    setup_session(monkeypatch)
+    monkeypatch.setenv('MARKETAI_LOCAL_MODE','1')
+    def handle(request):
+        assert str(request.url)==cloud.PUBLIC_UPDATE_MANIFEST
+        assert 'authorization' not in request.headers
+        assert 'x-device-id' not in request.headers
+        return httpx.Response(200,json={'available':True,'version':'1.6.0'})
+    transport(monkeypatch,handle)
+    assert asyncio.run(cloud.latest_update()).json()['version']=='1.6.0'
