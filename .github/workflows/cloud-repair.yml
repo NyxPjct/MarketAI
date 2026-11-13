@@ -1,0 +1,46 @@
+name: Check Railway deployment access
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.release/cloud-repair.json']
+
+permissions:
+  contents: write
+
+jobs:
+  access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Inspect existing deployment bindings without exposing values
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID || secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID || secrets.RAILWAY_SERVICE_ID }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          result = {name.lower() + '_available': bool(os.getenv(name)) for name in
+                    ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_ID', 'RAILWAY_SERVICE_ID']}
+          result['source_commit'] = os.environ['GITHUB_SHA']
+          Path('/tmp/railway-access.json').write_text(json.dumps(result, indent=2))
+          PY
+      - name: Save safe access report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import base64, json, os, subprocess
+          from pathlib import Path
+          endpoint = 'repos/' + os.environ['GITHUB_REPOSITORY'] + '/contents/.release/validation/railway-access.json'
+          existing = subprocess.run(['gh','api',endpoint],capture_output=True,text=True)
+          body = {'message':'ci: report Railway deployment credential availability',
+                  'branch':'main','content':base64.b64encode(Path('/tmp/railway-access.json').read_bytes()).decode()}
+          if existing.returncode == 0: body['sha'] = json.loads(existing.stdout)['sha']
+          subprocess.run(['gh','api','--method','PUT',endpoint,'--input','-'],input=json.dumps(body),text=True,check=True,stdout=subprocess.DEVNULL)
+          PY
