@@ -1,5 +1,8 @@
 # MarketAI Community — publicação e self-hosting
 
+> Windows v1.5.0 runs locally by default and does not require Railway or another hosting plan. This guide applies only to optional Cloud hosting. For the local app, install and open it; configure optional providers in Settings. Local data stays on this computer, and monitoring runs while the app is open.
+
+
 ## 1. Cloud
 
 A pasta cloud/ contém Dockerfile e railway.toml.

@@ -23,7 +23,7 @@ async def _refresh(base=DEFAULT_CLOUD_URL, rejected_access=None):
         if rejected_access is not None and sess.get("access_token") != rejected_access:
             return sess.get("access_token")
         if not ref: return None
-        async with httpx.AsyncClient(timeout=20) as c:
+        async with httpx.AsyncClient(timeout=20,trust_env=os.getenv("MARKETAI_LOCAL_MODE")!="1") as c:
             r=await c.post(base+"/v1/auth/refresh",json={"refresh_token":ref})
         if epoch != _session_epoch or load_cloud_session().get("refresh_token") != ref:
             return None
@@ -39,19 +39,19 @@ async def request(method,path,*,json_data=None,data=None,files=None,auth=True,ba
     if auth and token:
         headers["Authorization"]="Bearer "+token
         headers["X-Device-Id"]=device_uuid()
-    async with httpx.AsyncClient(timeout=45) as c:r=await c.request(method,base+path,headers=headers,json=json_data,data=data,files=files)
+    async with httpx.AsyncClient(timeout=45,trust_env=os.getenv("MARKETAI_LOCAL_MODE")!="1") as c:r=await c.request(method,base+path,headers=headers,json=json_data,data=data,files=files)
     if auth and r.status_code==401:
         token=await _refresh(base, rejected_access=token)
         if token:
             headers["Authorization"]="Bearer "+token
-            async with httpx.AsyncClient(timeout=45) as c:r=await c.request(method,base+path,headers=headers,json=json_data,data=data,files=files)
+            async with httpx.AsyncClient(timeout=45,trust_env=os.getenv("MARKETAI_LOCAL_MODE")!="1") as c:r=await c.request(method,base+path,headers=headers,json=json_data,data=data,files=files)
     return r
 
 async def login(email,password):
     global _session_epoch
     _session_epoch += 1
     epoch = _session_epoch
-    async with httpx.AsyncClient(timeout=20) as c:r=await c.post(DEFAULT_CLOUD_URL+"/v1/auth/login",json={"email":email,"password":password,"device_uuid":device_uuid()})
+    async with httpx.AsyncClient(timeout=20,trust_env=os.getenv("MARKETAI_LOCAL_MODE")!="1") as c:r=await c.post(DEFAULT_CLOUD_URL+"/v1/auth/login",json={"email":email,"password":password,"device_uuid":device_uuid()})
     if r.status_code!=200:return r
     if epoch != _session_epoch: raise ValueError("authentication_changed")
     d=r.json(); save_cloud_session({"refresh_token":d["refresh_token"],"access_token":d["access_token"],"account":d.get("user"),"entitlement":d.get("entitlement")});
@@ -62,7 +62,7 @@ async def register(email,password,full_name):
     global _session_epoch
     _session_epoch += 1
     epoch = _session_epoch
-    async with httpx.AsyncClient(timeout=20) as c:r=await c.post(DEFAULT_CLOUD_URL+"/v1/auth/register",json={"email":email,"password":password,"full_name":full_name,"accept_terms":True,"device_uuid":device_uuid()})
+    async with httpx.AsyncClient(timeout=20,trust_env=os.getenv("MARKETAI_LOCAL_MODE")!="1") as c:r=await c.post(DEFAULT_CLOUD_URL+"/v1/auth/register",json={"email":email,"password":password,"full_name":full_name,"accept_terms":True,"device_uuid":device_uuid()})
     if r.status_code!=200:return r
     if epoch != _session_epoch: raise ValueError("authentication_changed")
     d=r.json(); save_cloud_session({"refresh_token":d["refresh_token"],"access_token":d["access_token"],"account":d.get("user"),"entitlement":d.get("entitlement")}); await request("POST","/v1/devices/activate",json_data={"device_uuid":device_uuid(),"name":device_name()}); return r
@@ -84,7 +84,7 @@ async def account_status():
         if not current.get("access_token"):
             return {"authenticated":False,"cloud_url":DEFAULT_CLOUD_URL}
         save_cloud_session({**current,"account":d.get("user"),"entitlement":d.get("entitlement")})
-        return {"authenticated":True,"cloud_url":DEFAULT_CLOUD_URL,**d}
+        return {"authenticated":True,"cloud_url":DEFAULT_CLOUD_URL,"mode":"local" if os.getenv('MARKETAI_LOCAL_MODE')=='1' else "cloud",**d}
     except (httpx.HTTPError,ValueError):
         return {"authenticated":False,"temporary_unavailable":True,"cloud_url":DEFAULT_CLOUD_URL,"error":"cloud_unavailable"}
 

@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = Join-Path $env:RUNNER_TEMP ('MarketAI installer checks ' + [guid]::NewGuid())
 New-Item -ItemType Directory -Path $root -Force | Out-Null
-$result = [ordered]@{ version=$ExpectedVersion; status='running'; clean_install=$false; upgrade=$false; native_window=$false; data_preserved=$false; message='' }
+$result = [ordered]@{ version=$ExpectedVersion; status='running'; clean_install=$false; upgrade=$false; native_window=$false; data_preserved=$false; local_runtime=$false; local_data_preserved=$false; message='' }
 $processIds = @()
 
 function Install-Package([string]$Path, [string]$Destination) {
@@ -42,7 +42,7 @@ function Stop-NativeProcesses {
   $script:processIds=@()
 }
 
-function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectPreferences) {
+function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectPreferences, [bool]$ExpectLocalData=$false) {
   $env:MARKETAI_DATA_DIR = $DataDirectory
   # Tests must never contact the hosted Cloud using synthetic local session data.
   $env:MARKETAI_CLOUD_URL = 'http://127.0.0.1:9'
@@ -78,6 +78,20 @@ function Check-Native([string]$Directory, [string]$DataDirectory, [bool]$ExpectP
       throw "Installed backend did not become ready. $detail"
     }
     if ($info.version -ne $ExpectedVersion) { throw "Wrong installed version: $($info.version)" }
+    if ($info.mode -ne 'local') { throw 'Installer did not start in local mode' }
+    $account=Invoke-RestMethod ($url + '/api/cloud/status') -TimeoutSec 10
+    if (-not $account.authenticated -or $account.mode -ne 'local') { throw 'Automatic local profile did not authenticate' }
+    $catalog=Invoke-RestMethod ($url + '/api/catalog') -TimeoutSec 10
+    if ($ExpectLocalData) {
+      if (@($catalog.items | Where-Object { $_.fields.sku -eq 'NATIVE-LOCAL' -and $_.fields.purchase_cost -eq 25 }).Count -ne 1) { throw 'Local SQLite data did not survive restart' }
+      $result.local_data_preserved=$true
+    } else {
+      $body=@{products=@(@{fields=@{sku='NATIVE-LOCAL';product_name='Native local test';purchase_cost=25;destination_country='CA'};stock=3})} | ConvertTo-Json -Depth 5
+      $saved=Invoke-RestMethod ($url + '/api/catalog/import') -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 10
+      if ($saved.items[0].fields.sku -ne 'NATIVE-LOCAL') { throw 'Packaged local service could not save a product' }
+    }
+    if (-not (Test-Path (Join-Path $DataDirectory 'local-service/marketai.db'))) { throw 'Local database was not created in the data directory' }
+    $result.local_runtime=$true
     if (-not $windowFound) {
       $startup = Join-Path $DataDirectory 'logs/startup-error.log'
       $detail = if (Test-Path $startup) { Get-Content $startup -Raw } else { 'No startup error log' }
@@ -115,6 +129,7 @@ try {
   $clean = Join-Path $root 'clean install'
   Install-Package $Installer $clean
   Check-Native $clean (Join-Path $root 'clean-data') $false
+  Check-Native $clean (Join-Path $root 'clean-data') $false $true
   Uninstall-Package $clean
   $result.clean_install=$true
 
@@ -124,7 +139,8 @@ try {
     @{ Version='1.1.0'; Sha='2de675419ba98011d18a26afaa82287d07d5f21800f52e12e9636249d6931d67' },
     @{ Version='1.2.0'; Sha='2674c7cbc921724182bf6f8eb0cb5ccb49f8ed0ad58f2a44c709f6324e6ecb22' },
     @{ Version='1.3.0'; Sha='3f5ab1666967998b369f0cdf61bbb1866b48dda7945970042f583a61f6597a52' },
-    @{ Version='1.4.0'; Sha='25f17acbe21ae025887466d036f1c51ed15de7f0d1ac4f92a192528f2c31be08' }
+    @{ Version='1.4.0'; Sha='25f17acbe21ae025887466d036f1c51ed15de7f0d1ac4f92a192528f2c31be08' },
+    @{ Version='1.4.1'; Sha='d5ed1a6663903ea5f892bc9d34f2379a878fad6704aa502b069d77270afde06a' }
   )
   $result.upgraded_from=@()
   foreach ($entry in $baselines) {

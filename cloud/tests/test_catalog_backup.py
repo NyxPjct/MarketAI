@@ -123,6 +123,32 @@ def test_preview_and_restore_reject_other_accounts_including_edited_preview_refs
     assert restore(client, owner, content, plan).status_code == 409
 
 
+def test_local_archive_migration_requires_local_mode_and_the_local_profile(client, monkeypatch):
+    from app.models import User
+    owner, _ = account(client)
+    local, local_id = account(client)
+    other, _ = account(client)
+    add(client, owner)
+    content = export(client, owner)
+    with SessionLocal() as db:
+        db.get(User, local_id).email = 'local@marketai.local'
+        db.commit()
+    # The local address alone must never relax Cloud account isolation.
+    assert client.post('/v1/catalog/backup/preview', headers=local,
+        files={'file': ('backup.json', content)}).status_code == 403
+    monkeypatch.setenv('MARKETAI_LOCAL_MODE', '1')
+    assert client.post('/v1/catalog/backup/preview', headers=other,
+        files={'file': ('backup.json', content)}).status_code == 403
+    review = preview(client, local, content)
+    assert restore(client, local, content, plan_for(review)).status_code == 200
+    saved = client.get('/v1/catalog', headers=local).json()['items'][0]
+    assert saved['fields']['sku'] == '001-PHONE'
+    assert saved['latest'] is None and not saved['monitoring']
+    with SessionLocal() as db:
+        db.get(User, local_id).email = f'{local_id}@example.com'
+        db.commit()
+
+
 def test_restore_detects_edits_and_alert_rule_changes_after_preview(client):
     headers, _ = account(client)
     product = add(client, headers)

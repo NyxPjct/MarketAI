@@ -282,6 +282,7 @@ async def app_info():
         "name": APP_NAME,
         "version": APP_VERSION,
         "channel": APP_CHANNEL,
+        "mode": "local" if os.getenv("MARKETAI_LOCAL_MODE")=="1" else "cloud",
         "platform": platform_info(),
         "preferences": prefs,
         "privacy": {

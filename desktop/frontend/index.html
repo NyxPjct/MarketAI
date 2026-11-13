@@ -74,11 +74,12 @@
 
       <div class="sidebar-foot">
         <div class="status-dot-wrap"><i class="status-dot"></i><span id="apiStatus">verificando API…</span></div>
-        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.4.1</small>
+        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.5.0</small>
       </div>
     </aside>
 
     <main>
+      <p id="localModeNotice" class="card" hidden>Local mode: data stays on this computer. Monitoring runs while MarketAI is open. Internet is needed for live prices.</p>
       <header class="topbar">
         <div>
           <p class="eyebrow">INTELIGÊNCIA COMERCIAL</p>
@@ -277,7 +278,7 @@
           <p id="catalogFeedback" role="status" aria-live="polite"></p>
           <div class="table-wrap"><table class="catalog-table"><thead><tr><th>Select</th><th>Product / SKU</th><th>Purchase cost / stock</th><th>Data quality</th><th>Recommended price</th><th>Net margin</th><th>Minimum price for target margin</th><th>Collected at</th><th>Analysis status</th><th>Monitoring</th><th>Actions</th></tr></thead><tbody id="catalogRows"></tbody></table></div>
           <div class="action-row catalog-pagination"><button class="ghost" id="catalogPrevious" disabled>Previous page</button><span id="catalogPage" role="status"></span><button class="ghost" id="catalogNext" disabled>Next page</button></div>
-          <p class="micro">Monitoring runs while the Cloud Sentinel worker is active. Enabling monitoring does not place orders or change marketplace prices.</p>
+          <p class="micro">In local mode, monitoring runs while MarketAI is open. Cloud mode requires the Sentinel worker. Monitoring does not place orders or change prices.</p>
           <details class="catalog-backup" id="catalogBackupPanel">
             <summary>Catalog backup</summary>
             <p class="muted">Export all catalog products, costs, stock, revision history and alert rules. Market analyses and account credentials are not included.</p>
@@ -308,7 +309,7 @@
           <div class="table-wrap" id="batchPreviewPanel" hidden><table><thead><tr><th>Select</th><th>Line</th><th>Product</th><th>Variant</th><th>Purchase cost</th><th>Market</th><th>Fees / target margin</th><th>Validation</th></tr></thead><tbody id="batchPreviewRows"></tbody></table></div>
         </div>
         <div class="card batch-card">
-          <div class="card-head"><div><h2>Account batches</h2><p class="muted">Processing continues on the Cloud with the Desktop closed. One active batch per account. Cancelling stops waiting products; the current product can finish.</p></div><button class="ghost" id="batchRefresh">Refresh</button></div>
+          <div class="card-head"><div><h2>Account batches</h2><p class="muted">Local batches run while MarketAI is open and resume when reopened. Cloud batches continue while the server runs. Cancelling stops waiting products; the current product can finish.</p></div><button class="ghost" id="batchRefresh">Refresh</button></div>
           <label>Batch<select id="batchSelect"><option value="">Select a batch</option></select></label>
           <p id="batchProgress" role="status" aria-live="polite"></p>
           <progress id="batchProgressBar" max="1" value="0" aria-label="Batch progress"></progress>
@@ -385,7 +386,18 @@
           </label>
         </div>
         <div class="settings-grid">
-          <div class="card settings-card">
+          <div class="card settings-card" id="localIntegrations" hidden>
+            <h2>Local integrations</h2>
+            <p class="muted">Optional provider keys are stored on this computer, protected by Windows DPAPI. Missing sources leave market prices unavailable.</p>
+            <label>Mercado Livre<input id="settingsML" type="password" autocomplete="off"><span id="cred-ml"></span></label>
+            <label>eBay Client ID<input id="settingsEbayId" type="password" autocomplete="off"><span id="cred-ebay-id"></span></label>
+            <label>eBay Client Secret<input id="settingsEbaySecret" type="password" autocomplete="off"><span id="cred-ebay-secret"></span></label>
+            <label>SerpAPI<input id="settingsSerp" type="password" autocomplete="off"><span id="cred-serp"></span></label>
+            <label>OpenAI<input id="settingsOpenAI" type="password" autocomplete="off"><span id="cred-openai"></span></label>
+            <button id="saveCredentials" class="ghost">Save integration keys</button>
+            <button id="clearCredentials" class="ghost">Remove integration keys</button>
+          </div>
+          <div class="card settings-card" id="cloudServices">
             <div class="card-head"><div><p class="eyebrow">CLOUD</p><h2>Serviços centralizados</h2><p class="muted">Na edição Community, as integrações centralizadas podem ficar no MarketAI Cloud. Você não precisa expor chaves sensíveis no aplicativo.</p></div><span class="secure-chip">SERVER</span></div>
             <p class="muted">Sua conta e seus dispositivos podem ser gerenciados em <strong>Minha conta</strong>.</p>
           </div>
@@ -407,8 +419,8 @@
 
       <section id="view-about" class="view">
         <div class="about-grid">
-          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.4.1</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
-          <div class="card"><h3>Compromissos do MarketAI</h3><ul class="clean-list"><li>Não fabrica preços de mercado quando as fontes não respondem.</li><li>Bloqueia recomendação com amostra insuficiente ou variante ambígua.</li><li>Mostra os anúncios usados e descartados para auditoria.</li><li>Não coloca os recursos principais atrás de paywall.</li><li>Tokens de sessão são protegidos no Windows e as chaves dos marketplaces ficam apenas no MarketAI Cloud.</li></ul></div>
+          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.5.0</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
+          <div class="card"><h3>Compromissos do MarketAI</h3><ul class="clean-list"><li>Não fabrica preços de mercado quando as fontes não respondem.</li><li>Bloqueia recomendação com amostra insuficiente ou variante ambígua.</li><li>Mostra os anúncios usados e descartados para auditoria.</li><li>Não coloca os recursos principais atrás de paywall.</li><li>Session tokens and local integration keys are protected with Windows DPAPI. In Cloud mode, marketplace keys are managed on the server.</li></ul></div>
           <div class="card"><h3>Limites importantes</h3><p class="muted">Preços mudam, APIs podem limitar resultados e compatibilidade textual não comprova autenticidade física de um item. NCM, impostos, desembaraço e decisões contábeis devem ser validados com profissionais responsáveis.</p></div>
           <div class="card"><h3>Documentos</h3><p class="muted">Os Termos de Uso, Política de Privacidade e Avisos de Terceiros acompanham o instalador e a pasta do aplicativo.</p><div class="legal-links"><span>Termos de Uso</span><span>Privacidade</span><span>Terceiros</span></div></div>
         </div>
@@ -437,7 +449,7 @@
   <dialog id="alertRulesDialog" class="catalog-dialog">
     <form id="alertRulesForm">
       <div class="card-head"><div><h2>Alert rules</h2><p id="alertRulesProduct" class="muted"></p></div><button class="ghost" id="alertRulesClose" type="button">Close</button></div>
-      <p class="micro">Rules apply to manual checks and the Cloud Sentinel worker. Recurring monitoring requires Sentinel to be running. Alerts appear in Intelligence.</p>
+      <p class="micro">Rules apply to manual checks and Sentinel. Local monitoring runs while MarketAI is open; Cloud monitoring requires the server worker. Alerts appear in Intelligence.</p>
       <div class="catalog-fields">
         <label class="catalog-check"><input id="alertPriceEnabled" type="checkbox">Alert on price changes</label>
         <label>Price change threshold (%)<input id="alertPricePercent" type="number" min="0.01" max="1000" step="any" required></label>

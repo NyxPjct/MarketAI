@@ -1,5 +1,22 @@
 MARKETAI COMMUNITY — NOTA DE PRIVACIDADE
-Última atualização: 26/10/2026
+Última atualização: 13/11/2026
+
+MODO LOCAL PADRÃO (v1.5.0)
+No instalador Windows, o serviço, o perfil e o banco SQLite rodam no computador.
+Não é necessário login remoto ou hospedagem. As referências a Cloud abaixo só
+se aplicam ao modo Cloud opcional (MARKETAI_MODE=cloud). No modo local, análises,
+catálogo, lotes, histórico, revisões, monitores, snapshots e alertas são guardados
+em %LOCALAPPDATA%\MarketAI (ou MARKETAI_DATA_DIR). Consultas às fontes externas
+continuam enviando os dados necessários diretamente aos provedores configurados;
+preços atuais exigem internet. Monitoramento e processamento param ao fechar o app.
+Chaves locais e sessões são protegidas com DPAPI no Windows. A proteção está
+vinculada ao usuário/computador; copiar arquivos não migra essas credenciais.
+A importação revisada de um backup JSON de catálogo permite recuperar os campos
+do catálogo Cloud no perfil local, sem importar análises como evidência de mercado.
+Não há sincronização automática entre computadores no modo local nem recuperação
+automática dos dados que estejam somente em um servidor indisponível.
+Para proteger todos os registros locais, feche o MarketAI e copie toda a pasta
+de dados. O backup JSON do catálogo tem o escopo limitado descrito abaixo.
 
 1. CONTAS
 O MarketAI pode tratar nome, e-mail, identificador aleatório da instalação e

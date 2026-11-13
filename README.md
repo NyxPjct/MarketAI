@@ -7,7 +7,7 @@
 
 **MarketAI Community** is a free and open-source market intelligence platform designed for sellers, buyers, small businesses, analysts, students and teams that need better product decisions without a paywall.
 
-Each person uses an individual account, with separate analyses, monitored products, history, snapshots and alerts.
+The Windows installer runs locally by default, with a persistent profile, embedded service and SQLite database. No Railway subscription or hosted server is required. A separate hosted Cloud mode remains available for accounts shared across devices.
 
 **No paid plans. No trial limits. No monthly analysis quota. No Premium tier.**
 
@@ -57,21 +57,21 @@ The language switch is available on the login screen and inside **Settings**.
 
 Language changes also update interface labels, forms, account screens, Intelligence Core messages, dynamic UI states, date formatting and currency formatting.
 
-## Login first
+## Start locally — no hosting required
 
-MarketAI starts on the **Sign in / Create account** screen.
+Install and open MarketAI. A local profile opens automatically without remote sign-in. Catalog, costs, revisions, analyses, batches, monitors, snapshots and alerts are saved on this computer.
 
-Accounts are used to keep each user's data separated, including:
+- **Works without a hosted service:** saved catalog/history, preferences, backups and cost/margin simulation.
+- **Needs internet and available sources:** current market prices, currency collections and optional AI integrations. External providers may require their own credentials or charge for usage. Missing evidence leaves recommendations unavailable.
+- **Keep the app open:** local Sentinel checks and batch processing run with MarketAI. Interrupted batches resume on reopening; monitoring pauses while the app is closed.
+- **Optional keys:** open **Settings → Local integrations**. Keys and session tokens use Windows DPAPI; they are tied to your Windows user/computer. Never publish them in GitHub.
+- **No automatic device sync:** each local installation has its own data. Use a hosted instance only when you need shared account access across devices.
 
-- analyses;
-- history;
-- monitored products;
-- snapshots;
-- alerts;
-- devices;
-- Intelligence Core context.
+Data is stored in `%LOCALAPPDATA%\MarketAI` (or `MARKETAI_DATA_DIR`), with the database at `local-service/marketai.db`. To back up **all local records**, close MarketAI and copy the entire data folder to a safe location. DPAPI secrets are not portable to a different Windows user/computer. The catalog JSON export contains inputs and revisions, not the entire database.
 
-After authentication, the user enters the main workspace.
+An offline Railway instance cannot supply its old records. If you already have a **catalog JSON backup**, use **Product catalog → Catalog backup → Review catalog backup**, select products and restore them into the local profile. Existing SKUs require explicit replacement selection; imported monitors remain paused. Old remote sessions and preferences are preserved separately, and no data is fetched automatically from Railway.
+
+For optional hosted use, launch with `MARKETAI_MODE=cloud` and `MARKETAI_CLOUD_URL=https://your-server.example`. This opens the existing Sign in/Create account flow and requires a running compatible API and Sentinel service. See [PRODUCTION-SETUP.md](PRODUCTION-SETUP.md).
 
 ## 100% free
 
@@ -88,7 +88,7 @@ MarketAI Community unlocks:
 - Autopilot;
 - Copilot;
 - alerts;
-- account history synced across devices, with a local cache;
+- persistent local history; hosted mode supports account history across devices;
 - multiple devices per account.
 
 There is no active checkout in the Community edition.
@@ -107,6 +107,18 @@ Important files:
 - [NOTICE](NOTICE)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
+
+## What is new in v1.5.0
+
+- Embedded service and SQLite database start automatically with the Windows app.
+- Persistent local profile opens without Cloud login or Railway hosting.
+- Local batch worker and Sentinel start together and shut down with the app.
+- Provider keys can be configured locally in Settings with Windows DPAPI protection.
+- Reviewed Cloud catalog JSON backups can be imported into the local profile; hosted account isolation is preserved.
+- Existing remote sessions and preferences remain separate from the local database.
+- New runtime regression covers local startup, catalog analysis, history, backups, restart persistence and all five interface languages.
+
+Windows installer validation and the published download are updated below after the release pipeline completes.
 
 ## Session repair (v1.4.1)
 
@@ -129,7 +141,7 @@ The v1.4.0 release passed **100 Cloud tests, 17 Desktop tests**, the full browse
 
 1. Open **Product catalog → Catalog backup → Export full catalog backup**. The file includes all catalog inputs, revisions and linked rules, regardless of the current search, filter or page.
 2. Keep the file securely: it contains your commercial inputs. It excludes credentials, market analyses, snapshots, emitted alerts and batch jobs. The separate Settings backup still handles History/watchlist summaries.
-3. Choose a file in **Catalog backup** and select **Review catalog backup**. Only a backup from the same account is accepted; this is not an account-transfer feature.
+3. Choose a file in **Catalog backup** and select **Review catalog backup**. Cloud mode accepts only backups from the same account. Local mode also accepts a user-supplied Cloud catalog backup for migration into the local profile.
 4. Choose products. Existing SKUs remain unchanged unless replacement is enabled and each SKU is selected. Replacement preserves existing local revisions and appends the archived input history.
 5. Select **Restore selected products**. Restored monitors are paused; activate them using **Monitor selection**. Run an analysis to collect market evidence for a recovered product.
 
@@ -139,7 +151,7 @@ Archives support **10 MB, 5,000 products and 50,000 revisions**. These are proce
 
 Open **Alert rules** from a monitored product or its catalog row. Select price changes in either/both directions, a percentage threshold, minimum margin, and whether to alert after a chosen number of hours without valid collections. Set the minimum hours between alerts of the same type. Changes are revision checked and apply to future checks.
 
-Defaults retain the previous **8% price movement / 15% minimum margin** rules (or a watch's saved legacy minimum margin), add a **24-hour cooldown**, and leave the new stale-data alert disabled until configured. Cooldowns also bound collection-error notices. Alerts appear in **Intelligence**; email/push delivery is not included. Recurring checks require the separate Sentinel worker; stale-data alerts are evaluated on its cycles, not by a minute-exact scheduler. If no valid collection exists yet, elapsed time starts when the watch was created. Paused monitors do not issue new alerts.
+Defaults retain the previous **8% price movement / 15% minimum margin** rules (or a watch's saved legacy minimum margin), add a **24-hour cooldown**, and leave the new stale-data alert disabled until configured. Cooldowns also bound collection-error notices. Alerts appear in **Intelligence**; email/push delivery is not included. In local mode, recurring checks run with MarketAI open; in Cloud mode, they require the separate Sentinel worker; stale-data alerts are evaluated on its cycles, not by a minute-exact scheduler. If no valid collection exists yet, elapsed time starts when the watch was created. Paused monitors do not issue new alerts.
 
 Deploy the API and Sentinel worker from **v1.4.0 together**, then update Desktop. Startup creates additive `watch_alert_rules`, `watch_alert_deliveries`, `alert_details`, `catalog_restores` and `catalog_revision_sources` tables without altering previous tables. Existing monitors use defaults until configured. Back up PostgreSQL before deployment.
 
@@ -335,7 +347,7 @@ MarketAI supports:
 - landed unit cost;
 - pricing strategies;
 - margin simulation;
-- account history synced across devices, with a local cache;
+- persistent local history; hosted mode supports account history across devices;
 - CSV and PDF-oriented exports.
 
 ## External data sources
@@ -351,33 +363,21 @@ The project contains support for integrations such as:
 
 Open-source software cannot make a paid third-party API free.
 
-Sensitive credentials should remain on the Cloud or in a self-hosted environment and must never be committed to the repository.
+Local integration credentials are protected with Windows DPAPI. In Cloud mode, keep provider credentials on the server. Never commit credentials to the repository.
 
 ## Architecture
 
 ```text
-┌──────────────────────────────┐
-│     MarketAI Desktop         │
-│ Windows · Account login      │
-│ EN / PT-BR / DE / ES / FR    │
-└──────────────┬───────────────┘
-               │ HTTPS / JWT
-               ▼
-┌──────────────────────────────┐
-│       MarketAI Cloud         │
-│ FastAPI + authentication     │
-├──────────────────────────────┤
-│ Market Engine                │
-│ Intelligence Core            │
-│ Sentinel Worker              │
-│ Accounts / devices           │
-│ Admin / audit                │
-└──────────────┬───────────────┘
-               │
-        ┌──────┴──────┐
-        ▼             ▼
-   PostgreSQL     External APIs
+Windows MarketAI (default local mode)
+  Desktop UI → loopback service with JWT authentication
+               ├─ SQLite in the user data directory
+               ├─ batch worker + Sentinel while the app is open
+               └─ external providers for live data (internet required)
+
+Optional Cloud mode
+  Desktop UI → HTTPS API → PostgreSQL + separate Sentinel worker
 ```
+
 
 ## Security and account isolation
 
@@ -389,11 +389,11 @@ Sensitive credentials should remain on the Cloud or in a self-hosted environment
 - Intelligence Core data scoped by authenticated user;
 - synchronized history and Sentinel watchlists scoped by account;
 - secrets excluded from the repository;
-- HTTPS required for official release builds.
+- embedded service bound to loopback; HTTPS used for hosted mode.
 
 ## Community Cloud
 
-Current hosted Cloud instance:
+Previously configured hosted endpoint (availability is not required for local mode):
 
 ```text
 https://marketai-cloud-production.up.railway.app
@@ -405,13 +405,13 @@ Health endpoint:
 https://marketai-cloud-production.up.railway.app/health
 ```
 
-The hosted environment uses:
+An optional hosted environment uses:
 
 - MarketAI Cloud;
 - PostgreSQL;
 - MarketAI Sentinel Worker.
 
-The project can also be self-hosted.
+The project can also be self-hosted. An expired Railway plan cannot be reactivated by changing application code; default local mode removes that hosting dependency.
 
 ## Local development
 
@@ -438,6 +438,11 @@ python -m app.sentinel_worker
 
 ```bat
 cd desktop
+rem Default: local service is started automatically
+run_desktop_dev.bat
+
+rem Optional: connect to the separately running development API
+set MARKETAI_MODE=cloud
 set MARKETAI_CLOUD_URL=http://127.0.0.1:9000
 run_desktop_dev.bat
 ```
@@ -447,8 +452,8 @@ run_desktop_dev.bat
 Installer filenames follow the application version automatically.
 
 ```text
-v1.4.0 -> MarketAI-Setup-v1.4.0.exe
-v1.4.0 -> MarketAI-Setup-v1.4.0.exe
+v1.4.1 -> MarketAI-Setup-v1.4.1.exe
+v1.5.0 -> MarketAI-Setup-v1.5.0.exe
 v2.0.0 -> MarketAI-Setup-v2.0.0.exe
 ```
 
@@ -467,7 +472,8 @@ Pushes and Pull Requests run:
 - Desktop tests;
 - Python compilation checks;
 - JavaScript syntax validation;
-- two-device browser regression for guided analysis, durable batches, the saved SKU catalog, comparisons and bulk monitoring.
+- two-device browser regression for guided analysis, durable batches, the saved SKU catalog, comparisons and bulk monitoring;
+- embedded local service/browser regression with restart persistence and preserved remote session files.
 
 Updating `.release/windows.json` can trigger the Windows release pipeline and publish:
 

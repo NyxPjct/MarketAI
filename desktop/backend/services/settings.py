@@ -258,7 +258,7 @@ def platform_info() -> Dict[str, str]:
 
 # --- MarketAI Cloud session (refresh/access tokens protected with the same Windows DPAPI) ---
 def cloud_session_path() -> Path:
-    return data_dir() / "cloud-session.bin"
+    return data_dir() / ("local-session.bin" if os.getenv('MARKETAI_LOCAL_MODE')=='1' else "cloud-session.bin")
 
 def load_cloud_session() -> Dict[str, Any]:
     p=cloud_session_path()

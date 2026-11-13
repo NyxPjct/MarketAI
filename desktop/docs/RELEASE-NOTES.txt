@@ -1,10 +1,16 @@
-MARKETAI 1.4.1 — SESSION AND CONNECTION REPAIR
+MARKETAI 1.5.0 — LOCAL MODE, WITHOUT HOSTING
 
-- Keep the current workspace and stored login during temporary Cloud outages.
-- Serialize concurrent token refreshes and reuse the renewed access token.
-- Preserve renewed tokens when updating cached account information.
-- Prevent pending refresh or login responses from restoring a logged-out session.
-- Reject token renewal for inactive accounts on the Cloud.
-- 101 Cloud tests, 22 Desktop tests and the full browser workflow passed locally.
-- Hosted deployment requires authorized Railway access; installer publication does
-  not deploy the Cloud server. No deployment credential was available on 2026-11-13.
+- Windows starts an embedded service and persistent local profile automatically.
+- No Railway subscription, hosted server or Cloud login is required in local mode.
+- Catalog, history, monitors, alerts, snapshots and batches use local SQLite.
+- Sentinel and batch processing run while MarketAI is open. Interrupted batches
+  resume when the app reopens. Recurring monitoring pauses when it is closed.
+- Optional integration keys can be saved in Settings, protected with Windows DPAPI.
+- Live market prices still require internet and available external providers;
+  their credentials, terms, quotas or charges remain independent of MarketAI.
+- Cloud catalog JSON backups can be reviewed and imported into the local profile.
+  This does not retrieve data from an offline Railway instance or import market evidence.
+- Previous remote sessions and existing preferences are preserved separately.
+- Set MARKETAI_MODE=cloud and MARKETAI_CLOUD_URL to use your own hosted server.
+- Back up the whole MarketAI data folder with the app closed to preserve all local
+  records. DPAPI-protected credentials are tied to your Windows user/computer.

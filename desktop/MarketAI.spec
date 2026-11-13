@@ -1,20 +1,25 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules
+import sys
+from pathlib import Path
+sys.path.insert(0,str(Path('../cloud').resolve()))
 
 hiddenimports = []
 hiddenimports += collect_submodules('webview')
 hiddenimports += collect_submodules('uvicorn')
+hiddenimports += collect_submodules('app')
 
 block_cipher = None
 
 a = Analysis(
     ['desktop_launcher.py'],
-    pathex=[],
+    pathex=['../cloud'],
     binaries=[],
     datas=[
         ('frontend', 'frontend'),
         ('.env.example', '.'),
         ('docs', 'docs'),
+        ('../cloud/releases', 'releases'),
     ],
     hiddenimports=hiddenimports,
     hookspath=[],

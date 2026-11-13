@@ -127,8 +127,13 @@ def main() -> int:
 
     server = None
     thread = None
+    local_service = None
     try:
         configure_paths()
+        if os.getenv('MARKETAI_MODE','local').lower() != 'cloud':
+            from backend.local_runtime import LocalRuntime
+            local_service=LocalRuntime()
+            local_service.start()
         from backend.main import app
 
         port = choose_port()
@@ -139,6 +144,7 @@ def main() -> int:
             log_level="warning",
             access_log=False,
             server_header=False,
+            use_colors=False,
         )
         server = uvicorn.Server(config)
         thread = threading.Thread(target=server.run, name="MarketAI-API", daemon=True)
@@ -174,6 +180,8 @@ def main() -> int:
             server.should_exit = True
         if thread is not None:
             thread.join(timeout=2.5)
+        if local_service is not None:
+            local_service.stop()
         if os.name == "nt" and mutex not in (None, False):
             k32 = _kernel32()
             k32.ReleaseMutex(mutex)

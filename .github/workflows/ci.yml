@@ -72,3 +72,6 @@ jobs:
 
       - name: Validate two-device and CSV batch workflows
         run: python tools/check_workflow.py
+
+      - name: Validate automatic local runtime and persistence
+        run: python tools/check_local_runtime.py --python python
