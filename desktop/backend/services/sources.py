@@ -168,7 +168,7 @@ async def search_mercado_livre_catalog(query: str, site: str = "MLB") -> Dict:
         return {"items": [], "diagnostic": _diag("Catálogo Mercado Livre", "mercadolivre_catalog", True, "access_token", "network_error", error=str(exc)[:260], latency_ms=latency)}
 
 
-async def _ebay_token() -> Dict:
+async def _ebay_token(*, fresh=False) -> Dict:
     client_id = os.getenv("EBAY_CLIENT_ID", "").strip()
     client_secret = os.getenv("EBAY_CLIENT_SECRET", "").strip()
     if not client_id or not client_secret:
@@ -178,7 +178,7 @@ async def _ebay_token() -> Dict:
     now = time.time()
     cached = _EBAY_TOKEN_CACHE.get("token")
     cached_client = _EBAY_TOKEN_CACHE.get("client_id")
-    if cached and cached_client == client_id and float(_EBAY_TOKEN_CACHE.get("expires_at") or 0) > now + 60:
+    if not fresh and cached and cached_client == client_id and float(_EBAY_TOKEN_CACHE.get("expires_at") or 0) > now + 60:
         return {"token": cached, "error": ""}
     basic = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
     headers = {"Authorization": f"Basic {basic}", "Content-Type": "application/x-www-form-urlencoded"}
@@ -187,7 +187,11 @@ async def _ebay_token() -> Dict:
         async with httpx.AsyncClient(timeout=DEFAULT_TIMEOUT) as client:
             r = await client.post("https://api.ebay.com/identity/v1/oauth2/token", headers=headers, data=data)
         if r.status_code >= 400:
-            return {"token": None, "error": _safe_error(r, f"OAuth HTTP {r.status_code}")}
+            status = _status_for_http(r.status_code)
+            if r.status_code == 400 and "invalid_client" in r.text:
+                status = "auth_required"
+            return {"token": None, "error": _safe_error(r, f"OAuth HTTP {r.status_code}"),
+                    "status": status}
         body = r.json()
         token = body.get("access_token")
         if token:
@@ -196,19 +200,19 @@ async def _ebay_token() -> Dict:
             _EBAY_TOKEN_CACHE["client_id"] = client_id
         return {"token": token, "error": "" if token else "OAuth não retornou access_token."}
     except Exception as exc:
-        return {"token": None, "error": str(exc)[:260]}
+        return {"token": None, "error": str(exc)[:260], "status": "network_error"}
 
 
-async def search_ebay_live(query: str, marketplace: str = "EBAY_US", source_name: str = "eBay", gtin: str = "") -> Dict:
+async def search_ebay_live(query: str, marketplace: str = "EBAY_US", source_name: str = "eBay", gtin: str = "", *, fresh_token=False) -> Dict:
     configured = bool(os.getenv("EBAY_CLIENT_ID", "").strip() and os.getenv("EBAY_CLIENT_SECRET", "").strip())
     if not configured:
         return {"items": [], "diagnostic": _diag(source_name, "ebay", False, "oauth_client_credentials", "not_configured", error="Configure EBAY_CLIENT_ID e EBAY_CLIENT_SECRET.")}
     started = time.perf_counter()
-    token_result = await _ebay_token()
+    token_result = await _ebay_token(fresh=fresh_token)
     token = token_result.get("token")
     if not token:
         latency = int((time.perf_counter() - started) * 1000)
-        return {"items": [], "diagnostic": _diag(source_name, "ebay", True, "oauth_client_credentials", "auth_required", error=token_result.get("error") or "Não foi possível obter token do eBay.", latency_ms=latency)}
+        return {"items": [], "diagnostic": _diag(source_name, "ebay", True, "oauth_client_credentials", token_result.get("status", "upstream_error"), error=token_result.get("error") or "Não foi possível obter token do eBay.", latency_ms=latency)}
 
     headers = {"Authorization": f"Bearer {token}", "X-EBAY-C-MARKETPLACE-ID": marketplace}
     params = {"limit": "50", "filter": "conditions:{NEW}"}

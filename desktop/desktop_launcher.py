@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ctypes
 from ctypes import wintypes
+import logging
 import os
 import socket
 import sys
@@ -128,6 +129,7 @@ def main() -> int:
     server = None
     thread = None
     local_service = None
+    tray = None
     try:
         configure_paths()
         if os.getenv('MARKETAI_MODE','local').lower() != 'cloud':
@@ -156,7 +158,7 @@ def main() -> int:
         storage_dir = user_data_directory() / "webview"
         storage_dir.mkdir(parents=True, exist_ok=True)
 
-        webview.create_window(
+        window = webview.create_window(
             f"MarketAI v{APP_VERSION} — Market Intelligence · Community",
             f"http://127.0.0.1:{port}",
             width=1440,
@@ -165,6 +167,14 @@ def main() -> int:
             resizable=True,
             text_select=True,
         )
+        if os.name == "nt" and local_service is not None:
+            try:
+                from backend.tray import DesktopTray
+                tray = DesktopTray(window, bundled_directory() / "marketai.ico")
+                tray.start()
+                os.environ["MARKETAI_TRAY_AVAILABLE"] = "1"
+            except Exception:
+                logging.getLogger("marketai.local").exception("Could not start Windows tray")
         webview.start(debug=False, private_mode=False, storage_path=str(storage_dir))
         return 0
     except Exception as exc:
@@ -176,6 +186,8 @@ def main() -> int:
         )
         return 2
     finally:
+        if tray is not None:
+            tray.stop()
         if server is not None:
             server.should_exit = True
         if thread is not None:

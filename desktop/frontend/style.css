@@ -464,3 +464,14 @@ td:last-child{color:#fff}
 #catalogBackupFeedback, #alertRulesFeedback { overflow-wrap: anywhere; }
 
 #localModeNotice{padding:12px 16px;margin:0 0 18px;font-size:12px;line-height:1.5;color:var(--muted)}
+
+.tray-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tray-option input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}

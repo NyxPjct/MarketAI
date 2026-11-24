@@ -108,6 +108,12 @@ Important files:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
 
+## Local data protection and monitoring in v1.6.0
+
+**Settings → Backup do banco local** lists up to 14 copies of the complete local SQLite database. MarketAI backs it up daily while running. You can create a copy on demand or select a version to restore when the app next opens. MarketAI saves the current database before applying the restore. The copies are in `local-service/backups` under the MarketAI data folder. Integration keys and preferences are stored separately.
+
+**Settings → Bandeja do Windows** keeps the app and its monitor running in the Windows notification area when minimized. The icon menu can reopen the window or quit MarketAI. **Assistente de integrações** guides provider setup and tests the saved credentials. **Funcionamento** shows the last collection, the next check, batch activity and monitoring failures. Each failed watch can be retried manually three times until a successful collection resets the count.
+
 ## Local mode in v1.5.0 / v1.5.1
 
 - v1.5.1 checks for future releases using the public GitHub update manifest, independently of Railway and without sending account tokens.

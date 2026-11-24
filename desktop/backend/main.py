@@ -8,6 +8,9 @@ from pathlib import Path
 from statistics import median
 from typing import Any, Dict, Optional
 
+import httpx
+from urllib.parse import quote
+
 from dotenv import load_dotenv
 from fastapi import Body, FastAPI, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -29,6 +32,7 @@ from backend.services.sources import (
 from backend.services.pricing import PricingInputs, build_pricing
 from backend.services.vision import identify_product
 from backend.logging_config import configure_logging
+from backend.local_operations import router as local_router
 from backend.services.settings import (
     SECRET_KEYS,
     apply_saved_secrets_to_environment,
@@ -55,6 +59,7 @@ logger.info("Starting %s v%s (%s)", APP_NAME, APP_VERSION, APP_CHANNEL)
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
+app.include_router(local_router)
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 ML_SITES = {
@@ -247,32 +252,48 @@ async def integrations_status():
 @app.get("/api/integrations/test")
 async def integrations_test(source: str = Query(...)):
     source = source.strip().lower()
+    query = "Apple iPhone 16 128 GB"
     if source == "mercadolivre":
-        result = await search_mercado_livre_live("Apple iPhone 16 128 GB", site="MLB", source_name="Mercado Livre Brasil")
-        return result["diagnostic"]
-    if source == "ebay":
-        result = await search_ebay_live("Apple iPhone 16 128 GB", marketplace="EBAY_US", source_name="eBay Estados Unidos")
-        return result["diagnostic"]
-    if source == "google_shopping":
-        result = await search_google_shopping_live("Apple iPhone 16 128 GB", country="BR")
-        return result["diagnostic"]
-    if source == "bcb":
+        result = await search_mercado_livre_live(query, site="MLB", source_name="Mercado Livre Brasil")
+    elif source == "ebay":
+        result = await search_ebay_live(query, marketplace="EBAY_US", source_name="eBay Estados Unidos",
+                                        fresh_token=True)
+    elif source == "google_shopping":
+        result = await search_google_shopping_live(query, country="BR")
+    elif source == "bcb":
         rate = await get_rate_to_brl("USD")
-        return {
-            "source": "Banco Central — PTAX", "source_id": "bcb", "configured": True,
-            "auth": "public", "status": "ok" if rate.get("live") else "fallback",
-            "returned": 1, "error": "" if rate.get("live") else "PTAX indisponível; foi usada taxa de contingência.",
-            "latency_ms": 0, "checked_at": datetime.now(timezone.utc).isoformat(), "rate": rate,
-        }
-    if source == "vision":
-        configured = bool(os.getenv("OPENAI_API_KEY", "").strip())
-        return {
-            "source": "Visão por IA", "source_id": "vision", "configured": configured,
-            "auth": "api_key", "status": "configured" if configured else "not_configured",
-            "returned": 0, "error": "" if configured else "Configure OPENAI_API_KEY.",
-            "latency_ms": 0, "checked_at": datetime.now(timezone.utc).isoformat(),
-        }
-    return {"source_id": source, "status": "unknown_source", "error": "Integração desconhecida."}
+        return {"source_id": source, "status": "ok" if rate.get("live") else "fallback", "rate": rate}
+    elif source == "vision":
+        key = os.getenv("OPENAI_API_KEY", "").strip()
+        if not key:
+            return {"source_id": source, "status": "not_configured"}
+        model = quote(os.getenv("OPENAI_VISION_MODEL", "gpt-6-luna"), safe="")
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                response = await client.get(f"https://api.openai.com/v1/models/{model}",
+                                            headers={"Authorization": f"Bearer {key}"})
+        except httpx.RequestError:
+            return {"source_id": source, "status": "network_error"}
+        status = {401: "auth_required", 403: "auth_required", 404: "model_unavailable",
+                  429: "rate_limited"}.get(response.status_code)
+        return {"source_id": source, "status": status or (
+            "ok" if response.is_success else "upstream_error"
+        )}
+    else:
+        return {"source_id": source, "status": "unknown_source"}
+
+    diagnostic = result["diagnostic"]
+    status = diagnostic["status"]
+    if source == "google_shopping" and status in {"http_error", "upstream_error"}:
+        detail = diagnostic.get("error", "").lower()
+        if "invalid api key" in detail:
+            status = "auth_required"
+        elif any(word in detail for word in ("run out of searches", "quota", "rate limit")):
+            status = "rate_limited"
+    if status == "auth_required" and not diagnostic["configured"]:
+        status = "not_configured"
+    return {"source_id": source, "status": status, "returned": diagnostic["returned"],
+            "latency_ms": diagnostic["latency_ms"]}
 
 
 @app.get("/api/app/info")
@@ -284,6 +305,7 @@ async def app_info():
         "channel": APP_CHANNEL,
         "mode": "local" if os.getenv("MARKETAI_LOCAL_MODE")=="1" else "cloud",
         "platform": platform_info(),
+        "tray_available": os.getenv("MARKETAI_TRAY_AVAILABLE") == "1",
         "preferences": prefs,
         "privacy": {
             "local_data": True,

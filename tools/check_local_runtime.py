@@ -77,6 +77,27 @@ def main():
                 backup=Path(download.value.path()).read_bytes();assert json.loads(backup)['products'][0]['fields']['sku']=='LOCAL-001'
                 page.locator('[data-view=settings]').click();expect(page.locator('#localIntegrations')).to_be_visible()
                 expect(page.locator('#cloudServices')).not_to_be_visible()
+                expect(page.locator('#databaseBackups')).to_be_visible()
+                expect(page.locator('#databaseBackupVersions li')).to_have_count(1)
+                expect(page.locator('#operationPanel')).to_be_visible()
+                page.locator('#integrationSource').select_option('vision')
+                page.locator('#testLocalIntegration').click()
+                expect(page.locator('#integrationFeedback')).to_contain_text('Preencha e salve')
+                watch = httpx.post(url + '/api/intelligence/watches', json={
+                    'product_name': 'Watch without a configured market',
+                    'destination_country': 'ZZ',
+                })
+                assert watch.is_success, watch.text
+                watch_id = watch.json()['id']
+                page.locator('#createDatabaseBackup').click()
+                versions = page.locator('#databaseBackupVersions li')
+                expect(versions).to_have_count(2)
+                assert httpx.delete(url + '/api/history').is_success
+                assert not httpx.get(url + '/api/history').json()['items']
+                page.once('dialog', lambda dialog: dialog.accept())
+                versions.first.get_by_role('button', name='Restaurar').click()
+                expect(page.locator('#backupFeedback')).to_contain_text('Restauração agendada')
+                assert httpx.get(url + '/api/local/backups').json()['pending']
                 for lang in ['pt-BR','de','es','fr','en']:
                     page.evaluate('(lang)=>MarketI18n.setLanguage(lang)',lang)
                     assert page.locator('#localModeNotice').inner_text().strip()
@@ -88,6 +109,18 @@ def main():
             assert items[0]['fields']['sku']=='LOCAL-001'
             assert httpx.get(url+'/api/history').json()['items']
             assert (directory/'cloud-session.bin').read_bytes()==b'preserve-old-remote-session'
+            backups = httpx.get(url + '/api/local/backups').json()
+            assert backups['restore_result'] == 'restored' and not backups['pending'], backups
+            assert len(backups['versions']) == 3
+            monitor = httpx.get(url + '/api/local/monitor').json()
+            assert monitor['next_check'] and monitor['failures'][0]['id'] == watch_id, monitor
+            for attempt in range(1, 4):
+                retry = httpx.post(url + '/api/local/monitor/retry', json={'watch_id': watch_id})
+                assert retry.json() == {'result': 'collection_failed'}, retry.text
+                failures = httpx.get(url + '/api/local/monitor').json()['failures']
+                assert failures[0]['attempts'] == attempt, failures
+            retry = httpx.post(url + '/api/local/monitor/retry', json={'watch_id': watch_id})
+            assert retry.status_code == 409 and retry.json()['detail'] == 'retry_limit', retry.text
             # User-supplied Cloud archives can migrate inputs into the local profile.
             archive=json.loads(backup);archive['account_id']='00000000-0000-4000-8000-000000000001'
             result=httpx.post(url+'/api/catalog/backup/preview',files={'file':('backup.json',json.dumps(archive).encode())})
@@ -100,6 +133,9 @@ def main():
             restored=httpx.post(url+'/api/catalog/backup/restore',files={'file':('backup.json',json.dumps(archive).encode())},data={'plan':json.dumps(plan)})
             assert restored.status_code==200,restored.text
             assert restored.json()['replaced']==1
-    print('PASS: automatic local profile, SQLite catalog/history, analyses without hosted Cloud, backup export/import, restart persistence, five languages and preserved remote session')
+        with launch(args.python, directory) as url:
+            retry = httpx.post(url + '/api/local/monitor/retry', json={'watch_id': watch_id})
+            assert retry.status_code == 409 and retry.json()['detail'] == 'retry_limit', retry.text
+    print('PASS: local profile, catalog/history, database backup and restore, integration diagnostics, retry limit across restarts, Cloud catalog import, five languages and preserved remote session')
 
 if __name__=='__main__':main()

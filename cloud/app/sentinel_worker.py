@@ -10,25 +10,31 @@ BATCH=max(1,int(os.getenv("SENTINEL_BATCH_SIZE","50")))
 
 def utcnow(): return datetime.now(timezone.utc)
 
-async def check_one(db,w,user):
+async def check_one(db,w,user, *, require_working_source=False):
     try:
         fields=json.loads(w.settings_json or "{}")
         fields.update({"product_name":w.product_name,"variant_text":w.variant_text,"destination_country":w.country})
         analysis=await run_analysis(fields)
-        from app.watch_collection import persist_snapshot, record_failure
+        from app.watch_collection import persist_snapshot
+        if require_working_source and not any(
+            source.get("status") == "ok" for source in analysis["market"]["sources"]
+        ):
+            raise RuntimeError("No market source completed the collection")
         persist_snapshot(db,w,analysis,fields)
         db.commit()
+        return True
     except Exception:
         from app.watch_collection import record_failure
         db.rollback();record_failure(db,w);db.commit()
+        return False
 
-async def cycle():
+async def cycle(*, collect=check_one):
     db=SessionLocal()
     try:
         rows=db.query(ProductWatch).filter_by(active=True).order_by(ProductWatch.updated_at.asc()).limit(BATCH).all()
         for w in rows:
             user=db.get(User,w.user_id)
-            if user and user.status=="active" and user.deleted_at is None: await check_one(db,w,user)
+            if user and user.status=="active" and user.deleted_at is None: await collect(db,w,user)
         # Staleness must also be checked for active watches beyond this collection batch.
         from app.alert_rules import check_staleness
         from app.models import WatchAlertRules

@@ -1,3 +1,17 @@
+MARKETAI 1.6.0 — LOCAL DATA PROTECTION AND MONITORING
+
+- MarketAI makes daily backups of the full local SQLite database while running
+  and keeps up to 14 versions. Settings can create an additional copy or schedule
+  a restore for the next startup. MarketAI saves the current database first.
+- The optional Windows tray setting keeps the monitor running when minimized.
+  The tray menu opens MarketAI or exits the app and its background services.
+- The integration assistant explains where to find credentials and tests
+  market sources, the configured OpenAI model and Banco Central exchange rates.
+- The operation panel shows collections, upcoming checks, active batches and
+  failures. Each failed watch can be retried manually up to three times until a
+  collection succeeds.
+- Preferences and integration keys are stored separately from the local database.
+
 MARKETAI 1.5.1 — LOCAL MODE, WITHOUT HOSTING
 
 - Local mode checks future updates directly through the public GitHub manifest,

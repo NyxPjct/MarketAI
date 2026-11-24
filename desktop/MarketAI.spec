@@ -17,6 +17,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('frontend', 'frontend'),
+        ('marketai.ico', '.'),
         ('.env.example', '.'),
         ('docs', 'docs'),
         ('../cloud/releases', 'releases'),

@@ -2,6 +2,7 @@
 from __future__ import annotations
 import asyncio
 from contextlib import asynccontextmanager
+import logging
 import os
 from pathlib import Path
 import secrets
@@ -13,6 +14,12 @@ import time
 import httpx
 import uvicorn
 
+from backend.local_backup import LocalBackup
+from backend.local_monitor import LocalMonitor
+from backend import local_operations
+
+logger = logging.getLogger("marketai.local")
+
 class LocalRuntime:
     def __init__(self):
         from backend.services.settings import data_dir, _dpapi_encrypt, _dpapi_decrypt, apply_saved_secrets_to_environment
@@ -22,6 +29,9 @@ class LocalRuntime:
         load_dotenv(os.getenv('MARKETAI_ENV_PATH', str(data_dir()/'.env')))
         apply_saved_secrets_to_environment()
         root=data_dir()/'local-service';root.mkdir(parents=True,exist_ok=True)
+        self.backup = LocalBackup(root / "marketai.db")
+        self.backup.apply_pending_restore()
+        self.monitor = LocalMonitor()
         key=root/'identity.bin'
         if key.exists():
             jwt=_dpapi_decrypt(key.read_bytes()).decode('ascii')
@@ -44,20 +54,18 @@ class LocalRuntime:
         @asynccontextmanager
         async def lifespan(application):
             async with original(application):
-                async def monitor():
-                    from app.sentinel_worker import cycle, INTERVAL
-                    while True:
-                        try:await cycle()
-                        except Exception:
-                            import logging
-                            logging.getLogger('marketai.local').exception('Local monitoring cycle failed')
-                        await asyncio.sleep(INTERVAL*60)
-                worker=asyncio.create_task(monitor())
-                try:yield
+                self.loop = asyncio.get_running_loop()
+                self.monitor.initialize()
+                workers = [
+                    asyncio.create_task(self.monitor.run()),
+                    asyncio.create_task(self.backup_periodically()),
+                ]
+                try:
+                    yield
                 finally:
-                    worker.cancel()
-                    try:await worker
-                    except asyncio.CancelledError:pass
+                    for worker in workers:
+                        worker.cancel()
+                    await asyncio.gather(*workers, return_exceptions=True)
         app.router.lifespan_context=lifespan
         self.server=uvicorn.Server(uvicorn.Config(app,host='127.0.0.1',port=self.port,
             log_level='warning',access_log=False,server_header=False,use_colors=False))
@@ -75,7 +83,20 @@ class LocalRuntime:
                 time.sleep(.1)
             else:raise RuntimeError('Local service startup timed out')
         self.authorize()
+        self.run_automatic_backup()
+        local_operations.runtime = self
         return self
+
+    def run_automatic_backup(self):
+        try:
+            self.backup.create(automatic=True)
+        except Exception:
+            logger.exception("Automatic backup failed")
+
+    async def backup_periodically(self):
+        while True:
+            await asyncio.sleep(300)
+            await asyncio.to_thread(self.run_automatic_backup)
 
     def authorize(self):
         from app.db import SessionLocal
@@ -100,6 +121,8 @@ class LocalRuntime:
                 'account':tokens['user'],'entitlement':tokens['entitlement']})
 
     def stop(self):
+        if local_operations.runtime is self:
+            local_operations.runtime = None
         self.server.should_exit=True
         self.thread.join(timeout=15)
         self.socket.close()

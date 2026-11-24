@@ -74,7 +74,7 @@
 
       <div class="sidebar-foot">
         <div class="status-dot-wrap"><i class="status-dot"></i><span id="apiStatus">verificando API…</span></div>
-        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.5.1</small>
+        <button id="updateAvailable" class="update-chip" hidden>Atualização disponível</button><small id="appVersion">MarketAI v1.6.0</small>
       </div>
     </aside>
 
@@ -387,7 +387,7 @@
         </div>
         <div class="settings-grid">
           <div class="card settings-card" id="localIntegrations" hidden>
-            <h2>Local integrations</h2>
+            <h2>Assistente de integrações</h2>
             <p class="muted">Optional provider keys are stored on this computer, protected by Windows DPAPI. Missing sources leave market prices unavailable.</p>
             <label>Mercado Livre<input id="settingsML" type="password" autocomplete="off"><span id="cred-ml"></span></label>
             <label>eBay Client ID<input id="settingsEbayId" type="password" autocomplete="off"><span id="cred-ebay-id"></span></label>
@@ -396,6 +396,17 @@
             <label>OpenAI<input id="settingsOpenAI" type="password" autocomplete="off"><span id="cred-openai"></span></label>
             <button id="saveCredentials" class="ghost">Save integration keys</button>
             <button id="clearCredentials" class="ghost">Remove integration keys</button>
+            <label for="integrationSource">Fonte a testar</label>
+            <select id="integrationSource">
+              <option value="mercadolivre">Mercado Livre</option>
+              <option value="ebay">eBay</option>
+              <option value="google_shopping">Google Shopping · SerpAPI</option>
+              <option value="vision">OpenAI</option>
+              <option value="bcb">Banco Central · PTAX</option>
+            </select>
+            <p id="integrationGuide" class="muted"></p>
+            <button id="testLocalIntegration" class="ghost" type="button">Testar conexão</button>
+            <p id="integrationFeedback" role="status"></p>
           </div>
           <div class="card settings-card" id="cloudServices">
             <div class="card-head"><div><p class="eyebrow">CLOUD</p><h2>Serviços centralizados</h2><p class="muted">Na edição Community, as integrações centralizadas podem ficar no MarketAI Cloud. Você não precisa expor chaves sensíveis no aplicativo.</p></div><span class="secure-chip">SERVER</span></div>
@@ -410,6 +421,39 @@
             <button id="savePreferences" class="primary" type="button"><span>SALVAR PREFERÊNCIAS</span><b>→</b></button>
           </div>
 
+          <div class="card settings-card" id="desktopTraySettings" hidden>
+            <h2>Bandeja do Windows</h2>
+            <label for="minimizeToTray" class="tray-option"><input id="minimizeToTray" type="checkbox"> Minimizar para a bandeja</label>
+            <p class="muted">As verificações continuam com a janela minimizada. Use «Encerrar MarketAI» no menu do ícone perto do relógio para sair.</p>
+            <p id="trayFeedback" role="status"></p>
+          </div>
+
+          <div class="card settings-card wide-settings" id="databaseBackups" hidden>
+            <h2>Backup do banco local</h2>
+            <p class="muted">Uma cópia do banco é salva a cada 24 horas com o MarketAI aberto. O catálogo, histórico, monitoramento e lotes estão incluídos. Preferências e chaves ficam na pasta de dados.</p>
+            <div class="action-row">
+              <button id="createDatabaseBackup" class="ghost" type="button">Criar cópia agora</button>
+              <button id="cancelDatabaseRestore" class="ghost" type="button" hidden>Cancelar restauração agendada</button>
+            </div>
+            <p id="backupFeedback" role="status"></p>
+            <ul id="databaseBackupVersions" class="clean-list"></ul>
+          </div>
+
+          <div class="card settings-card wide-settings" id="operationPanel" hidden>
+            <div class="card-head">
+              <h2>Funcionamento</h2>
+              <button id="refreshOperations" class="ghost" type="button">Atualizar</button>
+            </div>
+            <dl>
+              <dt>Última coleta</dt><dd id="lastCollection">—</dd>
+              <dt>Próxima verificação</dt><dd id="nextCollection">—</dd>
+              <dt>Em andamento</dt><dd id="operationActivity">—</dd>
+            </dl>
+            <h3>Falhas de monitoramento</h3>
+            <p id="operationFeedback" role="status"></p>
+            <ul id="operationFailures" class="clean-list"></ul>
+          </div>
+
           <div class="card settings-card wide-settings">
             <div class="card-head"><div><p class="eyebrow">DADOS LOCAIS</p><h2>Backup e diagnóstico</h2><p class="muted">Histórico e monitorados ficam neste computador.</p></div></div>
             <div class="tool-grid"><button id="exportBackup" class="ghost">Exportar backup</button><button id="importBackupBtn" class="ghost">Importar backup</button><input id="importBackupFile" type="file" accept="application/json" hidden><button id="exportDiagnostics" class="ghost">Exportar diagnóstico</button><button id="openDataFolder" class="ghost">Abrir pasta de dados</button></div>
@@ -419,7 +463,7 @@
 
       <section id="view-about" class="view">
         <div class="about-grid">
-          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.5.1</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
+          <div class="card about-hero"><div class="about-logo">M</div><div><p class="eyebrow">COMMUNITY OPEN SOURCE</p><h2>MarketAI <span id="aboutVersion">v1.6.0</span></h2><p class="muted">Inteligência de mercado para analisar preço, margem e qualidade dos dados antes de tomar decisão.</p></div></div>
           <div class="card"><h3>Compromissos do MarketAI</h3><ul class="clean-list"><li>Não fabrica preços de mercado quando as fontes não respondem.</li><li>Bloqueia recomendação com amostra insuficiente ou variante ambígua.</li><li>Mostra os anúncios usados e descartados para auditoria.</li><li>Não coloca os recursos principais atrás de paywall.</li><li>Session tokens and local integration keys are protected with Windows DPAPI. In Cloud mode, marketplace keys are managed on the server.</li></ul></div>
           <div class="card"><h3>Limites importantes</h3><p class="muted">Preços mudam, APIs podem limitar resultados e compatibilidade textual não comprova autenticidade física de um item. NCM, impostos, desembaraço e decisões contábeis devem ser validados com profissionais responsáveis.</p></div>
           <div class="card"><h3>Documentos</h3><p class="muted">Os Termos de Uso, Política de Privacidade e Avisos de Terceiros acompanham o instalador e a pasta do aplicativo.</p><div class="legal-links"><span>Termos de Uso</span><span>Privacidade</span><span>Terceiros</span></div></div>
@@ -470,5 +514,6 @@
   <script src="/static/catalog.js"></script>
   <script src="/static/catalog-backup.js"></script>
   <script src="/static/alert-rules.js"></script>
+  <script src="/static/local-operations.js"></script>
 </body>
 </html>

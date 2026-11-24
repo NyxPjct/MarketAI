@@ -26,6 +26,7 @@ DEFAULT_PREFERENCES: Dict[str, Any] = {
     "default_ads_percent": 3.0,
     "default_margin_percent": 20.0,
     "first_run_completed": False,
+    "minimize_to_tray": False,
 }
 
 
@@ -88,7 +89,7 @@ def save_preferences(values: Dict[str, Any]) -> Dict[str, Any]:
             value = str(value).upper()[:2]
         if key == "default_purchase_currency":
             value = str(value).upper()[:4]
-        if key == "first_run_completed":
+        if key in {"first_run_completed", "minimize_to_tray"}:
             value = bool(value)
         current[key] = value
     preferences_path().write_text(json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8")
