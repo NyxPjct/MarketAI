@@ -15,24 +15,24 @@ The Windows installer runs locally by default, with a persistent profile, embedd
 
 ## Download for Windows
 
-Current version: **v1.5.1**
+Current version: **v1.6.0**
 
 One multilingual installer for **Windows 10/11 x64**, with English, Português (Brasil), Deutsch, Español and Français.
 
 ```text
-MarketAI-Setup-v1.5.1.exe
+MarketAI-Setup-v1.6.0.exe
 ```
 
 Direct download:
 
-- [MarketAI-Setup-v1.5.1.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.5.1/MarketAI-Setup-v1.5.1.exe)
-- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.5.1/MarketAI-Setup-v1.5.1.sha256)
-- [GitHub Release v1.5.1](https://github.com/NyxPjct/MarketAI/releases/tag/v1.5.1)
+- [MarketAI-Setup-v1.6.0.exe](https://github.com/NyxPjct/MarketAI/releases/download/v1.6.0/MarketAI-Setup-v1.6.0.exe)
+- [SHA-256 file](https://github.com/NyxPjct/MarketAI/releases/download/v1.6.0/MarketAI-Setup-v1.6.0.sha256)
+- [GitHub Release v1.6.0](https://github.com/NyxPjct/MarketAI/releases/tag/v1.6.0)
 
 SHA-256:
 
 ```text
-008a4ccec8842eb932c474620d877f276d868f9c1300f8f44ecfedc23dc67a1f
+72c60cca712982bc7a172f14c5f5df7e8fff7c93003125fbee5cca0bc51571f4
 ```
 
 All releases:
